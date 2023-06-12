@@ -1,0 +1,17 @@
+version: "3.9"
+services:
+  python-server:
+    build:
+      context: ./python-server
+      dockerfile: Dockerfile
+    ports:
+      - 8000:8000
+    depends_on:
+      - angular-app
+  angular-app:
+    build:
+      context: ./angular-app
+      dockerfile: Dockerfile
+    ports:
+      - 4200:80
+    command: ["nginx", "-g", "daemon off;"]
