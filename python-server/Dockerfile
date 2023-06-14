@@ -10,11 +10,17 @@ COPY requirements.txt .
 # Install the Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Install npm
+RUN apt-get update && apt-get install -y npm
+
+# Install nodemon using npm
+RUN npm install -g nodemon
+
 # Copy the entire project to the container
-COPY ./ .
+COPY . .
 
 # Expose a port (e.g., 8000) for the server to listen on
 EXPOSE 8000
 
 # Define the command to run when the container starts
-CMD [ "python", "server.py" ]
+CMD [ "nodemon", "--watch", ".", "--ext", "py", "--exec", "python", "server.py" ]

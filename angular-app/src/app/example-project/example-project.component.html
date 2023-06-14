@@ -1,0 +1,68 @@
+<div class="content example-project" role="main">
+  <h1>{{exampleProject.projectTitle}}</h1>
+  <p>
+    This is an example project template that demonstrates data management functionality. It consists of a form and a
+    table. The form allows you to enter a table name and a value. You can load data, add new values to the table, and
+    update or delete existing values. The table displays the data retrieved from the server. Each row represents a
+    record with an ID and a corresponding value. You can edit the values in the table and perform update and delete
+    operations on each record. The template provides a user-friendly interface for managing data efficiently.
+  </p>
+  <br><br>
+  <h2>PostgreSQL Data</h2>
+  <div>
+    <table>
+      <tbody>
+      <tr>
+        <th>
+          TableName
+        </th>
+        <td>
+          <input type="text" [(ngModel)]="exampleProject.tableName"/>
+        </td>
+      </tr>
+      <tr>
+        <th>
+          Value
+        </th>
+        <td>
+          <input type="text" [(ngModel)]="exampleProject.value"/>
+        </td>
+      </tr>
+      <tr>
+        <th>
+          <button (click)="exampleProject.loadData();">
+            Load Data
+          </button>
+        </th>
+        <td>
+          <button [disabled]="!exampleProject.value" (click)="exampleProject.addValue()">Add Value</button>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div *ngIf="exampleProject.dataLoading">
+    Loading...
+  </div>
+  <div *ngIf="exampleProject.dataLoaded && !exampleProject.dataLoading">
+    <table>
+      <thead>
+      <tr>
+        <th>ID</th>
+        <th colspan="2">Value</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr *ngFor="let data of exampleProject.data">
+        <th>{{data.id}}</th>
+        <td><input type="text" [(ngModel)]="data.value"/></td>
+        <td>
+          <button (click)="exampleProject.updateData(data)">update</button>
+          <button (click)="exampleProject.deleteData(data)">delete</button>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

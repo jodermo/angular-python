@@ -11,13 +11,16 @@ COPY package*.json ./
 RUN npm ci --only=production
 
 # Copy the entire project
-COPY ./ .
+COPY . .
 
 # Build the Angular app
 RUN npm run build
 
 # Stage 2: Create a minimal Nginx image with compiled Angular app
 FROM nginx:alpine
+
+# Copy the whole Angular app from the previous stage
+# COPY --from=build /app .
 
 # Copy the compiled Angular app from the previous stage
 COPY --from=build /app/dist/angular-app /usr/share/nginx/html

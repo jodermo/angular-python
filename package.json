@@ -1,0 +1,12 @@
+{
+  "name": "angular-python",
+  "version": "0.0.0",
+  "scripts": {
+    "ng": "ng",
+    "start": "cd angular-app && ng serve --host 0.0.0.0 --poll 2000",
+    "build": "cd angular-app && ng build",
+    "watch": "cd angular-app && ng build --watch --configuration development",
+    "test": "cd angular-app && ng test"
+  },
+  "private": false
+}

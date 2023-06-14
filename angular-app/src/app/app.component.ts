@@ -1,4 +1,6 @@
 import { Component } from '@angular/core';
+import {AppService} from "./app.service";
+import {AppRoutes} from "./app-routing.module";
 
 @Component({
   selector: 'app-root',
@@ -6,5 +8,8 @@ import { Component } from '@angular/core';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent {
-  title = 'angular-app';
+  routes = AppRoutes;
+
+  constructor(public app: AppService) {
+  }
 }
