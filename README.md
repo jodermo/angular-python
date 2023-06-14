@@ -13,6 +13,7 @@ To run this project, make sure you have the following prerequisites installed on
 The project structure is as follows:
 
 - angular-python/
+  - .env
   - docker-compose.yml
   - postgres-data/
     - ... database data
@@ -26,6 +27,17 @@ The project structure is as follows:
     - package.json
     - ... other Angular project files
 
+
+## Environment file [.env](./.env)
+
+```
+DB_HOST=postgres-database
+DB_PORT=5432
+DB_USER=postgres
+DB_PASSWORD=postgres
+DB_DATABASE=postgres
+POSTGRES_PASSWORD=postgres
+```
 
 ## Usage
 
