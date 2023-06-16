@@ -1,0 +1,6 @@
+<div class="api-action" *ngIf="api">
+
+  <span><b><i>{{api.method}}:</i></b> {{api.api_url}}</span>
+  <span class="spacer"></span>
+  <button (click)="apiManager.callApi(api)">Make API call</button>
+</div>

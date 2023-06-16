@@ -1,0 +1,26 @@
+<div class="api-info" *ngIf="api">
+  <div class="api-info-header">
+    <h2>{{ api.api_name }}</h2>
+    <div>
+      <app-api-action [api]="api"></app-api-action>
+    </div>
+  </div>
+  <span *ngIf="api.api_url"> <strong>URL:</strong> {{ api.api_url }}</span><br>
+  <span *ngIf="api.method"><strong>Method:</strong> {{ api.method }}</span><br>
+  <span *ngIf="api.mode"><strong>Mode:</strong> {{ api.mode }}</span><br>
+  <span *ngIf="api.cache"><strong>Cache:</strong> {{ api.cache }}</span><br>
+  <span *ngIf="api.credentials"><strong>Credentials:</strong> {{ api.credentials }}</span><br>
+  <span *ngIf="api.headers && api.headers.length"><strong>Headers:</strong></span>
+  <ul *ngIf="api.headers && api.headers.length">
+    <li *ngFor="let header of api.headers">
+      <span>{{ header.key }}: {{ header.value }}</span>
+    </li>
+  </ul>
+  <span *ngIf="api.redirect"><strong>Redirect:</strong> {{ api.redirect }}</span><br>
+  <span *ngIf="api.referrerPolicy"><strong>Referrer Policy:</strong> {{ api.referrerPolicy }}</span><br>
+  <div class="api-info-actions">
+    <button (click)="apiManager.editApi = api; apiManager.selectedResult = undefined;">Edit</button>
+    <button (click)="deleteApi(api)">Delete</button>
+  </div>
+
+</div>

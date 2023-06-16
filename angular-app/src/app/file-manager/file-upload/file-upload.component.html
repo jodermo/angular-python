@@ -1,0 +1,38 @@
+<div class="file-upload">
+  <label for="uploadPath">Path</label>
+  <input id="uploadPath" name="uploadPath" type="text" [(ngModel)]="fileManager.uploadPath" (ngModelChange)="fileManager.onUploadPathChanged()"/><br>
+  <div *ngIf="!fileManager.selectedFile"class="file-drop-box" (click)="fileInput.click()"
+       (dragenter)="fileManager.onDragEnter($event)"
+       (dragover)="fileManager.onDragOver($event)"
+       (dragleave)="fileManager.onDragLeave($event)"
+       (drop)="fileManager.onFileDrop($event)">
+    <p>Drag and drop files here</p>
+  </div>
+  <div  *ngIf="!fileManager.error && fileManager.selectedFile" class="file-drop-box done">
+    <div *ngIf="fileManager.isImageFile(fileManager.selectedFile)" class="file-preview-container" >
+      <img  [src]="fileManager.getPreviewUrl(fileManager.selectedFile)" alt="{{fileManager.selectedFile.name}}" class="file-preview">
+    </div>
+    <p *ngIf="fileManager.selectedFile">{{fileManager.selectedFile.name}} <i><small>[{{ fileManager.getFileSize(fileManager.selectedFile.size) }}]</small></i></p>
+  </div>
+  <div  *ngIf="fileManager.error && fileManager.selectedFile" class="file-drop-box error">
+    <div>
+      <p class="error-message">{{fileManager.error.message ? fileManager.error.message: fileManager.error}}</p>
+    </div>
+  </div>
+  <input class="file-input" type="file" [disabled]="!app.uploadPath" (change)="fileManager.onFileSelected($event)" #fileInput/>
+  <button class="upload-button" [disabled]="!fileManager.selectedFile || fileManager.uploaded === fileManager.selectedFile" (click)="fileManager.uploadFile()">
+    <span>Upload</span>
+  </button>
+  <button  class="upload-button" [disabled]="!fileManager.selectedFile" (click)="fileManager.reset()">
+    <span>Cancel</span>
+  </button>
+</div>
+
+<div *ngIf="showUploadList && fileManager.uploadedFiles.length">
+  <div class="uploaded-file" *ngFor="let file of fileManager.uploadedFiles">
+    <div *ngIf="fileManager.isImageFile(file)" class="file-preview-container" >
+      <img src="{{fileManager.getPreviewUrl(file)}}" alt="{{file.name}}" class="file-preview">
+    </div>
+    <p>{{file.name}} <i><small>[{{ fileManager.getFileSize(file.size) }}</small>]</i></p>
+  </div>
+</div>

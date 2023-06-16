@@ -5,7 +5,11 @@ import json
 from dotenv import load_dotenv
 from psycopg2 import sql
 from flask import jsonify, request, make_response
+from server_logging import server_logging
 
+mode = os.getenv("MODE")
+mode = mode if mode else 'dev'
+log = server_logging.server_logging("postgres_api.log", mode)
 
 class postgres_api:
     def __init__(self):
@@ -32,8 +36,8 @@ class postgres_api:
                 )
                 return conn
             except psycopg2.OperationalError as e:
-                print(f"Error connecting to PostgreSQL: {e}")
-                print("Retrying in 5 seconds...")
+                log.info(f"Error connecting to PostgreSQL: {e}")
+                log.info("Retrying in 5 seconds...")
                 time.sleep(5)
 
     def table_exists(self, cur, table_name):
@@ -127,9 +131,11 @@ class postgres_api:
         Returns:
             The response containing the fetched data.
         """
+        log.info('get_data')
         table_name = request.args.get('tableName')
+        log.info(table_name)
         data_id = request.args.get('id')
-
+        log.info(data_id)
         try:
             conn = self.connect_to_postgres()
             cur = conn.cursor()
@@ -165,6 +171,7 @@ class postgres_api:
 
             return response
         except psycopg2.Error as e:
+            log.info(str(e))
             return jsonify({'error': str(e)})
 
     def post_data(self):
@@ -243,10 +250,12 @@ class postgres_api:
         Returns:
             The response confirming the deletion.
         """
+        log.info('delete_data')
         request_data = request.json
         table_name = request_data.get('tableName')
+        log.info(table_name)
         data_id = request_data.get('data').get('id')
-
+        log.info(data_id)
         try:
             conn = self.connect_to_postgres()
             cur = conn.cursor()

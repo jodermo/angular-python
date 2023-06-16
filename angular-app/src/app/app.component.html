@@ -11,6 +11,7 @@
     Welcome
   </a>
 
+
   <!-- Navigation -->
   <ng-container *ngFor="let route of routes">
     <a *ngIf="route.data && route.data['showInNavigation']" routerLink="/{{route.path}}" routerLinkActive="active"

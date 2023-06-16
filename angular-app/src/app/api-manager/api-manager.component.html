@@ -1,94 +1,13 @@
 <div class="content api-manager" role="main">
   <h2>API Manager</h2>
-
-  <app-file-upload></app-file-upload>
-
-  <ng-container *ngIf="!apiManager.api && !apiManager.editApi">
-    <h3>API List</h3>
-    <ul *ngIf="apiManager.apis && apiManager.apis.length">
-      <li *ngFor="let dbApi of apiManager.apis">
-
-        <span *ngIf="dbApi.api_name"><strong>Name:</strong> {{ dbApi.api_name }}</span><br>
-        <span *ngIf="dbApi.api_url"> <strong>URL:</strong> {{ dbApi.api_url }}</span><br>
-        <span *ngIf="dbApi.method"><strong>Method:</strong> {{ dbApi.method }}</span><br>
-        <span *ngIf="dbApi.mode"><strong>Mode:</strong> {{ dbApi.mode }}</span><br>
-        <span *ngIf="dbApi.cache"><strong>Cache:</strong> {{ dbApi.cache }}</span><br>
-        <span *ngIf="dbApi.credentials"><strong>Credentials:</strong> {{ dbApi.credentials }}</span><br>
-        <span *ngIf="dbApi.headers && dbApi.headers.length"><strong>Headers:</strong></span>
-        <ul *ngIf="dbApi.headers && dbApi.headers.length">
-          <li *ngFor="let header of dbApi.headers">
-            <span>{{ header.key }}: {{ header.value }}</span>
-          </li>
-        </ul>
-        <span *ngIf="dbApi.redirect"><strong>Redirect:</strong> {{ dbApi.redirect }}</span><br>
-        <span *ngIf="dbApi.referrerPolicy"><strong>Referrer Policy:</strong> {{ dbApi.referrerPolicy }}</span><br>
-
-        <button (click)="apiManager.editApi = dbApi">Edit</button>
-        <button (click)="app.deleteAPI(dbApi)">Delete</button>
-      </li>
-    </ul>
-
+  <ng-container *ngIf="!apiManager.api && !apiManager.editApi && !apiManager.selectedResult">
+    <app-api-list></app-api-list>
     <button (click)="apiManager.newApi()">Add new API</button>
-
   </ng-container>
-  <ng-container *ngIf="apiManager.editApi">
-
-    <h3>Create New API</h3>
-    <form *ngIf="apiManager.editApi" (ngSubmit)="app.addOrUpdateAPIEntry(apiManager.editApi)">
-      <label for="apiName">API Name:</label>
-      <input type="text" id="apiName" [(ngModel)]="apiManager.editApi.api_name" name="apiName" required><br>
-      <label for="apiUrl">API URL:</label>
-      <input type="text" id="apiUrl" [(ngModel)]="apiManager.editApi.api_url" name="apiUrl" required><br>
-      <label for="apiMethod">Method:</label>
-      <select id="apiMethod" [(ngModel)]="apiManager.editApi.method" name="apiMethod" required>
-        <option value="GET">GET</option>
-        <option value="POST">POST</option>
-        <option value="PUT">PUT</option>
-        <option value="DELETE">DELETE</option>
-      </select><br>
-      <label for="apiMode">Mode:</label>
-      <select id="apiMode" [(ngModel)]="apiManager.editApi.mode" name="apiMode" required>
-        <option value="no-cors">no-cors</option>
-        <option value="cors">cors</option>
-        <option value="same-origin">same-origin</option>
-      </select><br>
-      <label for="apiCache">Cache:</label>
-      <select id="apiCache" [(ngModel)]="apiManager.editApi.cache" name="apiCache" required>
-        <option value="no-cache">no-cache</option>
-        <option value="default">default</option>
-        <option value="reload">reload</option>
-        <option value="force-cache">force-cache</option>
-        <option value="only-if-cached">only-if-cached</option>
-      </select><br>
-      <label for="apiCredentials">Credentials:</label>
-      <select id="apiCredentials" [(ngModel)]="apiManager.editApi.credentials" name="apiCredentials" required>
-        <option value="same-origin">same-origin</option>
-        <option value="include">include</option>
-        <option value="omit">omit</option>
-      </select><br>
-
-      <label for="apiRedirect">Redirect:</label>
-      <select id="apiRedirect" [(ngModel)]="apiManager.editApi.redirect" name="apiRedirect" required>
-        <option value="manual">manual</option>
-        <option value="follow">follow</option>
-        <option value="error">error</option>
-      </select><br>
-      <label for="apiReferrerPolicy">Referrer Policy:</label>
-      <select id="apiReferrerPolicy" [(ngModel)]="apiManager.editApi.referrerPolicy" name="apiReferrerPolicy" required>
-        <option value="no-referrer">no-referrer</option>
-        <option value="no-referrer-when-downgrade">no-referrer-when-downgrade</option>
-        <option value="origin">origin</option>
-        <option value="origin-when-cross-origin">origin-when-cross-origin</option>
-        <option value="same-origin">same-origin</option>
-        <option value="strict-origin">strict-origin</option>
-        <option value="strict-origin-when-cross-origin">strict-origin-when-cross-origin</option>
-        <option value="unsafe-url">unsafe-url</option>
-      </select><br>
-      <button type="submit">
-        <span *ngIf="!apiManager.editApi.id">Create API</span>
-        <span *ngIf="apiManager.editApi.id">Update API</span>
-      </button>
-      <button (click)="apiManager.editApi = undefined;">Cancel</button>
-    </form>
+  <ng-container *ngIf="apiManager.editApi && !apiManager.selectedResult">
+    <app-edit-api></app-edit-api>
+  </ng-container>
+  <ng-container *ngIf="apiManager.selectedResult">
+    <app-api-result [apiResult]="apiManager.selectedResult"></app-api-result>
   </ng-container>
 </div>

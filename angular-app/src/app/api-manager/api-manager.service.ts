@@ -1,5 +1,8 @@
-import { Injectable } from '@angular/core';
+import {Injectable} from '@angular/core';
 import {Api, AppService} from "../app.service";
+import {ApiResult} from "./api-result";
+
+
 
 @Injectable({
   providedIn: 'root'
@@ -10,9 +13,14 @@ export class ApiManagerService {
   editApi?: Api;
   apis?: Api[];
   private app?: AppService;
+  initialized = false;
 
-  constructor() { }
+  results: ApiResult[] = [];
 
+  selectedResult?: ApiResult;
+
+  constructor() {
+  }
 
 
   // View APIs
@@ -21,9 +29,7 @@ export class ApiManagerService {
 
     this.app?.getAPIs(
       (result: any) => {
-        // Handle success
-        console.log("APIs:", result);
-        this.apis = result; // Assign the retrieved APIs to the "apis" property
+        this.apis = result;
         this.api = undefined;
       },
       (error: any) => {
@@ -39,4 +45,20 @@ export class ApiManagerService {
   }
 
 
+  callApi(api?: Api) {
+    if (api) {
+      const result = new ApiResult(this, api);
+      this.selectedResult = result;
+      this.results.push(result);
+    }
+  }
+
+  init(app: AppService) {
+    if (!this.initialized) {
+      this.initialized = true;
+      this.app = app;
+      this.loadApis(this.app);
+    }
+
+  }
 }

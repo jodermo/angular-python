@@ -14,10 +14,11 @@ export class ApiManagerComponent extends AppComponent implements OnInit {
 
   constructor(app: AppService, public apiManager: ApiManagerService) {
     super(app);
+    this.apiManager.init(app);
   }
 
   ngOnInit() {
-    this.apiManager.loadApis(this.app);
+
   }
 
 

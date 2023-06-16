@@ -3,20 +3,33 @@ import {RouterModule, Routes} from '@angular/router';
 import {ExampleProjectComponent} from "./example-project/example-project.component";
 import {WelcomePageComponent} from "./welcome-page/welcome-page.component";
 import {ApiManagerComponent} from "./api-manager/api-manager.component";
+import {FileManagerComponent} from "./file-manager/file-manager.component";
 
 export const AppRoutes: Routes = [
-  {path: 'api-manager', component: ApiManagerComponent, data: {
+  {
+    path: 'api-manager', component: ApiManagerComponent, data: {
       showInNavigation: true,
       title: 'API Manager'
-    }},
-  {path: 'example-project', component: ExampleProjectComponent, data: {
+    }
+  },
+  {
+    path: 'file-manager', component: FileManagerComponent, data: {
+      showInNavigation: true,
+      title: 'File Manager'
+    }
+  },
+  {
+    path: 'example-project', component: ExampleProjectComponent, data: {
       showInNavigation: true,
       title: 'Example Project'
-    }},
-  {path: '**', component: WelcomePageComponent, data: {
+    }
+  },
+  {
+    path: '**', component: WelcomePageComponent, data: {
       showInNavigation: false,
       title: 'Welcome',
-  }},
+    }
+  },
 ];
 
 

@@ -111,8 +111,8 @@ To run the project, follow these steps:
 
 Experiment and develop:
 
-    Modify the Python server code in the python-server/ directory as per your experimentation requirements.
-    Modify the Angular app code in the angular-app/ directory for frontend experimentation.
+- Modify the Python server code in the python-server/ directory as per your experimentation requirements.
+- Modify the Angular app code in the angular-app/ directory for frontend experimentation.
 
 ## Documentations
 - [Angular Deploayment](./documentation/angular-deployment.md)

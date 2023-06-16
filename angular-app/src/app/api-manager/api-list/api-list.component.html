@@ -1,0 +1,8 @@
+<div class="api-list">
+  <h3>My APIs</h3>
+  <ul *ngIf="apiManager.apis && apiManager.apis.length">
+    <li *ngFor="let dbApi of apiManager.apis">
+      <app-api-info [api]="dbApi"></app-api-info>
+    </li>
+  </ul>
+</div>

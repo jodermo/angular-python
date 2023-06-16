@@ -1,12 +1,21 @@
-import {Component} from '@angular/core';
-import {AppService} from '../../app.service';
+import {Injectable} from '@angular/core';
+import {AppService} from "../app.service";
 
-@Component({
-  selector: 'app-file-upload',
-  templateUrl: './file-upload.component.html',
-  styleUrls: ['./file-upload.component.scss']
+
+export interface ServerFile {
+  name: string;
+  type: string;
+  mime_type: string;
+  path: string;
+  directory: string;
+  size: number;
+
+}
+
+@Injectable({
+  providedIn: 'root'
 })
-export class FileUploadComponent {
+export class FileManagerService {
   selectedFile?: File;
   isDragOver = false;
 
@@ -15,15 +24,23 @@ export class FileUploadComponent {
 
   uploadedFiles: File[] = [];
 
+  serverFiles: any[] = [];
+
   previewUrls: any = {};
 
   fallbackImage = '/assets/fallback.png';
+  uploadPath = 'upload';
 
-  constructor(public app: AppService) {
+  private app?: AppService;
+
+  constructor() {
   }
 
-  init() {
+
+  init(app = this.app) {
+    this.app = app;
     this.selectedFile = undefined;
+    this.loadUploadedFiles();
   }
 
   reset() {
@@ -44,8 +61,7 @@ export class FileUploadComponent {
     this.error = undefined;
     const uploadFile = this.selectedFile;
     try {
-      const result = await this.app.uploadFile(uploadFile);
-      console.log('File uploaded successfully', result, uploadFile);
+      this.app ? await this.app.uploadFile(uploadFile, this.uploadPath) : undefined;
       this.uploadedFiles.push(uploadFile);
       this.uploaded = uploadFile;
       this.init();
@@ -87,8 +103,9 @@ export class FileUploadComponent {
     this.selectedFile = file;
   }
 
-  isImageFile(file: File): boolean {
-    return file.type.startsWith('image/');
+  isImageFile(file: any): boolean {
+    const type = file.mime_type ? file.mime_type : file.type ? file.type : '';
+    return type.startsWith('image/');
   }
 
   getPreviewUrl(file: File | null) {
@@ -96,17 +113,14 @@ export class FileUploadComponent {
       if (this.previewUrls[file.name]) {
         return this.previewUrls[file.name];
       }
-      const setFileSrc = (src: string) => {
-        this.previewUrls[file.name] = src;
-      };
+
       const reader = new FileReader();
       reader.addEventListener(
         'load',
         () => {
           if (typeof reader.result === 'string') {
             Promise.resolve(reader.result).then((src: string) => {
-              console.log('src', src);
-              setFileSrc(src);
+              this.previewUrls[file.name] = src;
             });
           }
         },
@@ -117,5 +131,18 @@ export class FileUploadComponent {
     } else {
       return this.fallbackImage;
     }
+  }
+
+  loadUploadedFiles() {
+    if (this.uploadPath && this.app) {
+      this.app.getFiles(this.uploadPath, (result?: any) => {
+        this.serverFiles = result && result.files ? result.files : [];
+      })
+    }
+
+  }
+
+  onUploadPathChanged() {
+    this.loadUploadedFiles();
   }
 }

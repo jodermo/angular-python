@@ -1,0 +1,11 @@
+<div class="file-list" *ngIf="fileManager.serverFiles.length">
+  <div class="uploaded-file" *ngFor="let serverFile of fileManager.serverFiles">
+    <div *ngIf="fileManager.isImageFile(serverFile)" class="file-preview-container">
+      <img [src]="app.fileSrc(serverFile.name, fileManager.uploadPath)" alt="{{serverFile.name}}" class="file-preview" />
+    </div>
+    <p>{{serverFile.name}} <i><small>[{{ fileManager.getFileSize(serverFile.size) }}]</small></i></p>
+    <div class="file-options">
+      <button (click)="deleteFile(serverFile)">delete</button>
+    </div>
+  </div>
+</div>

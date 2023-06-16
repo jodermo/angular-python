@@ -21,7 +21,7 @@
     text-align: center;
     cursor: pointer;
     border: 1px dotted #ccc;
-    margin: 1rem 0;
+    margin: .5rem 0;
 
     &.done {
       cursor: default;
@@ -44,9 +44,9 @@
   height: 100%;
   max-width: 8rem;
   max-height: 8rem;
-  margin: 1rem auto;
+  margin: .5rem auto;
   overflow: hidden;
-  border-radius: 1rem;
+  border-radius: .5rem;
   box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.5);
 
   img {

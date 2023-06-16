@@ -9,15 +9,30 @@ import { ApiManagerComponent } from './api-manager/api-manager.component';
 import {FormsModule} from "@angular/forms";
 import {AppService} from "./app.service";
 import {ApiManagerService} from "./api-manager/api-manager.service";
-import { FileUploadComponent } from './components/file-upload/file-upload.component';
+import { FileUploadComponent } from './file-manager/file-upload/file-upload.component';
 import {HttpClientModule} from "@angular/common/http";
+import { FileManagerComponent } from './file-manager/file-manager.component';
+import { FileListComponent } from './file-manager/file-list/file-list.component';
+import {FileManagerService} from "./file-manager/file-manager.service";
+import { ApiListComponent } from './api-manager/api-list/api-list.component';
+import { EditApiComponent } from './api-manager/edit-api/edit-api.component';
+import { ApiActionComponent } from './api-manager/api-action/api-action.component';
+import { ApiResultComponent } from './api-manager/api-result/api-result.component';
+import { ApiInfoComponent } from './api-manager/api-info/api-info.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     WelcomePageComponent,
     ApiManagerComponent,
-    FileUploadComponent
+    FileUploadComponent,
+    FileManagerComponent,
+    FileListComponent,
+    ApiListComponent,
+    EditApiComponent,
+    ApiActionComponent,
+    ApiResultComponent,
+    ApiInfoComponent
   ],
   imports: [
     CommonModule,
@@ -27,7 +42,7 @@ import {HttpClientModule} from "@angular/common/http";
     AppRoutingModule,
     ExampleProjectModule
   ],
-  providers: [AppService, ApiManagerService],
+  providers: [AppService, FileManagerService, ApiManagerService],
   exports: [
     FileUploadComponent
   ],

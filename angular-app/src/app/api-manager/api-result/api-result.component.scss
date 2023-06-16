@@ -1,0 +1,18 @@
+.api-result{
+  .api-result-api{
+
+  }
+  .api-result-loading{
+
+  }
+  .api-result-error{
+    padding: 1rem;
+    background: red;
+    color: white;
+  }
+  .api-result-success{
+    padding: 1rem;
+    background: #b3d9ff;
+    color: #061c31;
+  }
+}

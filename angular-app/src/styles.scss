@@ -20,6 +20,9 @@ p {
   margin: 0;
 }
 
+* {
+  box-sizing: border-box;
+}
 
 a.active {
   text-decoration: underline;
@@ -43,6 +46,28 @@ a.active {
   background-color: #1976d2;
   color: white;
   font-weight: 600;
+}
+
+input:not([type=submit]), select, textarea {
+  width: 100%;
+  padding: .5rem 1rem;
+  border: 1px solid white;
+  background: #b3d9ff;
+  color: #061c31;
+}
+
+button {
+  border: 1px solid white;
+  background-color: #1976d2;
+  color: white;
+  cursor: pointer;
+  padding: .5rem 1rem;
+  transition: background-color .25s ease;
+
+  &:hover {
+    background-color: #000000;
+  }
+
 }
 
 .toolbar img {
@@ -71,6 +96,13 @@ a.active {
   max-width: 960px;
   flex-direction: column;
   align-items: center;
+
+  & > * {
+    width: 100%;
+  }
+  table{
+    width: 100%;
+  }
 }
 
 svg.material-icons {

@@ -1,0 +1,30 @@
+<div class="api-result" *ngIf="apiResult">
+  <button (click)="apiManager.selectedResult = undefined;">Close</button>
+  <div class="api-result-api" *ngIf="apiResult.api">
+    <app-api-info [api]="apiResult.api"></app-api-info>
+  </div>
+  <div class="api-result-loading" *ngIf="apiResult.loading">
+    <h3>Loading...</h3>
+  </div>
+  <div class="api-result-error" *ngIf="apiResult.error && !apiResult.loading">
+    <h3>Error:</h3>
+    <p>Status Code: {{apiResult.error.status}}</p>
+    <p>Status Text: {{apiResult.error.statusText}}</p>
+  </div>
+  <div class="api-result-success" *ngIf="apiResult.result && apiResult.ready && !apiResult.loading">
+    <h3>Result:</h3>
+    <div *ngIf="isTextResult()" [innerHTML]="apiResult.result"></div>
+    <div *ngIf="isImageResult()">
+      <img [src]="apiResult.result" alt="Image Result">
+    </div>
+    <div *ngIf="isOtherResult()">
+      <p>{{apiResult.result}}</p>
+    </div>
+    <div *ngIf="isObjectResult()">
+      <h4>Object Result:</h4>
+      <div *ngFor="let item of getObjectResultKeys()">
+        <p><strong>{{item.key}}:</strong> {{item.value}}</p>
+      </div>
+    </div>
+  </div>
+</div>
