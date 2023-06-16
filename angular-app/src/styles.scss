@@ -56,6 +56,13 @@ input:not([type=submit]), select, textarea {
   color: #061c31;
 }
 
+label {
+  display: inline-block;
+  width: 100%;
+  text-align: left;
+  font-size: .75rem;
+}
+
 button {
   border: 1px solid white;
   background-color: #1976d2;
@@ -66,6 +73,12 @@ button {
 
   &:hover {
     background-color: #000000;
+  }
+
+  &:disabled {
+    opacity: .5;
+    pointer-events: none;
+    cursor: default;
   }
 
 }
@@ -100,8 +113,13 @@ button {
   & > * {
     width: 100%;
   }
-  table{
+
+  table {
     width: 100%;
+
+    th, td {
+      text-align: left;
+    }
   }
 }
 

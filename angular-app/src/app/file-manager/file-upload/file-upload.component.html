@@ -6,7 +6,7 @@
        (dragover)="fileManager.onDragOver($event)"
        (dragleave)="fileManager.onDragLeave($event)"
        (drop)="fileManager.onFileDrop($event)">
-    <p>Drag and drop files here</p>
+    <p>Drag and drop files, or click here</p>
   </div>
   <div  *ngIf="!fileManager.error && fileManager.selectedFile" class="file-drop-box done">
     <div *ngIf="fileManager.isImageFile(fileManager.selectedFile)" class="file-preview-container" >
