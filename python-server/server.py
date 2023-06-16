@@ -1,264 +1,103 @@
-import time
-from flask import Flask, jsonify, request, make_response
+from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
-import psycopg2
+from postgres_api import postgres_api
+from file_server import file_server
+from file_upload import file_upload
+from server_logging import server_logging
 import os
-import json
-from dotenv import load_dotenv
-from psycopg2 import sql
-
-# Load environment variables from .env file
-load_dotenv()
-
-# Access environment variables
-db_host = os.getenv("DB_HOST")
-db_port = os.getenv("DB_PORT")
-db_user = os.getenv("DB_USER")
-db_password = os.getenv("DB_PASSWORD")
-db_database = os.getenv("DB_DATABASE")
-
-app = Flask(__name__)
-
-# Enable CORS for all routes
-CORS(app)
-
-def connect_to_postgres():
-    while True:
-        try:
-            conn = psycopg2.connect(
-                host=db_host,
-                port=db_port,
-                user=db_user,
-                password=db_password,
-                database=db_database
-            )
-            return conn
-        except psycopg2.OperationalError as e:
-            print(f"Error connecting to PostgreSQL: {e}")
-            print("Retrying in 5 seconds...")
-            time.sleep(5)
 
 
-def table_exists(cur, table_name):
-    # Check if the table exists in the database
-    query = sql.SQL("SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = {})").format(
-        sql.Literal(table_name)
-    )
-    cur.execute(query)
-    return cur.fetchone()[0]
+mode = os.getenv("MODE")
+mode = mode if mode else 'dev'
+
+log = server_logging.server_logging("server.log", mode)
 
 
-def column_exists(cur, table_name, column_name):
-    # Check if the column exists in the table
-    query = sql.SQL("SELECT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = {} AND column_name = {})").format(
-        sql.Literal(table_name),
-        sql.Literal(column_name)
-    )
-    cur.execute(query)
-    return cur.fetchone()[0]
+class Server:
+    def __init__(self):
+        self.app = Flask(__name__)
+        max_content_length = 1 * 1024 * 1024 * 1024
+        self.max_content_length = int(os.getenv("MAX_CONTENT_LENGTH", str(max_content_length)))
+        self.host = os.getenv("SERVER_HOST", "0.0.0.0")
+        self.port = int(os.getenv("SERVER_PORT", 8000))
+        self.api = postgres_api.postgres_api()
+        self.file_server = file_server.file_server()
+        self.file_upload = file_upload.file_upload()
+        self.setup_app()
+        log.info('__init__')
+
+    def setup_app(self):
+        CORS(self.app)
+        self.app.config['MAX_CONTENT_LENGTH'] = self.max_content_length
+
+        # Add the before_request handler
+        self.app.before_request(self.handle_chunking)
+
+        self.app.add_url_rule('/', methods=['GET'], view_func=self.index_html)
+        self.app.add_url_rule('/data', methods=['GET'], view_func=self.get_data)
+        self.app.add_url_rule('/data', methods=['POST'], view_func=self.post_data)
+        self.app.add_url_rule('/data', methods=['PUT'], view_func=self.put_data)
+        self.app.add_url_rule('/data', methods=['DELETE'], view_func=self.delete_data)
+        self.app.add_url_rule('/file', methods=['POST'], view_func=self.post_file)
+        self.app.add_url_rule('/files', methods=['GET'], view_func=self.get_files)
+        self.app.add_url_rule('/file', methods=['GET'], view_func=self.get_file)
+
+        self.app.errorhandler(Exception)(self.handle_error)
+        log.info('setup_app')
 
 
-def create_table(cur, conn, table_name, columns):
-    # Create the table if it doesn't exist or if columns don't exist
-    if not table_exists(cur, table_name):
-        # Build the CREATE TABLE query
-        create_query = sql.SQL("CREATE TABLE IF NOT EXISTS {} (id SERIAL PRIMARY KEY, value TEXT, data JSONB)").format(
-            sql.Identifier(table_name)
-        )
-        cur.execute(create_query)
-        conn.commit()
-    else:
-        # Alter the table to add missing columns
-        if not column_exists(cur, table_name, 'value'):
-            # Build the ALTER TABLE query
-            alter_query = sql.SQL("ALTER TABLE {} ADD COLUMN value TEXT").format(
-                sql.Identifier(table_name)
-            )
-            cur.execute(alter_query)
-            conn.commit()
+    def index_html(self):
+        return send_file('index.html')
+
+    def get_data(self):
+        return self.api.get_data()
+
+    def post_data(self):
+        return self.api.post_data()
+
+    def put_data(self):
+        return self.api.put_data()
+
+    def delete_data(self):
+        return self.api.delete_data()
+
+    def post_file(self):
+        return self.file_upload.post_file(request)
+
+
+    def get_files(self):
+        return self.file_server.get_files(request)
+
+
+    def get_file(self):
+        return self.file_server.get_file(request)
 
 
 
-def insert_data(cur, conn, table_name, data):
-    # Insert data into the table
-    insert_query = sql.SQL("INSERT INTO {} (data) VALUES (%s) RETURNING id").format(sql.Identifier(table_name))
-    record = (data,)
-    cur.execute(insert_query, record)
-    conn.commit()
-    inserted_id = cur.fetchone()[0]  # Retrieve the inserted ID
-    return inserted_id
 
-@app.route('/data', methods=['GET'])
-def get_data():
-    # Get the tableName parameter from the query string
-    table_name = request.args.get('tableName')
-    data_id = request.args.get('id')
 
-    try:
-        conn = connect_to_postgres()
-        cur = conn.cursor()
 
-        # Define the table columns
-        columns = {
-            'id': 'SERIAL PRIMARY KEY',
-            'data': 'JSONB'
-        }
-
-        # Create or update the table
-        create_table(cur, conn, table_name, columns)
-
-        if data_id:
-            # Build and execute the query to fetch data by ID
-            query = sql.SQL("SELECT * FROM {} WHERE id = %s").format(sql.Identifier(table_name))
-            cur.execute(query, (data_id,))
-            row = cur.fetchone()
-
-            # Get the column names
-            column_names = [desc[0] for desc in cur.description]
-
-            # Convert the row into a dictionary
-            data = dict(zip(column_names, row))
-
-            response = make_response(jsonify(data))
-        else:
-            # Build and execute the query to fetch all data
-            query = sql.SQL("SELECT * FROM {}").format(sql.Identifier(table_name))
-            cur.execute(query)
-            rows = cur.fetchall()
-
-            # Get the column names
-            column_names = [desc[0] for desc in cur.description]
-
-            # Convert the database rows into a list of dictionaries
-            data = []
-            for row in rows:
-                row_data = dict(zip(column_names, row))
-                data.append(row_data)
-
-            response = make_response(jsonify(data))
-
-        response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
-        response.headers['Pragma'] = 'no-cache'
-        response.headers['Expires'] = '0'
-
-        # Close the database connection
-        cur.close()
-        conn.close()
-
+    def handle_error(self, e):
+        log.exception(str(e))
+        response = jsonify(error=str(e))
+        response.status_code = 500  # Set the status code to indicate the error
         return response
-    except psycopg2.Error as e:
-        # Handle any database connection or query errors
-        return jsonify({'error': str(e)})
 
+    def handle_chunking(self):
+        """
+        Sets the "wsgi.input_terminated" environment flag, thus enabling
+        Werkzeug to pass chunked requests as streams. The gunicorn server
+        should set this, but it's not yet been implemented.
+        """
 
+        transfer_encoding = request.headers.get("Transfer-Encoding", None)
+        if transfer_encoding == u"chunked":
+            request.environ["wsgi.input_terminated"] = True
 
-# POST route
-@app.route('/data', methods=['POST'])
-def post_data():
-    # Get the JSON payload from the request body
-    request_data = request.json
-    table_name = request_data.get('tableName')
-    data = json.dumps(request_data.get('data'))  # Convert data to JSON string
-
-    try:
-        conn = connect_to_postgres()
-        cur = conn.cursor()
-
-        # Define the table columns
-        columns = {
-            'id': 'SERIAL PRIMARY KEY',
-            'data': 'JSONB'
-        }
-
-        # Create or update the table
-        create_table(cur, conn, table_name, columns)
-
-        # Save data to PostgreSQL and retrieve the inserted ID
-        inserted_id = insert_data(cur, conn, table_name, data)
-
-
-        # Close the database connection
-        cur.close()
-        conn.close()
-
-        # Return a response with the inserted ID
-        response_data = {'message': 'Data saved successfully', 'data': request_data, 'id': inserted_id}
-        return jsonify(response_data)
-    except psycopg2.Error as e:
-        # Handle any database connection or query errors
-        return jsonify({'error': str(e)})
-
-# PUT route
-@app.route('/data', methods=['PUT'])
-def put_data():
-    # Get the JSON payload from the request body
-    request_data = request.json
-    table_name = request_data.get('tableName')
-    data_id = request_data.get('data').get('id')
-    new_value = request_data.get('data').get('value')
-
-    try:
-        conn = connect_to_postgres()
-        cur = conn.cursor()
-
-        # Update data in the table
-        update_query = sql.SQL("UPDATE {} SET value = %s, data = %s WHERE id = %s").format(sql.Identifier(table_name))
-        cur.execute(update_query, (new_value, json.dumps(request_data.get('data')), data_id))
-        conn.commit()
-
-        # Fetch the updated data
-        select_query = sql.SQL("SELECT * FROM {} WHERE id = %s").format(sql.Identifier(table_name))
-        cur.execute(select_query, (data_id,))
-        row = cur.fetchone()
-
-        # Get the column names
-        column_names = [desc[0] for desc in cur.description]
-
-        # Convert the row into a dictionary
-        updated_data = dict(zip(column_names, row))
-
-        # Close the database connection
-        cur.close()
-        conn.close()
-
-        # Return a response with the updated data and message
-        response_data = {
-            'message': 'Data updated successfully',
-            'data': updated_data
-        }
-        return jsonify(response_data)
-    except psycopg2.Error as e:
-        # Handle any database connection or query errors
-        return jsonify({'error': str(e)})
-
-
-# DELETE route
-@app.route('/data', methods=['DELETE'])
-def delete_data():
-    # Get the JSON payload from the request body
-    request_data = request.json
-    table_name = request_data.get('tableName')
-    data_id = request_data.get('data').get('id')
-
-    try:
-        conn = connect_to_postgres()
-        cur = conn.cursor()
-
-        # Delete data from the table
-        delete_query = sql.SQL("DELETE FROM {} WHERE id = %s").format(sql.Identifier(table_name))
-        cur.execute(delete_query, (data_id,))
-        conn.commit()
-
-        # Close the database connection
-        cur.close()
-        conn.close()
-
-        # Return a response
-        return jsonify({'message': 'Data deleted successfully', 'data': request_data})
-    except psycopg2.Error as e:
-        # Handle any database connection or query errors
-        return jsonify({'error': str(e)})
+    def run(self):
+        self.app.run(host=self.host, port=self.port)
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8000)
+    server = Server()
+    server.run()

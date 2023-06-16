@@ -1,10 +1,27 @@
-import { Injectable } from '@angular/core';
-import {observable} from "rxjs";
-
+import {Injectable} from '@angular/core';
 // Define available header types
 export const HeaderTypes = ['JSON', 'form'];
 // Define a union type for header types
 export type HeaderType = typeof HeaderTypes[number];
+
+
+export interface Api {
+  id: number;
+  api_name: string;
+  api_url: string;
+  method: string;
+  mode: string;
+  cache: string;
+  credentials: string;
+  headers: {
+    key: string,
+    value: string,
+  }[];
+  redirect: string;
+  referrerPolicy: string;
+  body: any;
+}
+
 
 @Injectable({
   providedIn: 'root'
@@ -18,7 +35,7 @@ export class AppService {
         'Content-Type': 'application/json' // JSON headers
       },
       form: {
-        'Content-Type': 'application/x-www-form-urlencoded' // Form headers
+        // 'Content-Type': 'application/x-www-form-urlencoded' // Form headers
       }
     },
     headerTypes: HeaderTypes, // Available header types
@@ -79,8 +96,10 @@ export class AppService {
       return this.delete(this.API.url + '/data', body, onSuccess, onError);
     }
   };
+  uploadPath = '/upload';
 
-  constructor() {}
+  constructor() {
+  }
 
   // Perform a GET request
   async get(
@@ -100,10 +119,10 @@ export class AppService {
         let result: any = response;
         try {
           result = await response.json();
-          if(result.length){
+          if (result.length) {
             const results = [];
-            for(let data of result){
-              if(data.id && data.data){
+            for (let data of result) {
+              if (data.id && data.data) {
                 results.push(Object.assign({id: data.id}, data.data));
               }
             }
@@ -177,7 +196,7 @@ export class AppService {
       const response = await fetch(url, {
         method: 'POST',
         headers: headerType === 'form' ? this.API.headers.form : this.API.headers.JSON,
-        body: JSON.stringify(body)
+        body: headerType === 'form' ? body : JSON.stringify(body)
       });
       if (response.ok) {
         let result = response;
@@ -186,12 +205,26 @@ export class AppService {
         } catch (e) {
           console.warn('POST request returned non-JSON data');
         }
-        if (onSuccess) {
-          onSuccess(result);
+        if((result as any).error){
+          if (onError) {
+            onError((result as any).error);
+          } else {
+            throw new Error(`POST request failed with error: ${(result as any).error}`);
+          }
+        }else{
+          if (onSuccess) {
+            onSuccess(result);
+          }
         }
+
         return result;
       } else {
-        throw new Error(`POST request failed with status ${response.status}`);
+        if (onError) {
+          onError();
+        } else {
+          throw new Error(`POST request failed with status ${response.status}`);
+        }
+
       }
     } catch (error) {
       if (onError) {
@@ -272,5 +305,42 @@ export class AppService {
         console.error(error);
       }
     }
+  }
+
+
+  // Get APIs
+  getAPIs(
+    onSuccess?: (result?: any) => void,
+    onError?: (error?: any) => void
+  ): Promise<any> {
+    return this.API.get('api', onSuccess, onError);
+  }
+
+// Create or update API entry
+  addOrUpdateAPIEntry(api: Api, onSuccess?: (result?: any) => void, onError?: (error?: any) => void): Promise<any> {
+
+    if (api.id) {
+      return this.API.update('api', api, onSuccess, onError);
+    } else {
+      return this.API.add('api', api, onSuccess, onError);
+    }
+
+
+  }
+
+  deleteAPI(api?: Api, onSuccess?: (result?: any) => void, onError?: (error?: any) => void): Promise<any> {
+    if (!api) {
+      return Promise.reject('API is undefined');
+    }
+
+    return this.API.add('api', api, onSuccess, onError);
+  }
+
+  uploadFile(file: File, uploadPath = this.uploadPath, onSuccess?: (result?: any) => void, onError?: (error?: any) => void): Promise<any> {
+    console.log('uploadFile',  file);
+    const formData = new FormData();
+    formData.append('file', file);
+    console.log('formData', formData);
+    return this.post(this.API.url + '/file?path='+ uploadPath, formData, onSuccess, onError, 'form');
   }
 }

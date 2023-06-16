@@ -7,7 +7,7 @@ services:
     ports:
       - 5432:5432
     volumes:
-      - ./postgres-data:/var/lib/postgresql/data
+      - ./resources/postgres-data:/var/lib/postgresql/data
     restart: always
 
 
@@ -21,6 +21,7 @@ services:
       - 8000:8000
     volumes:
       - ./python-server:/app
+      - ./resources/uploads:/app/uploads
     depends_on:
       - postgres-database
     command: nodemon -L --watch /app --ext py --exec "python server.py"
@@ -33,6 +34,8 @@ services:
       - .env
     ports:
       - 80:80
+    volumes:
+      - ./resources/dist:/app/dist
 
   angular-serve:
     build:

@@ -2,8 +2,13 @@ import {NgModule} from '@angular/core';
 import {RouterModule, Routes} from '@angular/router';
 import {ExampleProjectComponent} from "./example-project/example-project.component";
 import {WelcomePageComponent} from "./welcome-page/welcome-page.component";
+import {ApiManagerComponent} from "./api-manager/api-manager.component";
 
 export const AppRoutes: Routes = [
+  {path: 'api-manager', component: ApiManagerComponent, data: {
+      showInNavigation: true,
+      title: 'API Manager'
+    }},
   {path: 'example-project', component: ExampleProjectComponent, data: {
       showInNavigation: true,
       title: 'Example Project'

@@ -1,0 +1,59 @@
+.file-upload {
+
+  text-align: center;
+
+  .file-input {
+    position: absolute;
+    pointer-events: none;
+    opacity: 0;
+    z-index: -10;
+    width: 0;
+    height: 0;
+    font-size: 0;
+  }
+
+
+
+  .file-drop-box {
+    width: 100%;
+    height: 100%;
+    padding: 2rem;
+    text-align: center;
+    cursor: pointer;
+    border: 1px dotted #ccc;
+    margin: 1rem 0;
+
+    &.done {
+      cursor: default;
+      pointer-events: none;
+      border: 1px dotted green;
+    }
+
+    &.error {
+      cursor: default;
+      pointer-events: none;
+      border: 1px dotted red;
+      color: red;
+    }
+
+  }
+}
+.file-preview {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: 8rem;
+  max-height: 8rem;
+  margin: 1rem auto;
+  overflow: hidden;
+  border-radius: 1rem;
+  box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.5);
+
+  img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: center center;
+  }
+}

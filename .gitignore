@@ -2,8 +2,11 @@
 frontend/www/*
 !frontend/www/README.md
 
-postgres-data/
-
+resources/postgres-data/*
+resources/uploads/*
+!resources/uploads/README.md
+resources/dist/*
+!resources/dist/README.md
 angular-app/dist/
 
 # See http://help.github.com/ignore-files/ for more about ignoring files.
@@ -44,6 +47,8 @@ angular-app/.sass-cache/
 /angular-app/libpeerconnection.log
 angular-app/testem.log
 /angular-app/typings
+
+/python-server/server.log
 
 # System files
 .DS_Store
