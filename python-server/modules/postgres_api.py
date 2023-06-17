@@ -5,11 +5,11 @@ import json
 from dotenv import load_dotenv
 from psycopg2 import sql
 from flask import jsonify, request, make_response
-from server_logging import server_logging
+from modules.server_logging import server_logging
 
 mode = os.getenv("MODE")
 mode = mode if mode else 'dev'
-log = server_logging.server_logging("postgres_api.log", mode)
+log = server_logging("postgres_api.log", mode)
 
 class postgres_api:
     def __init__(self):

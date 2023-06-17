@@ -1,10 +1,10 @@
-import {Injectable} from '@angular/core';
-import {ServerFile} from "./file-manager/file-manager.service";
+import { Injectable } from '@angular/core';
+import { ServerFile } from './file-manager/file-manager.service';
+
 // Define available header types
 export const HeaderTypes = ['JSON', 'form'];
 // Define a union type for header types
 export type HeaderType = typeof HeaderTypes[number];
-
 
 export interface Api {
   id: number;
@@ -15,19 +15,21 @@ export interface Api {
   cache: string;
   credentials: string;
   headers: {
-    key: string,
-    value: string,
+    key: string;
+    value: string;
   }[];
   redirect: string;
   referrerPolicy: string;
   body: any;
 }
 
-
 @Injectable({
   providedIn: 'root'
 })
 export class AppService {
+  user = {
+    username: 'Anonymous_' + Date.now()
+  };
   // API configuration
   API = {
     url: 'http://localhost:8000', // API base URL
@@ -97,9 +99,9 @@ export class AppService {
       };
       if (confirm('Are you sure?')) {
         return this.delete(this.API.url + '/data', body, onSuccess, onError);
-      }else{
-        if(onError){
-          onError()
+      } else {
+        if (onError) {
+          onError();
         }
       }
       return undefined;
@@ -107,8 +109,7 @@ export class AppService {
   };
   uploadPath = '/upload';
 
-  constructor() {
-  }
+  constructor() {}
 
   // Perform a GET request
   async get(
@@ -130,11 +131,11 @@ export class AppService {
           result = await response.json();
           if (result.length) {
             const results = [];
-            for (let data of result) {
+            for (const data of result) {
               if (data.id && data.data) {
-                const newData = Object.assign({id: data.data && data.data.id ? data.data.id: data.id}, data.data);
+                const newData = Object.assign({ id: data.data && data.data.id ? data.data.id : data.id }, data.data);
                 newData.id = data.id;
-                newData.data  = data.data;
+                newData.data = data.data;
                 results.push(newData);
               }
             }
@@ -236,7 +237,6 @@ export class AppService {
         } else {
           throw new Error(`POST request failed with status ${response.status}`);
         }
-
       }
     } catch (error) {
       if (onError) {
@@ -298,7 +298,7 @@ export class AppService {
         body: JSON.stringify(body)
       });
       if (response.ok) {
-        let result = response
+        let result = response;
 
         try {
           result = await response.json();
@@ -321,7 +321,6 @@ export class AppService {
     }
   }
 
-
   // Get APIs
   getAPIs(
     onSuccess?: (result?: any) => void,
@@ -331,7 +330,11 @@ export class AppService {
   }
 
   // Create or update API entry
-  addOrUpdateAPIEntry(api: Api, onSuccess?: (result?: any) => void, onError?: (error?: any) => void): Promise<any> {
+  addOrUpdateAPIEntry(
+    api: Api,
+    onSuccess?: (result?: any) => void,
+    onError?: (error?: any) => void
+  ): Promise<any> {
     if (api.id) {
       return this.API.update('api', api, onSuccess, onError);
     } else {
@@ -339,7 +342,11 @@ export class AppService {
     }
   }
 
-  deleteAPI(api?: Api, onSuccess?: (result?: any) => void, onError?: (error?: any) => void): Promise<any> {
+  deleteAPI(
+    api?: Api,
+    onSuccess?: (result?: any) => void,
+    onError?: (error?: any) => void
+  ): Promise<any> {
     if (!api) {
       return Promise.reject('API is undefined');
     }
@@ -347,27 +354,65 @@ export class AppService {
     return this.API.delete('api', api, onSuccess, onError);
   }
 
-  uploadFile(file: File, uploadPath = this.uploadPath, onSuccess?: (result?: any) => void, onError?: (error?: any) => void): Promise<any> {
+  uploadFile(
+    file: File,
+    uploadPath = this.uploadPath,
+    onSuccess?: (result?: any) => void,
+    onError?: (error?: any) => void
+  ): Promise<any> {
     const formData = new FormData();
     formData.append('file', file);
-    return this.post(this.API.url + '/file?path=' + uploadPath, formData, onSuccess, onError, 'form');
+    return this.post(
+      this.API.url + '/file?path=' + uploadPath,
+      formData,
+      onSuccess,
+      onError,
+      'form'
+    );
   }
 
-  getFiles(uploadPath = this.uploadPath, onSuccess?: (result?: any) => void, onError?: (error?: any) => void) {
+  getFiles(
+    uploadPath = this.uploadPath,
+    onSuccess?: (result?: any) => void,
+    onError?: (error?: any) => void
+  ) {
     return this.get(this.API.url + '/files?path=' + uploadPath, onSuccess, onError);
   }
 
-  getFile(fileName: string, uploadPath = this.uploadPath, onSuccess?: (result?: any) => void, onError?: (error?: any) => void) {
+  getFile(
+    fileName: string,
+    uploadPath = this.uploadPath,
+    onSuccess?: (result?: any) => void,
+    onError?: (error?: any) => void
+  ) {
     return this.get(this.fileSrc(fileName, uploadPath), onSuccess, onError);
   }
 
-  fileSrc(fileName: string, uploadPath = this.uploadPath, onSuccess?: (result?: any) => void, onError?: (error?: any) => void) {
+  fileSrc(
+    fileName: string,
+    uploadPath = this.uploadPath,
+    onSuccess?: (result?: any) => void,
+    onError?: (error?: any) => void
+  ) {
     return this.API.url + '/file?path=' + uploadPath + '/' + fileName;
   }
 
-  deleteFile(serverFile: ServerFile, onSuccess?: (result?: any) => void, onError?: (error?: any) => void) {
+  deleteFile(
+    serverFile: ServerFile,
+    onSuccess?: (result?: any) => void,
+    onError?: (error?: any) => void
+  ) {
     if (confirm('Are you sure?')) {
-      return this.delete(this.API.url + '/file?path=' + serverFile.directory + '&filename=' + serverFile.name, {file: serverFile}, onSuccess, onError);
+      return this.delete(
+        this.API.url +
+        '/file?path=' +
+        serverFile.directory +
+        '&filename=' +
+        serverFile.name,
+        { file: serverFile },
+        onSuccess,
+        onError
+      );
     }
     return undefined;
   }

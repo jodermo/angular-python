@@ -1,0 +1,20 @@
+<div class="text-to-speech-button" *ngIf="text">
+  <button
+    *ngIf="!textToSpeech.playing || textToSpeech.playing.text !== text || (textToSpeech.audio.currentTime === 0 && textToSpeech.audio.paused)"
+    (click)="textToSpeech.makeFileAndPlay(text, language)">
+    Read
+  </button>
+  <button
+    *ngIf="textToSpeech.playing && textToSpeech.playing.text === text && (textToSpeech.audio.currentTime !== 0 && textToSpeech.audio.paused)"
+    (click)="textToSpeech.play()">
+    Play
+  </button>
+  <button *ngIf="textToSpeech.playing && textToSpeech.playing.text === text && !textToSpeech.audio.paused"
+          (click)="textToSpeech.pause()">
+    Pause
+  </button>
+  <select [(ngModel)]="language">
+    <option *ngFor="let lang of languages" [value]="lang">{{lang}}</option>
+  </select>
+  <span class="spacer"></span>
+</div>

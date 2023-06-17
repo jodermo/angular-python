@@ -4,6 +4,8 @@ import {ExampleProjectComponent} from "./example-project/example-project.compone
 import {WelcomePageComponent} from "./welcome-page/welcome-page.component";
 import {ApiManagerComponent} from "./api-manager/api-manager.component";
 import {FileManagerComponent} from "./file-manager/file-manager.component";
+import {WebsocketComponent} from "./websocket/websocket.component";
+import {TextToSpeechComponent} from "./text-to-speech/text-to-speech.component";
 
 export const AppRoutes: Routes = [
   {
@@ -16,6 +18,18 @@ export const AppRoutes: Routes = [
     path: 'file-manager', component: FileManagerComponent, data: {
       showInNavigation: true,
       title: 'File Manager'
+    }
+  },
+  {
+    path: 'websocket', component: WebsocketComponent, data: {
+      showInNavigation: true,
+      title: 'Websocket'
+    }
+  },
+  {
+    path: 'text-to-speech', component: TextToSpeechComponent, data: {
+      showInNavigation: true,
+      title: 'Text To Speech'
     }
   },
   {

@@ -5,11 +5,14 @@ This project provides a flexible environment for experimenting with Python backe
 - Python Server
 - Angular Frontend
 - PostgreSQL Database
+- SocketIO Websocket
 
 #### With some basic functionality
 - Dynamic API with GET, POST, PUT, DELETE functions
 - File Upload
 - File Server
+- Websocket Chat
+- Text to speech functions
 
 
 
@@ -30,16 +33,16 @@ The project structure is as follows:
     - [uploads/](./resources/uploads/) `Uploaded files`
   - [python-server/](./python-server) `Python server files`
     - [Dockerfile](./python-server/Dockerfile) `Docker configuration`
-    - [server.py](./python-server/server.py) `Main server code`
+    - [server.py](./python-server/server.py) `Main server / routing`
+    - [server.log](./python-server/server.log) `Log file`
     - [index.html](./python-server/index.html) `Index file for server base route`
-    - [file_server/](./python-server/file_server/) 
-      - [file_server.py](./python-server/file_server/file_server.py)  `File server code`
-    - [file_upload/](./python-server/file_upload/)
-        - [file_upload.py](./python-server/file_server/file_upload.py) `File upload code`
-    - [postgres_api/](./python-server/postgres_api/)
-        - [postgres_api.py](./python-server/file_server/postgres_api.py) `Database API code`
-    - [server_logging/](./python-server/server_logging/)
-        - [server_logging.py](./python-server/file_server/server_logging.py) `Server logging code`
+    - [modules/](./python-server/modules/) 
+      - [file_server.py](python-server/modules/file_server.py)  `File server`
+      - [file_upload.py](./python-server/modules/file_upload.py) `File upload`
+      - [postgres_api.py](./python-server/modules/postgres_api.py) `Database API`
+      - [websocket.py](./python-server/modules/websocket.py) `Websocket`
+      - [text_to_speech.py](./python-server/modules/text_to_speech.py) `Text to speech`
+      - [server_logging.py](./python-server/modules/server_logging.py) `Server logging`
   - [angular-app/](./angular-app/)  `Angular frontend app`
     - [Dockerfile](./angular-app/Dockerfile) `Docker configuration for build mode (localhost:80)`
     - [Dockerfile_serve](./angular-app/Dockerfile_serve)  `Docker configuration for serve mode (localhost:4200)`
@@ -49,8 +52,8 @@ The project structure is as follows:
       - [app](./angular-app/src/app) `Source files for frontend app`
         - [app.component.ts](./angular-app/src/app/app.component.ts) `Main app component`
         - [app-routing.module.ts](./angular-app/src/app/app-routing.module.ts) `Router configuration (frontend URLs)`
-        - [components/](./angular-app/src/app/components/) `Global Angular components`
-        - [api-manager/](./angular-app/src/app/api-manager/) `API Manager for custom API integration`
+        - [file-manager/](./angular-app/src/app/file-manager/) `File manager for uploading and managing files`
+        - [api-manager/](./angular-app/src/app/api-manager/) `API manager for custom API integration`
         - [welcome-page/](./angular-app/src/app/welcome-page/) `Welcome page with Angular starter content and router navigation`
         - [example-project/](./angular-app/src/app/example-project/) `Example project with documentation`
 
@@ -61,6 +64,7 @@ The project structure is as follows:
 MODE=dev
 SERVER_HOST=0.0.0.0
 SERVER_PORT=8000
+ALLOWED_ORIGINS=*
 
 DB_HOST=postgres-database
 DB_PORT=5432
@@ -71,6 +75,7 @@ POSTGRES_PASSWORD=postgres
 
 FILE_UPLOAD_ROOT='app/'
 FILE_UPLOAD_DIRECTORY='uploads/'
+TEXT_TO_SPEECH_DIRECTORY='tts-files/'
 ALLOWED_EXTENSIONS=txt,pdf,png,jpg,jpeg,gif
 MAX_CONTENT_LENGTH=10737418240
 
@@ -78,6 +83,7 @@ PYTHONDONTWRITEBYTECODE=1
 PYTHONUNBUFFERED=1
 FLASK_DEBUG=1
 FLASK_ENV=development
+
 
 ```
 
@@ -103,10 +109,9 @@ To run the project, follow these steps:
     This command will ***build*** and start the Python server and Angular app containers defined in the docker-compose.yml file.
 
 4. App is running at:
-    - PostgreSQL database: [localhost:5432](http://localhost:5432)
-    - python server: [localhost:8000](http://localhost:8000)
-    - Angular build: [localhost:80](http://localhost:80)
-    - Angular serve: [localhost:4200](http://localhost:4200)
+    - python server: [localhost:8000](http://localhost:8000) *(restarts on file changes)*
+    - Angular build : [localhost:80](http://localhost:80) *(run: `docker-compose up --build` to rebuild)*
+    - Angular serve : [localhost:4200](http://localhost:4200) *(for deployment, is watching file changes)*
       
 
 Experiment and develop:
@@ -128,7 +133,3 @@ This project is licensed under the [MIT License](LICENSE).
 
 Author
 - Moritz Petzka - [https://petzka.com](https://petzka.com)
-
-Acknowledgments
-
-Special thanks to the open-source community for their contributions.

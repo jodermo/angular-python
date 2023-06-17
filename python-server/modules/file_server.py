@@ -1,12 +1,12 @@
 import os
 import mimetypes
 from dotenv import load_dotenv
-from server_logging import server_logging
 from flask import jsonify, send_file
+from modules.server_logging import server_logging
 
 mode = os.getenv("MODE")
 mode = mode if mode else 'dev'
-log = server_logging.server_logging("file_upload.log", mode)
+log = server_logging("file_upload.log", mode)
 
 class file_server:
     def __init__(self):

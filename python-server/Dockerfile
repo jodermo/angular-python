@@ -4,14 +4,17 @@ FROM python:3.9
 # Set the working directory in the container
 WORKDIR /app
 
+# Install the required system packages
+RUN apt-get update && apt-get install -y libasound2-dev
+
 # Copy the requirements file to the container
 COPY requirements.txt .
 
 # Install the Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Install npm
-RUN apt-get update && apt-get install -y npm
+# Install npm and mpg123
+RUN apt-get install -y npm mpg123
 
 # Install nodemon using npm
 RUN npm install -g nodemon

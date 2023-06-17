@@ -1,0 +1,30 @@
+<div class="content text-to-speech" role="main">
+  <div class="text-to-speech-input">
+    <select [(ngModel)]="textToSpeech.language">
+      <option *ngFor="let lang of textToSpeech.languages" [value]="lang">{{lang}}</option>
+    </select>
+    <div class="text-to-speech-actions">
+    </div>
+
+    <form (ngSubmit)="textToSpeech.makeFileAndPlay()">
+      <input type="text" [(ngModel)]="textToSpeech.text" name="textToSpeech" placeholder="Type a text...">
+      <button [disabled]="!textToSpeech.text" type="submit">Send</button>
+    </form>
+
+
+  </div>
+
+  <div class="text-to-speech-results" *ngIf="textToSpeech.results && textToSpeech.results.length">
+    <ul>
+      <li *ngFor="let textToSpeechResult of textToSpeech.results">
+        <div>{{textToSpeechResult.text}}</div>
+        <button (click)="textToSpeech.togglePauseOrNext(textToSpeechResult)">
+          <span *ngIf="textToSpeech.playing !== textToSpeechResult || textToSpeech.audio.paused">Play</span>
+          <span *ngIf="textToSpeech.playing === textToSpeechResult && !textToSpeech.audio.paused">Pause</span>
+        </button>
+      </li>
+    </ul>
+
+  </div>
+
+</div>

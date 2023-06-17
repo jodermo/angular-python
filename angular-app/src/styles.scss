@@ -48,12 +48,26 @@ a.active {
   font-weight: 600;
 }
 
-input:not([type=submit]), select, textarea {
+ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+input:not([type=submit]):not([type=checkbox]), select, textarea {
   width: 100%;
   padding: .5rem 1rem;
   border: 1px solid white;
   background: #b3d9ff;
   color: #061c31;
+}
+
+.padding-left {
+  padding-left: .5rem;
+}
+
+.padding-right {
+  padding-right: .5rem;
 }
 
 label {
