@@ -1,16 +1,15 @@
 <div class="content text-to-speech" role="main">
   <div class="text-to-speech-input">
-    <select [(ngModel)]="textToSpeech.language">
-      <option *ngFor="let lang of textToSpeech.languages" [value]="lang">{{lang}}</option>
+    <select [(ngModel)]="app.language">
+      <option *ngFor="let language of app.languages" [ngValue]="language">{{language.name}}</option>
     </select>
     <div class="text-to-speech-actions">
     </div>
 
-    <form (ngSubmit)="textToSpeech.makeFileAndPlay()">
+    <form (ngSubmit)="textToSpeech.makeFileAndPlay(textToSpeech.text, app.language)">
       <input type="text" [(ngModel)]="textToSpeech.text" name="textToSpeech" placeholder="Type a text...">
       <button [disabled]="!textToSpeech.text" type="submit">Send</button>
     </form>
-
 
   </div>
 

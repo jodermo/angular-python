@@ -5,13 +5,15 @@ FROM python:3.9
 WORKDIR /app
 
 # Install the required system packages
-RUN apt-get update && apt-get install -y libasound2-dev
+RUN apt-get update && apt-get install -y libasound2-dev ffmpeg mplayer
 
 # Copy the requirements file to the container
 COPY requirements.txt .
 
 # Install the Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
+
+RUN pip install --upgrade openai wandb
 
 # Install npm and mpg123
 RUN apt-get install -y npm mpg123

@@ -1,0 +1,40 @@
+<div class="content open-ai" role="main">
+  <div class="open-ai-input">
+
+    <form (ngSubmit)="openAi.sendRequest()">
+      <input type="text" [(ngModel)]="openAi.text" [disabled]="openAi.sending" name="textToSpeech" placeholder="Type a text...">
+      <button [disabled]="!openAi.text || openAi.sending" type="submit">Send</button>
+    </form>
+    <app-speech-recognition-button [disabled]="openAi.sending" (onResult)="onSpeechRecognitionResult($event)"></app-speech-recognition-button>
+
+  </div>
+
+  <div class="open-ai-results" >
+    <ul>
+      <li *ngFor="let openAiResult of openAi.results">
+        <div><b><i>{{openAiResult.text}}</i></b></div>
+        <div *ngIf="openAiResult.response">
+          <div class="open-ai-choices" *ngIf="openAiResult.response.choices" >
+            <div class="open-ai-choice" *ngFor="let choice of openAiResult.response.choices; let i = index" >
+              <p *ngIf="choice.message">
+               <span>{{choice.message.role}}: </span> {{choice.message.content}}
+                <app-text-to-speech-button [text]="choice.message.content" [autoplay]="i === 0"></app-text-to-speech-button>
+              </p>
+            </div>
+          </div>
+
+        </div>
+        <div *ngIf="openAiResult.response && openAiResult.response.error">
+          <p *ngIf="openAiResult.response.error.message">
+            {{openAiResult.response.error.message}}
+          </p>
+        </div>
+      </li>
+      <li *ngIf="openAi.sending">
+        One moment, calculating response...
+      </li>
+    </ul>
+
+  </div>
+
+</div>

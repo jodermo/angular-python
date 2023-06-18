@@ -1,10 +1,24 @@
-import { Injectable } from '@angular/core';
-import { ServerFile } from './file-manager/file-manager.service';
+import {Injectable} from '@angular/core';
+import {ServerFile} from './file-manager/file-manager.service';
+import {TextToSpeechResponse} from "./text-to-speech/text-to-speech.service";
 
 // Define available header types
 export const HeaderTypes = ['JSON', 'form'];
 // Define a union type for header types
 export type HeaderType = typeof HeaderTypes[number];
+
+export interface AppLanguage {
+  name: string;
+  iso: string;
+  lang: string;
+}
+
+export const AppLanguages = [
+  {name: 'English', iso: 'en', lang: 'en-US'} as AppLanguage,
+  {name: 'Deutsch', iso: 'de', lang: 'de-DE'} as AppLanguage
+];
+export type AppLanguageType = typeof AppLanguages[number];
+
 
 export interface Api {
   id: number;
@@ -27,6 +41,8 @@ export interface Api {
   providedIn: 'root'
 })
 export class AppService {
+  languages: AppLanguage[] = AppLanguages;
+  language: AppLanguageType = AppLanguages.length ? AppLanguages[0] : {name: 'English', iso: 'en', lang: 'en-US'};
   user = {
     username: 'Anonymous_' + Date.now()
   };
@@ -108,8 +124,10 @@ export class AppService {
     }
   };
   uploadPath = '/upload';
+  playedTextToSpeechResults: TextToSpeechResponse[] = [];
 
-  constructor() {}
+  constructor() {
+  }
 
   // Perform a GET request
   async get(
@@ -133,7 +151,7 @@ export class AppService {
             const results = [];
             for (const data of result) {
               if (data.id && data.data) {
-                const newData = Object.assign({ id: data.data && data.data.id ? data.data.id : data.id }, data.data);
+                const newData = Object.assign({id: data.data && data.data.id ? data.data.id : data.id}, data.data);
                 newData.id = data.id;
                 newData.data = data.data;
                 results.push(newData);
@@ -409,7 +427,7 @@ export class AppService {
         serverFile.directory +
         '&filename=' +
         serverFile.name,
-        { file: serverFile },
+        {file: serverFile},
         onSuccess,
         onError
       );

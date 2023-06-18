@@ -30,12 +30,12 @@ The project structure is as follows:
   - [resources/](./resources) `Private app data`
     - [dist/](./resources/dist/) `Angular build`
     - [postgres-data/](./resources/postgres-data/) `Database data`
-    - [uploads/](./resources/uploads/) `Uploaded files`
+    - [server/](./resources/server/) `Server generated files`
   - [python-server/](./python-server) `Python server files`
     - [Dockerfile](./python-server/Dockerfile) `Docker configuration`
+    - [requirements.txt](./python-server/requirements.txt) `Python requirements file`
     - [server.py](./python-server/server.py) `Main server / routing`
     - [server.log](./python-server/server.log) `Log file`
-    - [index.html](./python-server/index.html) `Index file for server base route`
     - [modules/](./python-server/modules/) 
       - [file_server.py](python-server/modules/file_server.py)  `File server`
       - [file_upload.py](./python-server/modules/file_upload.py) `File upload`
@@ -43,6 +43,12 @@ The project structure is as follows:
       - [websocket.py](./python-server/modules/websocket.py) `Websocket`
       - [text_to_speech.py](./python-server/modules/text_to_speech.py) `Text to speech`
       - [server_logging.py](./python-server/modules/server_logging.py) `Server logging`
+    - [www/](./python-server/www/)
+      - [index.html](./python-server/www/index.html) `Index file for server base route`
+      - [tts-files/](./python-server/www/tts-files/) *(gets generated if needed)*
+        - `... text to speech files`
+      - [uploads/](./python-server/www/uploads/) *(gets generated if needed)*
+        - `... uploaded files`
   - [angular-app/](./angular-app/)  `Angular frontend app`
     - [Dockerfile](./angular-app/Dockerfile) `Docker configuration for build mode (localhost:80)`
     - [Dockerfile_serve](./angular-app/Dockerfile_serve)  `Docker configuration for serve mode (localhost:4200)`
@@ -73,7 +79,7 @@ DB_PASSWORD=postgres
 DB_DATABASE=postgres
 POSTGRES_PASSWORD=postgres
 
-FILE_UPLOAD_ROOT='app/'
+FILE_UPLOAD_ROOT='app/www/'
 FILE_UPLOAD_DIRECTORY='uploads/'
 TEXT_TO_SPEECH_DIRECTORY='tts-files/'
 ALLOWED_EXTENSIONS=txt,pdf,png,jpg,jpeg,gif

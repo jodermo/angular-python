@@ -21,8 +21,7 @@ services:
       - 8000:8000
     volumes:
       - ./python-server:/app
-      - ./resources/uploads:/app/uploads
-      - ./resources/text_to_speech:/app/text_to_speech
+      - ./resources/server:/app/www
     depends_on:
       - postgres-database
     command: nodemon -L --watch /app --ext py --exec "python server.py"

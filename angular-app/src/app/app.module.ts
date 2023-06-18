@@ -21,9 +21,14 @@ import {ApiResultComponent} from './api-manager/api-result/api-result.component'
 import {ApiInfoComponent} from './api-manager/api-info/api-info.component';
 import {WebsocketComponent} from './websocket/websocket.component';
 import {WebsocketService} from "./websocket/websocket.service";
-import { TextToSpeechComponent } from './text-to-speech/text-to-speech.component';
+import {TextToSpeechComponent} from './text-to-speech/text-to-speech.component';
 import {TextToSpeechService} from "./text-to-speech/text-to-speech.service";
-import { TextToSpeechButtonComponent } from './text-to-speech/text-to-speech-button/text-to-speech-button.component';
+import {TextToSpeechButtonComponent} from './text-to-speech/text-to-speech-button/text-to-speech-button.component';
+import {OpenAiComponent} from './open-ai/open-ai.component';
+import {OpenAiService} from "./open-ai/open-ai.service";
+import { SpeechRecognitionComponent } from './speech-recognition/speech-recognition.component';
+import {SpeechRecognitionService} from "./speech-recognition/speech-recognition.service";
+import { SpeechRecognitionButtonComponent } from './speech-recognition/speech-recognition-button/speech-recognition-button.component';
 
 @NgModule({
   declarations: [
@@ -40,7 +45,10 @@ import { TextToSpeechButtonComponent } from './text-to-speech/text-to-speech-but
     ApiInfoComponent,
     WebsocketComponent,
     TextToSpeechComponent,
-    TextToSpeechButtonComponent
+    TextToSpeechButtonComponent,
+    OpenAiComponent,
+    SpeechRecognitionComponent,
+    SpeechRecognitionButtonComponent
   ],
   imports: [
     CommonModule,
@@ -50,7 +58,15 @@ import { TextToSpeechButtonComponent } from './text-to-speech/text-to-speech-but
     AppRoutingModule,
     ExampleProjectModule
   ],
-  providers: [AppService, FileManagerService, ApiManagerService, WebsocketService, TextToSpeechService],
+  providers: [
+    AppService,
+    FileManagerService,
+    ApiManagerService,
+    WebsocketService,
+    TextToSpeechService,
+    SpeechRecognitionService,
+    OpenAiService
+  ],
   exports: [
     FileUploadComponent
   ],

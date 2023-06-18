@@ -5,6 +5,8 @@ from modules.file_server import file_server
 from modules.server_logging import server_logging
 from modules.websocket import websocket
 from modules.text_to_speech import text_to_speech
+from modules.speech_recognition import speech_recognition
+from modules.open_ai import open_ai
 import os
 from dotenv import load_dotenv
 
@@ -28,7 +30,8 @@ class Server:
         self.file_server = file_server()
         self.websocket = websocket(self.app)
         self.text_to_speech = text_to_speech()
-
+        self.speech_recognition = speech_recognition()
+        self.open_ai = open_ai()
         self.setup_app()
         log.info('__init__')
 
@@ -50,13 +53,14 @@ class Server:
         self.app.add_url_rule('/file', methods=['DELETE'], view_func=self.delete_file)
         self.app.add_url_rule('/text-to-speech', methods=['POST'], view_func=self.send_text_to_speech)
         self.app.add_url_rule('/text-to-speech', methods=['GET'], view_func=self.get_text_to_speech)
-
+        self.app.add_url_rule('/speech-recognition', methods=['GET'], view_func=self.get_recognize_file)
+        self.app.add_url_rule('/open-ai', methods=['POST'], view_func=self.send_gpt_prompt)
         self.app.errorhandler(Exception)(self.handle_error)
 
         log.info('setup_app')
 
     def index_html(self):
-        return send_file('index.html')
+        return send_file('www/index.html')
 
     def get_data(self):
         return self.api.get_data()
@@ -76,6 +80,9 @@ class Server:
     def send_text_to_speech(self):
         return self.text_to_speech.send_text_to_speech(request)
 
+    def get_recognize_file(self):
+        return self.speech_recognition.get_recognize_file(request)
+
     def post_file(self):
         return self.file_server.post_file(request)
 
@@ -87,6 +94,9 @@ class Server:
 
     def delete_file(self):
         return self.file_server.delete_file(request)
+
+    def send_gpt_prompt(self):
+        return self.open_ai.send_gpt_prompt(request)
 
     def handle_error(self, e):
         log.exception(str(e))

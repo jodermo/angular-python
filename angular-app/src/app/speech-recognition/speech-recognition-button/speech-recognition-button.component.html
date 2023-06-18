@@ -1,0 +1,29 @@
+<div class="speech-recognition-button">
+  <div class="speech-recognition-actions">
+    <div>
+      <select [(ngModel)]="app.language" [disabled]="disabled">
+        <option *ngFor="let language of app.languages" [ngValue]="language">{{language.name}}</option>
+      </select>
+    </div>
+    <button [disabled]="disabled" (mousedown)="speechRecognition.startRecording(app.language)" (mouseup)="speechRecognition.stopRecording()">
+      Hold to Record
+    </button>
+    <button *ngIf="!speechRecognition.recording && speechRecognition.audioFile && speechRecognition.audioReady"
+            (click)="speechRecognition.playAudio()">Play last record
+    </button>
+
+  </div>
+  <div class="speech-recognition-results" *ngIf="speechRecognition.results.length">
+    <div class="speech-recognition-result" *ngFor="let speechRecognitionResult of speechRecognition.results"
+         [ngClass]="{'error': (speechRecognitionResult.error !== undefined)}">
+      <p *ngIf="showResults && speechRecognitionResult.error">{{speechRecognitionResult.error}}</p>
+      <p *ngIf="showResults && speechRecognitionResult.text && speechRecognitionResult.error">{{speechRecognitionResult.text}}</p>
+      <app-text-to-speech-button *ngIf="readResult && speechRecognitionResult.text || speechRecognitionResult.error"
+                                 [text]="(speechRecognitionResult.text ? speechRecognitionResult.text : speechRecognitionResult.error)"
+                                 [autoplay]="speechRecognition.currentResult === speechRecognitionResult"
+      ></app-text-to-speech-button>
+    </div>
+  </div>
+
+</div>
+

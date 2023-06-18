@@ -1,8 +1,5 @@
 import {Injectable} from '@angular/core';
-import {AppService} from "../app.service";
-
-export const TextToSpeechLanguages = ['en', 'de'];
-export  type TextToSpeechLanguage = typeof TextToSpeechLanguages[number];
+import {AppLanguage, AppLanguages, AppLanguageType, AppService} from "../app.service";
 
 export interface TextToSpeechResponse {
   text: string;
@@ -18,9 +15,10 @@ export class TextToSpeechService {
   private app?: AppService;
   text?: string;
   results: TextToSpeechResponse[] = [];
+  currentResult?: TextToSpeechResponse;
   textResults: any = {};
-  languages = TextToSpeechLanguages;
-  language: TextToSpeechLanguage = 'en';
+  languages: AppLanguage[] = AppLanguages;
+  language: AppLanguageType = AppLanguages.length ? AppLanguages[0] : {name: 'English', iso: 'en', lang: 'en-US'};
   filename = 'text.mp3';
 
   audio = new Audio();
@@ -45,11 +43,11 @@ export class TextToSpeechService {
     this.app = app;
   }
 
-  addResult(result: TextToSpeechResponse, lang = this.language) {
-    if (!this.textResults[lang]) {
-      this.textResults[lang] = {} as any;
+  addResult(result: TextToSpeechResponse, language = this.language) {
+    if (!this.textResults[language.iso]) {
+      this.textResults[language.iso] = {} as any;
     }
-    this.textResults[lang][result.text] = result;
+    this.textResults[language.iso][result.text] = result;
     this.results.push(result);
   }
 
@@ -65,21 +63,20 @@ export class TextToSpeechService {
     }
   }
 
-  makeFileAndPlay(text = this.text, lang = this.language, filename = this.filename) {
-
+  makeFileAndPlay(text = this.text, language = this.language, filename = this.filename, fromAutoplay = false) {
     if (text?.length) {
-      if (this.textResults[lang] && this.textResults[lang][text]) {
-        this.playResult(this.textResults[lang][text]);
+      if (this.textResults[language.iso] && this.textResults[language.iso][text]) {
+        this.playResult(this.textResults[language.iso][text], fromAutoplay);
       } else {
         this.app?.post(this.app?.API.url + '/text-to-speech', {
           text,
-          lang,
+          lang: language.iso,
           filename
         }, (result?: TextToSpeechResponse) => {
           if (result?.text) {
             this.text = undefined;
-            this.addResult(result, lang);
-            this.playResult(result);
+            this.addResult(result, language);
+            this.playResult(result, fromAutoplay);
           }
         });
       }
@@ -104,7 +101,15 @@ export class TextToSpeechService {
     return this.app?.API.url + '/text-to-speech?filename=' + result.filename;
   }
 
-  playResult(textToSpeechResult = this.playing) {
+  playResult(textToSpeechResult = this.playing, fromAutoplay = false) {
+    if (this.app) {
+      const played = this.app.playedTextToSpeechResults.find((played: TextToSpeechResponse) => played === textToSpeechResult);
+      if (fromAutoplay && played) {
+        return;
+      } else if (textToSpeechResult) {
+        this.app.playedTextToSpeechResults.push(textToSpeechResult);
+      }
+    }
     if (textToSpeechResult && textToSpeechResult !== this.playing) {
       this.played = false;
       this.playing = textToSpeechResult;

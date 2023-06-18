@@ -6,6 +6,8 @@ import {ApiManagerComponent} from "./api-manager/api-manager.component";
 import {FileManagerComponent} from "./file-manager/file-manager.component";
 import {WebsocketComponent} from "./websocket/websocket.component";
 import {TextToSpeechComponent} from "./text-to-speech/text-to-speech.component";
+import {OpenAiComponent} from "./open-ai/open-ai.component";
+import {SpeechRecognitionComponent} from "./speech-recognition/speech-recognition.component";
 
 export const AppRoutes: Routes = [
   {
@@ -30,6 +32,18 @@ export const AppRoutes: Routes = [
     path: 'text-to-speech', component: TextToSpeechComponent, data: {
       showInNavigation: true,
       title: 'Text To Speech'
+    }
+  },
+  {
+    path: 'speech-recognition', component: SpeechRecognitionComponent, data: {
+      showInNavigation: true,
+      title: 'Speech Recognition'
+    }
+  },
+  {
+    path: 'open-ai', component: OpenAiComponent, data: {
+      showInNavigation: true,
+      title: 'OpenAI'
     }
   },
   {

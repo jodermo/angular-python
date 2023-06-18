@@ -1,11 +1,13 @@
 <div class="text-to-speech-button" *ngIf="text">
   <button
     *ngIf="!textToSpeech.playing || textToSpeech.playing.text !== text || (textToSpeech.audio.currentTime === 0 && textToSpeech.audio.paused)"
-    (click)="textToSpeech.makeFileAndPlay(text, language)">
+    [disabled]="disabled"
+    (click)="textToSpeech.makeFileAndPlay(text, app.language)">
     Read
   </button>
   <button
     *ngIf="textToSpeech.playing && textToSpeech.playing.text === text && (textToSpeech.audio.currentTime !== 0 && textToSpeech.audio.paused)"
+    [disabled]="disabled"
     (click)="textToSpeech.play()">
     Play
   </button>
@@ -13,8 +15,8 @@
           (click)="textToSpeech.pause()">
     Pause
   </button>
-  <select [(ngModel)]="language">
-    <option *ngFor="let lang of languages" [value]="lang">{{lang}}</option>
+  <select [(ngModel)]="app.language" [disabled]="disabled">
+    <option *ngFor="let language of app.languages" [ngValue]="language">{{language.name}}</option>
   </select>
   <span class="spacer"></span>
 </div>

@@ -1,0 +1,18 @@
+.speech-recognition-actions {
+  display: flex;
+}
+
+.speech-recognition-result {
+  &.error {
+    color: red;
+  }
+}
+
+.speech-recognition-transcription{
+  opacity: 0;
+  position: absolute;
+  z-index: -100;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}

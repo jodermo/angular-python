@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import {Component, HostListener} from '@angular/core';
 import {AppComponent} from "../app.component";
 import {AppService} from "../app.service";
 import {TextToSpeechService} from "./text-to-speech.service";

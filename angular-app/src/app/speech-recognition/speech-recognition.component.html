@@ -1,0 +1,49 @@
+<div class="content speech-recognition" role="main">
+
+  <h2>Speech Recognition</h2>
+
+  <div class="speech-recognition-transcription" *ngIf="speechRecognition.transcription ">
+    {{ speechRecognition.transcription }}
+  </div>
+
+
+  <div class="speech-recognition-actions">
+    <div>
+      <select [(ngModel)]="app.language">
+        <option *ngFor="let language of app.languages" [ngValue]="language">{{language.name}}</option>
+      </select>
+    </div>
+    <button (mousedown)="speechRecognition.startRecording(app.language)" (mouseup)="speechRecognition.stopRecording()">
+      Hold to Record
+    </button>
+    <button *ngIf="!speechRecognition.recording && speechRecognition.audioFile && speechRecognition.audioReady"
+            (click)="speechRecognition.playAudio()">Play last record
+    </button>
+  </div>
+
+
+  <div class="speech-recognition-status">
+    <span *ngIf="speechRecognition.recording">Recording</span>
+    <span *ngIf="!speechRecognition.recording">Ready</span>
+  </div>
+
+
+  <div class="speech-recognition-upload-loader" *ngIf="speechRecognition.uploading">
+    <p>Uploading file...</p>
+  </div>
+
+  <div class="speech-recognition-upload-error" *ngIf="speechRecognition.uploadError">
+    <p>Error uploading file: {{ speechRecognition.uploadError }}</p>
+  </div>
+  <div class="speech-recognition-results" *ngIf="speechRecognition.results.length">
+    <div class="speech-recognition-result" *ngFor="let speechRecognitionResult of speechRecognition.results"
+         [ngClass]="{'error': (speechRecognitionResult.error !== undefined)}">
+      <p *ngIf="speechRecognitionResult.error">{{speechRecognitionResult.error}}</p>
+      <p *ngIf="speechRecognitionResult.text">{{speechRecognitionResult.text}}</p>
+      <app-text-to-speech-button *ngIf="speechRecognitionResult.text || speechRecognitionResult.error"
+                                 [text]="(speechRecognitionResult.text ? speechRecognitionResult.text : speechRecognitionResult.error)"
+                                 [autoplay]="speechRecognition.currentResult === speechRecognitionResult"
+      ></app-text-to-speech-button>
+    </div>
+  </div>
+</div>
