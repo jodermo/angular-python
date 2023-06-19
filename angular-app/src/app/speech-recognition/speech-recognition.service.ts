@@ -9,6 +9,7 @@ export interface SpeechRecognitionResponse {
   filename: string;
   path: string;
   directory: string;
+  time: number;
 }
 
 @Injectable({
@@ -36,6 +37,9 @@ export class SpeechRecognitionService {
   audio = new Audio();
   audioReady = false;
   currentResult?: SpeechRecognitionResponse;
+
+  loading = false;
+
   private resultCallbacks: ((result?: SpeechRecognitionResponse) => void)[] = [];
 
 
@@ -59,11 +63,15 @@ export class SpeechRecognitionService {
     onSuccess?: (result?: SpeechRecognitionResponse) => void,
     onError?: (error?: any) => void
   ) {
+    const language = (this.app && this.app.language ? this.app.language.lang : this.language ? this.language.lang : 'en-US');
+    this.loading = true;
     this.app?.get(
-      this.app?.API.url + '/speech-recognition?filename=' + filename + '&path=' + directory + '&language=' + (this.language ? this.language.lang : 'en-US'),
+      this.app?.API.url + '/speech-recognition?filename=' + filename + '&path=' + directory + '&language=' + language,
       (result?: SpeechRecognitionResponse) => {
         if (result) {
+          result.time = Date.now();
           this.results.push(result);
+          this.results.sort((a, b) => a.time + b.time);
           this.currentResult = result;
           for (const callback of this.resultCallbacks) {
             callback(result);
@@ -72,8 +80,14 @@ export class SpeechRecognitionService {
         if (onSuccess) {
           onSuccess(result);
         }
+        this.loading = false;
       },
-      onError
+      (error: any)=>{
+        if(onError){
+          onError(error)
+        }
+        this.loading = false;
+      }
     );
   }
 
@@ -104,6 +118,7 @@ export class SpeechRecognitionService {
 
   async stopRecording() {
     if (this.recording && this.mediaRecorder) {
+      this.loading = true;
       await this.mediaRecorder?.stop();
       setTimeout(() => {
         // wait till this.mediaRecorder is finished calculating

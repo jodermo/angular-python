@@ -13,8 +13,13 @@
         <option *ngFor="let language of app.languages" [ngValue]="language">{{language.name}}</option>
       </select>
     </div>
-    <button (mousedown)="speechRecognition.startRecording(app.language)" (mouseup)="speechRecognition.stopRecording()">
-      Hold to Record
+    <button *ngIf="!speechRecognition.recording"
+            (click)="speechRecognition.startRecording()">
+      Start Recording
+    </button>
+    <button *ngIf="speechRecognition.recording"
+            (click)="speechRecognition.stopRecording()">
+      Stop Recording
     </button>
     <button *ngIf="!speechRecognition.recording && speechRecognition.audioFile && speechRecognition.audioReady"
             (click)="speechRecognition.playAudio()">Play last record

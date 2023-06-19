@@ -1,40 +1,98 @@
 <div class="content open-ai" role="main">
+  <h1>OpenAI</h1>
   <div class="open-ai-input">
+    <div class="open-ai-options">
+      <label>
+        <span>Mode</span>
+        <select [(ngModel)]="openAi.mode">
+          <option *ngFor="let mode of openAi.modes" [ngValue]="mode">
+            {{mode.name}}
+          </option>
+        </select>
+      </label>
+      <label *ngIf="openAi.mode.alias === 'chat' || openAi.mode.alias === 'completion'">
+        <span>Role</span>
+        <select [(ngModel)]="openAi.role" >
+          <option *ngFor="let role of openAi.roles" [ngValue]="role">
+            {{role}}
+          </option>
+        </select>
+      </label>
+      <label *ngIf="openAi.mode.alias === 'completion'">
+        <span>Model</span>
+        <select [(ngModel)]="openAi.completionModel">
+          <option *ngFor="let model of openAi.completionModels" [ngValue]="model">
+            {{model}}
+          </option>
+        </select>
+      </label>
+      <label *ngIf="openAi.mode.alias === 'chat'">
+        <span>Model</span>
+        <select [(ngModel)]="openAi.chatModel">
+          <option *ngFor="let model of openAi.chatModels" [ngValue]="model">
+            {{model}}
+          </option>
+        </select>
+      </label>
+      <label *ngIf="openAi.mode.alias === 'image'">
+        <span>Number</span>
+        <input type="number" [(ngModel)]="openAi.numberOfImages" [min]="1" [max]="openAi.maxNumberOfImages" [step]="1"  />
+      </label>
+      <label *ngIf="openAi.mode.alias === 'image'">
+        <span>Size</span>
+        <select [(ngModel)]="openAi.imageSize">
+          <option *ngFor="let size of openAi.imageSizes" [ngValue]="size">
+            {{size}}
+          </option>
+        </select>
+      </label>
 
-    <form (ngSubmit)="openAi.sendRequest()">
-      <input type="text" [(ngModel)]="openAi.text" [disabled]="openAi.sending" name="textToSpeech" placeholder="Type a text...">
+    </div>
+    <form (ngSubmit)="openAi.submitRequest()">
+      <textarea type="text" [(ngModel)]="openAi.text" [disabled]="openAi.sending" name="textToSpeech"
+                placeholder="Type a text..."></textarea>
       <button [disabled]="!openAi.text || openAi.sending" type="submit">Send</button>
     </form>
-    <app-speech-recognition-button [disabled]="openAi.sending" (onResult)="onSpeechRecognitionResult($event)"></app-speech-recognition-button>
-
+    <app-speech-recognition-button [disabled]="openAi.sending"
+                                   (onResult)="onSpeechRecognitionResult($event)"></app-speech-recognition-button>
   </div>
-
-  <div class="open-ai-results" >
+  <div class="open-ai-results">
     <ul>
-      <li *ngFor="let openAiResult of openAi.results">
-        <div><b><i>{{openAiResult.text}}</i></b></div>
-        <div *ngIf="openAiResult.response">
-          <div class="open-ai-choices" *ngIf="openAiResult.response.choices" >
-            <div class="open-ai-choice" *ngFor="let choice of openAiResult.response.choices; let i = index" >
-              <p *ngIf="choice.message">
-               <span>{{choice.message.role}}: </span> {{choice.message.content}}
-                <app-text-to-speech-button [text]="choice.message.content" [autoplay]="i === 0"></app-text-to-speech-button>
-              </p>
+      <li *ngIf="openAi.sending">
+        <h3>Calculating response for <i>"{{openAi.text}}", please wait..</i></h3>
+      </li>
+      <li class="open-ai-result" *ngFor="let openAiResult of openAi.results">
+        <div class="open-ai-result-question">
+          <b>You: </b><span><i>"{{openAiResult.text || openAiResult.prompt}}"</i></span>
+        </div>
+        <div class="open-ai-result-answers" *ngIf="openAiResult.response">
+          <div class="open-ai-choices" *ngIf="openAiResult.response.choices">
+            <div class="open-ai-choice" *ngFor="let choice of openAiResult.response.choices; let i = index">
+              <div *ngIf="choice.message">
+                <b>{{choice.message.role}}: </b>
+                <p><i>"{{choice.message.content}}"</i></p>
+                <app-text-to-speech-button [text]="choice.message.content"
+                                           [autoplay]="i === 0"></app-text-to-speech-button>
+              </div>
             </div>
           </div>
-
+          <div class="open-ai-data" *ngIf="openAiResult.response.data">
+            <div class="open-ai-data-entry" *ngFor="let data of openAiResult.response.data; let i = index">
+              <div class="image-preview" *ngIf="data.url" >
+                <img [src]="data.url">
+              </div>
+              <a [href]="data.url" target="_blank">Open Image</a>
+            </div>
+          </div>
         </div>
         <div *ngIf="openAiResult.response && openAiResult.response.error">
           <p *ngIf="openAiResult.response.error.message">
             {{openAiResult.response.error.message}}
           </p>
+          <app-text-to-speech-button [text]="openAiResult.response.error.message"
+                                     [autoplay]="true"></app-text-to-speech-button>
         </div>
       </li>
-      <li *ngIf="openAi.sending">
-        One moment, calculating response...
-      </li>
     </ul>
-
   </div>
-
 </div>

@@ -1,0 +1,44 @@
+.open-ai-input {
+  display: flex;
+  flex-direction: column;
+
+  .open-ai-options {
+    display: flex;
+  }
+
+  form {
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+
+.open-ai-data {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+
+  column-gap: .5rem;
+  row-gap: .5rem;
+
+
+  .open-ai-data-entry {
+
+
+    .image-preview {
+      max-width: 32rem;
+      max-height: 32rem;
+      margin-bottom: .25rem;
+      overflow: hidden;
+
+      img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        object-position: center center;
+      }
+    }
+
+  }
+}

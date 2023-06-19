@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
+from modules.ssl_manager import ssl_manager
 from modules.postgres_api import postgres_api
 from modules.file_server import file_server
 from modules.server_logging import server_logging
@@ -20,20 +21,22 @@ log = server_logging("server.log", mode)
 
 class Server:
     def __init__(self):
+        log.info('__init__')
         self.app = Flask(__name__)
         max_content_length = 1 * 1024 * 1024 * 1024
 
         self.max_content_length = int(os.getenv("MAX_CONTENT_LENGTH", str(max_content_length)))
         self.host = os.getenv("SERVER_HOST", "0.0.0.0")
-        self.port = int(os.getenv("SERVER_PORT", 8000))
+        self.port = int(os.getenv("SERVER_PORT", 80))
         self.api = postgres_api()
         self.file_server = file_server()
         self.websocket = websocket(self.app)
         self.text_to_speech = text_to_speech()
         self.speech_recognition = speech_recognition()
+        self.ssl_manager = ssl_manager()
         self.open_ai = open_ai()
         self.setup_app()
-        log.info('__init__')
+
 
     def setup_app(self):
         cors_allowed_origins = os.getenv('ALLOWED_ORIGINS', '*').split(',')
@@ -42,7 +45,8 @@ class Server:
 
         self.app.before_request(self.handle_chunking)
 
-        self.app.add_url_rule('/', methods=['GET'], view_func=self.index_html)
+        self.app.add_url_rule('/', methods=['GET'], view_func=self.angular_build)
+        self.app.add_url_rule('/<filename>', methods=['GET'], view_func=self.angular_build)
         self.app.add_url_rule('/data', methods=['GET'], view_func=self.get_data)
         self.app.add_url_rule('/data', methods=['POST'], view_func=self.post_data)
         self.app.add_url_rule('/data', methods=['PUT'], view_func=self.put_data)
@@ -54,13 +58,18 @@ class Server:
         self.app.add_url_rule('/text-to-speech', methods=['POST'], view_func=self.send_text_to_speech)
         self.app.add_url_rule('/text-to-speech', methods=['GET'], view_func=self.get_text_to_speech)
         self.app.add_url_rule('/speech-recognition', methods=['GET'], view_func=self.get_recognize_file)
-        self.app.add_url_rule('/open-ai', methods=['POST'], view_func=self.send_gpt_prompt)
+        self.app.add_url_rule('/open-ai/chat', methods=['POST'], view_func=self.post_gpt_chat)
+        self.app.add_url_rule('/open-ai/completions', methods=['POST'], view_func=self.post_gpt_completions)
+        self.app.add_url_rule('/open-ai/images', methods=['POST'], view_func=self.post_gpt_images)
         self.app.errorhandler(Exception)(self.handle_error)
-
         log.info('setup_app')
 
-    def index_html(self):
-        return send_file('www/index.html')
+    def angular_build(self, filename=None):
+        log.exception('filename: ' + str(filename))
+        if "." in str(filename):
+            return send_file('../angular-app/' + str(filename))
+        else:
+            return send_file('../angular-app/index.html')
 
     def get_data(self):
         return self.api.get_data()
@@ -95,13 +104,19 @@ class Server:
     def delete_file(self):
         return self.file_server.delete_file(request)
 
-    def send_gpt_prompt(self):
-        return self.open_ai.send_gpt_prompt(request)
+    def post_gpt_chat(self):
+        return self.open_ai.post_chat_request(request)
+
+    def post_gpt_completions(self):
+        return self.open_ai.post_completions_request(request)
+
+    def post_gpt_images(self):
+        return self.open_ai.generate_image_request(request)
 
     def handle_error(self, e):
         log.exception(str(e))
         response = jsonify(error=str(e))
-        response.status_code = 500  # Set the status code to indicate the error
+        response.status_code = 500
         return response
 
     def handle_chunking(self):
@@ -110,8 +125,15 @@ class Server:
             request.environ["wsgi.input_terminated"] = True
 
     def run(self):
-        self.app.run(host=self.host, port=self.port)
-
+        log.exception('run')
+        log.exception(self.host + ':' +  str(self.port))
+        if os.getenv("SSL_ACTIVE") and os.getenv("SSL_PRIVATE_KEY_PATH"):
+            log.exception('SSL active')
+            context = server.ssl_manager.get_ssl_context()
+            server.app.run(host=self.host, port=self.port, ssl_context=context)
+        else:
+            log.exception('SSL inactive')
+            server.app.run(host=self.host, port=self.port)
 
 if __name__ == '__main__':
     server = Server()

@@ -25,7 +25,7 @@ export class WebsocketService {
   private app?: AppService;
 
   constructor() {
-    this.socket = io('http://localhost:8000');
+    this.socket = io('https://app.dont-use.com');
   }
 
   startMessageListener(appService = this.app): void {

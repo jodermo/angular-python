@@ -6,6 +6,7 @@ export interface TextToSpeechResponse {
   filename: string;
   lang: string;
   play: boolean;
+  time: number;
 }
 
 @Injectable({
@@ -44,11 +45,13 @@ export class TextToSpeechService {
   }
 
   addResult(result: TextToSpeechResponse, language = this.language) {
+    result.time = Date.now();
     if (!this.textResults[language.iso]) {
       this.textResults[language.iso] = {} as any;
     }
     this.textResults[language.iso][result.text] = result;
     this.results.push(result);
+    this.results.sort((a, b) => a.time + b.time);
   }
 
   makeFile(text = this.text, lang = this.language, filename = this.filename) {

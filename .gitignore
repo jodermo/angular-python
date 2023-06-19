@@ -1,8 +1,10 @@
 
+
+
 frontend/www/*
 !frontend/www/README.md
 
-resources/postgres-data/*
+postgres-data/*
 resources/uploads/*
 !resources/uploads/README.md
 resources/dist/*
@@ -49,6 +51,10 @@ angular-app/testem.log
 /angular-app/typings
 
 /python-server/server.log
+/python-server/ssl/*
+!/python-server/ssl/README.md
+
+postgres-data/*
 
 # System files
 .DS_Store

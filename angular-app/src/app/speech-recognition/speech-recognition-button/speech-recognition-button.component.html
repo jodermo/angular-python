@@ -5,11 +5,25 @@
         <option *ngFor="let language of app.languages" [ngValue]="language">{{language.name}}</option>
       </select>
     </div>
-    <button [disabled]="disabled" (mousedown)="speechRecognition.startRecording(app.language)" (mouseup)="speechRecognition.stopRecording()">
-      Hold to Record
+    <button *ngIf="!speechRecognition.recording" [disabled]="disabled || speechRecognition.loading || speechRecognition.uploading"
+            (click)="speechRecognition.startRecording()">
+      <span *ngIf="!speechRecognition.loading && !speechRecognition.uploading">
+        Start recording
+      </span>
+      <span *ngIf="speechRecognition.uploading">
+        Uploading record...
+      </span>
+      <span *ngIf="speechRecognition.loading && !speechRecognition.uploading">
+        Calculating text...
+      </span>
     </button>
-    <button *ngIf="!speechRecognition.recording && speechRecognition.audioFile && speechRecognition.audioReady"
-            (click)="speechRecognition.playAudio()">Play last record
+    <button *ngIf="speechRecognition.recording"  [disabled]="disabled || speechRecognition.loading || speechRecognition.uploading"
+            (click)="speechRecognition.stopRecording()">
+      Stop Recording
+    </button>
+    <button
+      [disabled]="speechRecognition.recording || !speechRecognition.audioFile || !speechRecognition.audioReady"
+      (click)="speechRecognition.playAudio()">Play last recorded text
     </button>
 
   </div>
@@ -17,7 +31,8 @@
     <div class="speech-recognition-result" *ngFor="let speechRecognitionResult of speechRecognition.results"
          [ngClass]="{'error': (speechRecognitionResult.error !== undefined)}">
       <p *ngIf="showResults && speechRecognitionResult.error">{{speechRecognitionResult.error}}</p>
-      <p *ngIf="showResults && speechRecognitionResult.text && speechRecognitionResult.error">{{speechRecognitionResult.text}}</p>
+      <p
+        *ngIf="showResults && speechRecognitionResult.text && speechRecognitionResult.error">{{speechRecognitionResult.text}}</p>
       <app-text-to-speech-button *ngIf="readResult && speechRecognitionResult.text || speechRecognitionResult.error"
                                  [text]="(speechRecognitionResult.text ? speechRecognitionResult.text : speechRecognitionResult.error)"
                                  [autoplay]="speechRecognition.currentResult === speechRecognitionResult"

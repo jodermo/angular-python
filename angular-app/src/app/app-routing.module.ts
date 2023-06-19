@@ -11,6 +11,12 @@ import {SpeechRecognitionComponent} from "./speech-recognition/speech-recognitio
 
 export const AppRoutes: Routes = [
   {
+    path: 'open-ai', component: OpenAiComponent, data: {
+      showInNavigation: true,
+      title: 'OpenAI'
+    }
+  },
+  {
     path: 'api-manager', component: ApiManagerComponent, data: {
       showInNavigation: true,
       title: 'API Manager'
@@ -38,12 +44,6 @@ export const AppRoutes: Routes = [
     path: 'speech-recognition', component: SpeechRecognitionComponent, data: {
       showInNavigation: true,
       title: 'Speech Recognition'
-    }
-  },
-  {
-    path: 'open-ai', component: OpenAiComponent, data: {
-      showInNavigation: true,
-      title: 'OpenAI'
     }
   },
   {

@@ -1,35 +1,23 @@
-# Base image with Node.js
-FROM node:14 AS build
+# Use the official Node.js LTS (Long Term Support) image as the base image
+FROM node:lts
 
-# Set the working directory
+# Install Angular CLI globally
+RUN npm install -g @angular/cli
+
+# Set the working directory inside the container
 WORKDIR /app
 
-# Copy package.json and package-lock.json
+# Copy the package.json and package-lock.json files to the working directory
 COPY package*.json ./
 
-# Install dependencies
-RUN npm ci --only=production
+# Install the project dependencies
+RUN npm install
 
-# Copy the entire project
+# Copy the entire project to the working directory
 COPY . .
 
-# Build the Angular app
-RUN npm run build
+# Expose the default Angular serve port (4200)
+EXPOSE 4200
 
-# Stage 2: Create a minimal Nginx image with compiled Angular app
-FROM nginx:alpine
-
-# Copy the whole Angular app from the previous stage
-# COPY --from=build /app .
-
-# Copy the compiled Angular app from the previous stage
-COPY --from=build /app/dist/angular-app /usr/share/nginx/html
-
-# Copy the nginx configuration file
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-
-# Expose port 80 for Nginx
-EXPOSE 80
-
-# Start Nginx
-CMD ["nginx", "-g", "daemon off;"]
+# Start the Angular development server in watch mode
+CMD ng serve --host 0.0.0.0 --port 4200 --poll 2000

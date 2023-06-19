@@ -5,6 +5,13 @@ html, body {
   box-sizing: border-box;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top:0;
+  left: 0;
+  padding: 0;
+  margin: 0;
 }
 
 h1,
@@ -34,14 +41,24 @@ a.active {
   flex: 1;
 }
 
+.text-right {
+  text-align: right;
+}
+.float-right{
+  justify-self: flex-end;
+  align-self: flex-end;
+}
 
 .toolbar {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
-  height: 60px;
+  min-height: 60px;
+  height: auto;
   display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   align-items: center;
   background-color: #1976d2;
   color: white;
@@ -60,6 +77,12 @@ input:not([type=submit]):not([type=checkbox]), select, textarea {
   border: 1px solid white;
   background: #b3d9ff;
   color: #061c31;
+
+  &:disabled {
+    opacity: .5;
+    pointer-events: none;
+    cursor: pointer;
+  }
 }
 
 .padding-left {
@@ -97,6 +120,7 @@ button {
 
 }
 
+
 .toolbar img {
   margin: 0 16px;
 }
@@ -127,6 +151,7 @@ button {
   & > * {
     width: 100%;
   }
+
 
   table {
     width: 100%;

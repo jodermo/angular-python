@@ -6,15 +6,15 @@ This project provides a flexible environment for experimenting with Python backe
 - Angular Frontend
 - PostgreSQL Database
 - SocketIO Websocket
+- OpenAI integration
 
-#### With some basic functionality
+#### With some basic functionality and example code for:
 - Dynamic API with GET, POST, PUT, DELETE functions
-- File Upload
-- File Server
+- File Manager
 - Websocket Chat
 - Text to speech functions
-
-
+- Speech (voice) recognition
+- OpenAI Tool
 
 ## Prerequisites
 
@@ -27,10 +27,7 @@ The project structure is as follows:
 - angular-python/
   - .env
   - [docker-compose.yml](./docker-compose.yml) `Docker Composition`
-  - [resources/](./resources) `Private app data`
-    - [dist/](./resources/dist/) `Angular build`
-    - [postgres-data/](./resources/postgres-data/) `Database data`
-    - [server/](./resources/server/) `Server generated files`
+  - [postgres-data/](postgres-data/) `Database data`
   - [python-server/](./python-server) `Python server files`
     - [Dockerfile](./python-server/Dockerfile) `Docker configuration`
     - [requirements.txt](./python-server/requirements.txt) `Python requirements file`
@@ -44,15 +41,15 @@ The project structure is as follows:
       - [text_to_speech.py](./python-server/modules/text_to_speech.py) `Text to speech`
       - [server_logging.py](./python-server/modules/server_logging.py) `Server logging`
     - [www/](./python-server/www/)
-      - [index.html](./python-server/www/index.html) `Index file for server base route`
       - [tts-files/](./python-server/www/tts-files/) *(gets generated if needed)*
         - `... text to speech files`
       - [uploads/](./python-server/www/uploads/) *(gets generated if needed)*
         - `... uploaded files`
+    - [ssl/](./python-server/ssl/)
+      - [certificate.pem](python-server/ssl/certificate.pem)  `SSL certificate`
+      - [private_key.pem](python-server/ssl/private_key.pem)  `SSL private key`
   - [angular-app/](./angular-app/)  `Angular frontend app`
-    - [Dockerfile](./angular-app/Dockerfile) `Docker configuration for build mode (localhost:80)`
-    - [Dockerfile_serve](./angular-app/Dockerfile_serve)  `Docker configuration for serve mode (localhost:4200)`
-    - [nginx.conf](./angular-app/nginx.conf) `NGINX configuration for build`
+    - [Dockerfile](./angular-app/Dockerfile_build) `Docker configuration for build mode (localhost:80)`
     - [package.json](./angular-app/package.json) `Node.js configuration`
     - [src](./angular-app/src/) 
       - [app](./angular-app/src/app) `Source files for frontend app`
@@ -66,11 +63,16 @@ The project structure is as follows:
 
 ## Environment file [.env](./.env)
 
-```
+```dotenv
 MODE=dev
 SERVER_HOST=0.0.0.0
-SERVER_PORT=8000
+SERVER_DOMAIN=app.dont-use.com
+SERVER_PORT=80
 ALLOWED_ORIGINS=*
+
+# SSL_ACTIVE=1
+SSL_PRIVATE_KEY_PATH=ssl/private_key.pem
+SSL_CERTIFICATE_PATH=ssl/certificate.pem
 
 DB_HOST=postgres-database
 DB_PORT=5432
@@ -79,16 +81,21 @@ DB_PASSWORD=postgres
 DB_DATABASE=postgres
 POSTGRES_PASSWORD=postgres
 
-FILE_UPLOAD_ROOT='app/www/'
+FILE_UPLOAD_ROOT='www/'
 FILE_UPLOAD_DIRECTORY='uploads/'
 TEXT_TO_SPEECH_DIRECTORY='tts-files/'
-ALLOWED_EXTENSIONS=txt,pdf,png,jpg,jpeg,gif
+ALLOWED_EXTENSIONS=txt,pdf,png,jpg,jpeg,gif,mp3,wav,wma,mp4,ogg,ogv,webm,csv
 MAX_CONTENT_LENGTH=10737418240
 
 PYTHONDONTWRITEBYTECODE=1
 PYTHONUNBUFFERED=1
 FLASK_DEBUG=1
 FLASK_ENV=development
+
+OPENAI_API_KEY=<your OpenAi api key>
+
+# optional: 
+# OPENAI_ORGANISATION_ID=<your OpenAi organisation id>
 
 
 ```
@@ -107,20 +114,42 @@ To run the project, follow these steps:
     ```bash
    cd angular-python/
     ```
-
-3. Run Docker Images:
+   
+3. Run first build:
+    ```bash
+    npm install
+    npm run build
+    ```
+   
+4. Run Docker Images:
     ```bash
     docker-compose up
     ```
     This command will ***build*** and start the Python server and Angular app containers defined in the docker-compose.yml file.
 
-4. App is running at:
-    - python server: [localhost:8000](http://localhost:8000) *(restarts on file changes)*
-    - Angular build : [localhost:80](http://localhost:80) *(run: `docker-compose up --build` to rebuild)*
-    - Angular serve : [localhost:4200](http://localhost:4200) *(for deployment, is watching file changes)*
-      
+5. App is running at [localhost:80](http://localhost:80)
 
-Experiment and develop:
+6. Optional - Start Angular serve mode at [localhost:4200](http://localhost:4200):
+    ```bash
+    npm start
+    ```
+   This will watch for code changes and automatically recompile the Angular app
+
+7. Optional - Use SSH and PORT 443 instead PORT 80
+   - A. Docker compose file: [docker-compose.yml](./docker-compose.yml)
+      - Change `80:80` to `443:443`
+   - B. Server environment file: [.env](./.env)
+     - Change (uncomment) `# SSL_ACTIVE=1` to `SSL_ACTIVE=1`
+     - Change `SERVER_PORT=80` to `SERVER_PORT=443`
+   - C. Angular environment file: [angular-app/src/environments/environment.prod.ts](./angular-app/src/environments/environment.prod.ts)
+     - Change `serverURL: 'http://localhost:80/'` to `serverURL: 'https://domain-name.com/'` *(replace "domain-name.com" with your domain)*
+   - D.1 If not exist, the server will now create an SSL certificate to [python-server/ssl/](./python-server/ssl/) [certificate.pem](python-server/ssl/certificate.pem)  and [private_key.pem](python-server/ssl/private_key.pem) on start up
+   - D.2 Optional - To use your own key, replace files in:
+     - [python-server/ssl/](./python-server/ssl/)
+       - [certificate.pem](python-server/ssl/certificate.pem)  `SSL certificate`
+       - [private_key.pem](python-server/ssl/private_key.pem)  `SSL private key`
+
+#### Experiment and develop:
 
 - Modify the Python server code in the python-server/ directory as per your experimentation requirements.
 - Modify the Angular app code in the angular-app/ directory for frontend experimentation.

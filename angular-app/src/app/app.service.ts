@@ -48,7 +48,7 @@ export class AppService {
   };
   // API configuration
   API = {
-    url: 'http://localhost:8000', // API base URL
+    url: 'https://app.dont-use.com', // API base URL
     headers: {
       JSON: {
         'Content-Type': 'application/json' // JSON headers
