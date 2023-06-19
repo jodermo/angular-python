@@ -202,3 +202,6 @@ Please note that this project is still under development, and the structure and 
 
 Author
 - Moritz Petzka - [https://petzka.com](https://petzka.com)
+
+
+*P.s. if you want to support me and the development, take a look at my "underwater" Unreal Engine 5 project, there is also a possibility to donate: [underwater.ue-game.com](https://underwater.ue-game.com)*
