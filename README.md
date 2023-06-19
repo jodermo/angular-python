@@ -66,7 +66,7 @@ The project structure is as follows:
 ```dotenv
 MODE=dev
 SERVER_HOST=0.0.0.0
-SERVER_DOMAIN=app.dont-use.com
+SERVER_DOMAIN=localhost
 SERVER_PORT=80
 ALLOWED_ORIGINS=*
 
