@@ -135,15 +135,16 @@ To run the project, follow these steps:
     ```
    This will watch for code changes and automatically recompile the Angular app
 
-7. Optional - Use SSH and PORT 443 instead PORT 80
+7. Optional - Use SSH and PORT 443 instead PORT 80 *(replace "domain-name.com" with your domain)*
    - A. Docker compose file: [docker-compose.yml](./docker-compose.yml)
       - Change `80:80` to `443:443`
    - B. Server environment file: [.env](./.env)
      - Change (uncomment) `# SSL_ACTIVE=1` to `SSL_ACTIVE=1`
-     - Change `SERVER_DOMAIN=localhost` to `SERVER_DOMAIN=domain-name.com` *(replace "domain-name.com" with your domain)*
+     - Change `SERVER_DOMAIN=localhost` to `SERVER_DOMAIN=domain-name.com` 
+     - Change `ALLOWED_ORIGINS=*` to `ALLOWED_ORIGINS=https://domain-name.com`
      - Change `SERVER_PORT=80` to `SERVER_PORT=443`
    - C. Angular environment file: [angular-app/src/environments/environment.prod.ts](./angular-app/src/environments/environment.prod.ts)
-     - Change `serverURL: 'http://localhost:80/'` to `serverURL: 'https://domain-name.com/'` *(replace "domain-name.com" with your domain)*
+     - Change `serverURL: 'http://localhost:80/'` to `serverURL: 'https://domain-name.com/'` 
    - D.1 If not exist, the server will now create an SSL certificate to [python-server/ssl/](./python-server/ssl/) [certificate.pem](python-server/ssl/certificate.pem)  and [private_key.pem](python-server/ssl/private_key.pem) on start up
    - D.2 Optional - To use your own key, replace files in:
      - [python-server/ssl/](./python-server/ssl/)
