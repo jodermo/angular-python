@@ -140,6 +140,7 @@ To run the project, follow these steps:
       - Change `80:80` to `443:443`
    - B. Server environment file: [.env](./.env)
      - Change (uncomment) `# SSL_ACTIVE=1` to `SSL_ACTIVE=1`
+     - Change `SERVER_DOMAIN=localhost` to `SERVER_DOMAIN=domain-name.com` *(replace "domain-name.com" with your domain)*
      - Change `SERVER_PORT=80` to `SERVER_PORT=443`
    - C. Angular environment file: [angular-app/src/environments/environment.prod.ts](./angular-app/src/environments/environment.prod.ts)
      - Change `serverURL: 'http://localhost:80/'` to `serverURL: 'https://domain-name.com/'` *(replace "domain-name.com" with your domain)*
