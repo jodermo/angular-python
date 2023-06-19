@@ -25,9 +25,10 @@ To run this project, ensure that you have Docker installed on your system. Docke
 The project structure is as follows:
 
 - angular-python/
-  - .env
-  - [docker-compose.yml](./docker-compose.yml) `Docker Composition`
+
   - postgres-data/ `Database data` (will be generated on first start)
+  - [.env](./.env) `dotenv environment file`
+  - [docker-compose.yml](./docker-compose.yml) `Docker Composition`
   - [python-server/](./python-server) `Python server files`
     - [Dockerfile](./python-server/Dockerfile) `Docker configuration`
     - [requirements.txt](./python-server/requirements.txt) `Python requirements file`
