@@ -60,6 +60,9 @@ postgres-data/*
 .DS_Store
 Thumbs.db
 
+Dockerfile
+docker-compose.yml
+angular-app/src/environments/environment.prod.ts
 
 .env
 .idea

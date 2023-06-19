@@ -1,6 +1,7 @@
 import {Injectable} from '@angular/core';
 import {ServerFile} from './file-manager/file-manager.service';
 import {TextToSpeechResponse} from "./text-to-speech/text-to-speech.service";
+import {environment} from "../environments/environment.prod";
 
 // Define available header types
 export const HeaderTypes = ['JSON', 'form'];
@@ -48,7 +49,7 @@ export class AppService {
   };
   // API configuration
   API = {
-    url: 'https://app.dont-use.com', // API base URL
+    url: environment.serverURL, // API base URL
     headers: {
       JSON: {
         'Content-Type': 'application/json' // JSON headers

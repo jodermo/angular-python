@@ -152,9 +152,12 @@ To run the project, follow these steps:
        - [private_key.pem](python-server/ssl/private_key.pem)  `SSL private key`
 
 
-8. Attention! - Before adding files to git, exclude your local .env file from Repository:
+8. Attention! - Before adding files to git, exclude your local configuration files from git commits:
     ```bash
+   git update-index --assume-unchanged docker-compose.yml
+   git update-index --assume-unchanged Dockerfile
    git update-index --assume-unchanged .env
+   git update-index --assume-unchanged angular-app/src/environments/environment.prod.ts
     ```
 
 #### Experiment and develop:

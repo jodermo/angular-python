@@ -2,6 +2,7 @@ import {Injectable} from '@angular/core';
 import {io, Socket} from 'socket.io-client';
 import {Observable} from 'rxjs';
 import {AppService} from "../app.service";
+import {environment} from "../../environments/environment.prod";
 
 export interface WebsocketMessage {
   id: number;
@@ -25,7 +26,7 @@ export class WebsocketService {
   private app?: AppService;
 
   constructor() {
-    this.socket = io('https://app.dont-use.com');
+    this.socket = io(environment.serverURL);
   }
 
   startMessageListener(appService = this.app): void {
