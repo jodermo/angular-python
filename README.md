@@ -41,6 +41,8 @@ The project structure is as follows:
       - [postgres_api.py](./python-server/modules/postgres_api.py) `Database API`
       - [websocket.py](./python-server/modules/websocket.py) `Websocket`
       - [text_to_speech.py](./python-server/modules/text_to_speech.py) `Text to speech`
+      - [speech_recognition.py](./python-server/modules/speech_recognition.py) `Speech (voice) recognition`
+      - [open_ai.py](./python-server/modules/open_ai.py) `OpenAI integration`
       - [server_logging.py](./python-server/modules/server_logging.py) `Server logging`
     - [www/](./python-server/www/)
       - [tts-files/](./python-server/www/tts-files/) *(gets generated if needed)*
