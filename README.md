@@ -1,5 +1,7 @@
 # Python and Angular Experimentation Project
 
+### *This project is under development, so the structure and code may change in the near future*
+
 This project provides a flexible environment for experimenting with Python backend development and Angular frontend development. It includes a Python server for backend functionality and an Angular app for frontend user interfaces. This project is ideal for developers who want to explore and test different features, APIs, and interactions between the Python backend and Angular frontend.
 
 - Python Server
