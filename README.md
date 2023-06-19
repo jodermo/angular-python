@@ -1,8 +1,9 @@
 # Python and Angular Experimentation Project
 
-### *This project is under development, so the structure and code may change in the near future*
+### *"This project is under development, so the structure and code may change in the near future"*
 
-This project provides a flexible environment for experimenting with Python backend development and Angular frontend development. It includes a Python server for backend functionality and an Angular app for frontend user interfaces. This project is ideal for developers who want to explore and test different features, APIs, and interactions between the Python backend and Angular frontend.
+*This project provides a flexible environment for experimenting with Python backend development and Angular frontend development. It includes a Python server for backend functionality and an Angular app for frontend user interfaces. This project is ideal for developers who want to explore and test different features, APIs, and interactions between the Python backend and Angular frontend.*
+
 
 - Python Server
 - Angular Frontend
@@ -10,13 +11,15 @@ This project provides a flexible environment for experimenting with Python backe
 - SocketIO Websocket
 - OpenAI integration
 
-#### With some basic functionality and example code for:
-- Dynamic API with GET, POST, PUT, DELETE functions
-- File Manager
-- Websocket Chat
-- Text to speech functions
-- Speech (voice) recognition
-- OpenAI Tool
+#### Example Usage
+This project incorporates various functions accompanied by code examples for both the backend and frontend components.
+
+- Dynamic API: Provides GET, POST, PUT, DELETE functions for dynamic API endpoints.
+- File Manager: Allows file upload and management.
+- Websocket Chat: Enables real-time chat functionality using websockets.
+- Text to Speech: Converts text into speech audio files.
+- Speech Recognition: Converts speech (voice) into text.
+- OpenAI Tool: Integrates with the OpenAI API for various functionalities.
 
 ## Prerequisites
 
@@ -167,7 +170,7 @@ To run the project, follow these steps:
     ```
 
 
-## OpenAI integration
+## Use OpenAI integration
 To user OpenAI functionality, you need an OpenAI API-Key [signup to OpenAI](https://platform.openai.com/signup)
 
 Add your API-Key to the server environment file: [.env](./.env)
@@ -190,6 +193,8 @@ This is an example project template that demonstrates data management functional
 ## License
 
 This project is licensed under the [MIT License](LICENSE).
+
+Please note that this project is still under development, and the structure and code may change in the future.
 
 Author
 - Moritz Petzka - [https://petzka.com](https://petzka.com)
