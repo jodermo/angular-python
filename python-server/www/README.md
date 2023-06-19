@@ -1,7 +1,6 @@
 # Python Server - Public Directory
 
-- [index.html](./index.html) `index.html for server root`
-- [tts-files/](./tts-files/) **(generated if needed)*
+- tts-files/ **(will be generated if needed)*
     - `... text to speech files`
-- [uploads/](./uploads/) **(generated if needed)*
+- uploads/ **(will be generated if needed)*
     - `... uploaded files`
