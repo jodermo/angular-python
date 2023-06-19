@@ -166,10 +166,7 @@ To user OpenAI functionality, you need an OpenAI API-Key [signup to OpenAI](http
 
 Add your API-Key to the server environment file: [.env](./.env)
 - Change (uncomment) `# OPENAI_API_KEY=<your OpenAi api key>` to `OPENAI_API_KEY=<your OpenAi api key>`
-- Change (uncomment) `# OPENAI_ORGANISATION_ID=<your OpenAi organisation id>` to `OPENAI_ORGANISATION_ID=<your OpenAi organisation id>`
-
-# optional:
-# OPENAI_ORGANISATION_ID=<your OpenAi organisation id>
+- Optional - Change (uncomment) `# OPENAI_ORGANISATION_ID=<your OpenAi organisation id>` to `OPENAI_ORGANISATION_ID=<your OpenAi organisation id>`
 
 #### Experiment and develop:
 
