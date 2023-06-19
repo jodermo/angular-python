@@ -49,6 +49,9 @@ angular-app/.sass-cache/
 /angular-app/libpeerconnection.log
 angular-app/testem.log
 /angular-app/typings
+angular-app/.vscode/*
+angular-app/.editorconfig
+
 
 /python-server/server.log
 /python-server/ssl/*
