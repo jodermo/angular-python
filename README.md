@@ -114,7 +114,7 @@ To run the project, follow these steps:
     ```bash
    cd angular-python/
     ```
-   
+
 3. Run first build:
     ```bash
     npm install
@@ -150,6 +150,12 @@ To run the project, follow these steps:
      - [python-server/ssl/](./python-server/ssl/)
        - [certificate.pem](python-server/ssl/certificate.pem)  `SSL certificate`
        - [private_key.pem](python-server/ssl/private_key.pem)  `SSL private key`
+
+
+8. Attention! - Before adding files to git, exclude your local .env file from Repository:
+    ```bash
+   git update-index --assume-unchanged .env
+    ```
 
 #### Experiment and develop:
 
