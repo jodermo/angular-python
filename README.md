@@ -66,6 +66,10 @@ The project structure is as follows:
         - [app-routing.module.ts](./angular-app/src/app/app-routing.module.ts) `Router configuration (frontend URLs)`
         - [file-manager/](./angular-app/src/app/file-manager/) `File manager for uploading and managing files`
         - [api-manager/](./angular-app/src/app/api-manager/) `API manager for custom API integration`
+        - [websocket/](./angular-app/src/app/websocket/) `Websocket integration`
+        - [text-to-speech/](./angular-app/src/app/text-to-speech/) `Text to speech`
+        - [speech-recognition/](./angular-app/src/app/speech-recognition/) `Speech (voice) recognition`
+        - [open-ai/](./angular-app/src/app/open-ai/) `OpenAI integration`
         - [welcome-page/](./angular-app/src/app/welcome-page/) `Welcome page with Angular starter content and router navigation`
         - [example-project/](./angular-app/src/app/example-project/) `Example project with documentation`
 
