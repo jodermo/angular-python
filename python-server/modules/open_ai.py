@@ -1,3 +1,4 @@
+# https://platform.openai.com/docs/api-reference
 import os
 import openai
 import requests
@@ -9,7 +10,6 @@ from modules.server_logging import server_logging
 mode = os.getenv("MODE")
 mode = mode if mode else 'dev'
 log = server_logging("open_ai.log", mode)
-
 
 class open_ai:
     def __init__(self):
@@ -23,8 +23,46 @@ class open_ai:
             log.info('open_ai')
             log.info(self.api_key)
 
-    def post_completions(self, prompt, role = 'user', model = 'gpt-3.5-turbo'):
-        log.info('post_completions')
+    def list_models(self):
+        if self.api_key:
+            url = 'https://api.openai.com/v1/models'
+            headers = {
+                'Authorization': 'Bearer ' + self.api_key
+            }
+            response = requests.get(url, headers=headers)
+            data = response.json()
+            log.info('success' if 'error' not in data else 'error')
+            return jsonify({'success': 0 if 'error' in data else 1, 'response': data})
+        else:
+            log.info('No API key')
+            return jsonify({'success': 0, 'response': {'error': {'code': 'No API key', 'message': 'Set your API key to OPENAI_API_KEY=KEY in .env file'}}})
+
+    def list_models_request(self, request):
+        log.info('list_models_request')
+        return self.list_models()
+
+    def retrieve_model(self, model):
+        log.info('retrieve_model')
+        if self.api_key:
+            url = f'https://api.openai.com/v1/models/{model}'
+            headers = {
+                'Authorization': 'Bearer ' + self.api_key
+            }
+            response = requests.get(url, headers=headers)
+            data = response.json()
+            log.info('success' if 'error' not in data else 'error')
+            return jsonify({'success': 0 if 'error' in data else 1, 'response': data})
+        else:
+            log.info('No API key')
+            return jsonify({'success': 0, 'response': {'error': {'code': 'No API key', 'message': 'Set your API key to OPENAI_API_KEY=KEY in .env file'}}})
+
+    def retrieve_model_request(self, request):
+        log.info('retrieve_model_request')
+        model = request.args.get('model')  # Assuming model is passed as a query parameter
+        return self.retrieve_model(model)
+
+    def create_completion(self, prompt, role='user', model='gpt-3.5-turbo', max_tokens=None, temperature=None, top_p=None, n=None, stop=None):
+        log.info('create_completion')
         log.info(prompt)
         log.info(role)
         log.info(model)
@@ -36,32 +74,38 @@ class open_ai:
             }
             payload = {
                 'prompt': prompt,
-                'model': model
+                'model': model,
+                'max_tokens': max_tokens,
+                'temperature': temperature,
+                'top_p': top_p,
+                'n': n,
+                'stop': stop
             }
-
             response = requests.post(url, headers=headers, json=payload)
             data = response.json()
             log.info('success' if 'error' in data else 'error')
             return jsonify({'success': 0 if 'error' in data else 1, 'prompt': prompt, 'response': data})
         else:
             log.info('No API key')
-            return jsonify({'success': 0, 'text': text, 'response': {'error': {'code': 'No API key', 'message': 'Set your API key to OPENAI_API_KEY=KEY in .env file'}}})
+            return jsonify({'success': 0, 'prompt': prompt, 'model': model, 'response': {'error': {'code': 'No API key', 'message': 'Set your API key to OPENAI_API_KEY=KEY in .env file'}}})
 
-
-
-    def post_completions_request(self, request):
-        log.info('post_completions_request')
+    def create_completion_request(self, request):
+        log.info('create_completion_request')
         request_data = request.json
         prompt = request_data.get('prompt')
         role = request_data.get('role') if request_data.get('role') else 'user'
         model = request_data.get('model') if request_data.get('model') else 'gpt-3.5-turbo'
-        return self.post_completions(prompt, role, model)
+        max_tokens = request_data.get('max_tokens')
+        temperature = request_data.get('temperature')
+        top_p = request_data.get('top_p')
+        n = request_data.get('n')
+        stop = request_data.get('stop')
+        return self.create_completion(prompt, role, model, max_tokens, temperature, top_p, n, stop)
 
 
-    def post_chat(self, text, role = 'user', model = 'gpt-3.5-turbo'):
-        log.info('post_completions')
-        log.info(text)
-        log.info(role)
+    def create_chat_completion(self, messages, model='gpt-3.5-turbo', temperature=0.7):
+        log.info('create_chat_completion')
+        log.info(messages)
         log.info(model)
         if self.api_key:
             url = 'https://api.openai.com/v1/chat/completions'
@@ -71,32 +115,26 @@ class open_ai:
             }
             payload = {
                 'model': model,
-                'messages': [
-                    {
-                        'role': role,
-                        'content': text
-                    }
-                ],
-                'temperature': 0.7
+                'messages': messages,
+                'temperature': temperature
             }
-
             response = requests.post(url, headers=headers, json=payload)
             data = response.json()
             log.info('success' if 'error' in data else 'error')
-            return jsonify({'success': 0 if 'error' in data else 1, 'text': text, 'response': data})
+            return jsonify({'success': (0 if 'error' in data else 1),'model': model, 'messages': messages, 'temperature': temperature, 'response': data})
         else:
             log.info('No API key')
-            return jsonify({'success': 0, 'text': text, 'response': {'error': {'code': 'No API key', 'message': 'Set your API key to OPENAI_API_KEY=KEY in .env file'}}})
+            return jsonify({'success': 0, 'messages': messages, 'response': {'error': {'code': 'No API key', 'message': 'Set your API key to OPENAI_API_KEY=KEY in .env file'}}})
 
 
-
-    def post_chat_request(self, request):
-        log.info('post_chat_request')
+    def create_chat_completion_request(self, request):
+        log.info('create_chat_completion_request')
         request_data = request.json
-        text = request_data.get('text')
-        role = request_data.get('role') if request_data.get('role') else 'user'
+        messages = request_data.get('messages')
         model = request_data.get('model') if request_data.get('model') else 'gpt-3.5-turbo'
-        return self.post_chat(text, role, model)
+        temperature = request_data.get('temperature', 0.7)
+        return self.create_chat_completion(messages, model, temperature)
+
 
     def generate_image(self, prompt, number = 1, size = '1024x1024'):
         log.info('post_completions')
@@ -121,7 +159,7 @@ class open_ai:
             return jsonify({'success': 0 if 'error' in data else 1, 'prompt': prompt,  'number': number, 'size': size, 'response': data})
         else:
             log.info('No API key')
-            return jsonify({'success': 0, 'text': prompt, 'response': {'error': {'code': 'No API key', 'message': 'Set your API key to OPENAI_API_KEY=KEY in .env file'}}})
+            return jsonify({'success': 0, 'prompt': prompt, 'response': {'error': {'code': 'No API key', 'message': 'Set your API key to OPENAI_API_KEY=KEY in .env file'}}})
 
     def generate_image_request(self, request):
         log.info('post_completions_request')
@@ -130,3 +168,146 @@ class open_ai:
         number = request_data.get('number') if request_data.get('number') else 1
         size = request_data.get('size') if request_data.get('size') else '1024x1024'
         return self.generate_image(prompt, number, size)
+
+    def create_edit(self, document):
+        log.info('create_edit')
+        if self.api_key:
+            url = 'https://api.openai.com/v1/edits'
+            headers = {
+                'Authorization': 'Bearer ' + self.api_key,
+                'Content-Type': 'application/json'
+            }
+            payload = {
+                'document': document
+            }
+            response = requests.post(url, headers=headers, json=payload)
+            data = response.json()
+            log.info('success' if 'error' not in data else 'error')
+            return jsonify({'success': 0 if 'error' in data else 1, 'response': data})
+        else:
+            log.info('No API key')
+            return jsonify({'success': 0, 'response': {'error': {'code': 'No API key', 'message': 'Set your API key to OPENAI_API_KEY=KEY in .env file'}}})
+
+    def create_edit_request(self, request):
+        log.info('create_edit_request')
+        request_data = request.json
+        document = request_data.get('document')
+        return self.create_edit(document)
+
+    def create_embeddings(self, texts):
+        log.info('create_embeddings')
+        if self.api_key:
+            url = 'https://api.openai.com/v1/embeddings'
+            headers = {
+                'Authorization': 'Bearer ' + self.api_key,
+                'Content-Type': 'application/json'
+            }
+            payload = {
+                'documents': texts
+            }
+            response = requests.post(url, headers=headers, json=payload)
+            data = response.json()
+            log.info('success' if 'error' not in data else 'error')
+            return jsonify({'success': 0 if 'error' in data else 1, 'response': data})
+        else:
+            log.info('No API key')
+            return jsonify({'success': 0, 'response': {'error': {'code': 'No API key', 'message': 'Set your API key to OPENAI_API_KEY=KEY in .env file'}}})
+
+    def create_embeddings_request(self, request):
+        log.info('create_embeddings_request')
+        request_data = request.json
+        texts = request_data.get('texts')
+        return self.create_embeddings(texts)
+
+
+    def create_audio_transcription(self, audio):
+        log.info('create_audio_transcription')
+        if self.api_key:
+            url = 'https://api.openai.com/v1/audio/transcriptions'
+            headers = {
+                'Authorization': 'Bearer ' + self.api_key,
+                'Content-Type': 'application/json'
+            }
+            payload = {
+                'audio': audio
+            }
+            response = requests.post(url, headers=headers, json=payload)
+            data = response.json()
+            log.info('success' if 'error' not in data else 'error')
+            return jsonify({'success': 0 if 'error' in data else 1, 'response': data})
+        else:
+            log.info('No API key')
+            return jsonify({'success': 0, 'response': {'error': {'code': 'No API key', 'message': 'Set your API key to OPENAI_API_KEY=KEY in .env file'}}})
+
+    def create_audio_transcription_request(self, request):
+        log.info('create_audio_transcription_request')
+        request_data = request.json
+        audio = request_data.get('audio')
+        return self.create_audio_transcription(audio)
+
+    def create_audio_translation(self, audio, target_language):
+        log.info('create_audio_translation')
+        if self.api_key:
+            url = 'https://api.openai.com/v1/audio/translations'
+            headers = {
+                'Authorization': 'Bearer ' + self.api_key,
+                'Content-Type': 'application/json'
+            }
+            payload = {
+                'audio': audio,
+                'target_language': target_language
+            }
+            response = requests.post(url, headers=headers, json=payload)
+            data = response.json()
+            log.info('success' if 'error' not in data else 'error')
+            return jsonify({'success': 0 if 'error' in data else 1, 'response': data})
+        else:
+            log.info('No API key')
+            return jsonify({'success': 0, 'target_language': target_language, 'response': {'error': {'code': 'No API key', 'message': 'Set your API key to OPENAI_API_KEY=KEY in .env file'}}})
+
+    def create_audio_translation_request(self, request):
+        log.info('create_audio_translation_request')
+        request_data = request.json
+        audio = request_data.get('audio')
+        target_language = request_data.get('target_language')
+        return self.create_audio_translation(audio, target_language)
+
+    def list_files(self):
+        log.info('list_files')
+        if self.api_key:
+            url = 'https://api.openai.com/v1/files'
+            headers = {
+                'Authorization': 'Bearer ' + self.api_key
+            }
+            response = requests.get(url, headers=headers)
+            data = response.json()
+            log.info('success' if 'error' not in data else 'error')
+            return jsonify({'success': 0 if 'error' in data else 1, 'response': data})
+        else:
+            log.info('No API key')
+            return jsonify({'success': 0, 'response': {'error': {'code': 'No API key', 'message': 'Set your API key to OPENAI_API_KEY=KEY in .env file'}}})
+
+    def list_files_request(self, request):
+        log.info('list_files_request')
+        return self.list_files()
+
+    def delete_file(self, file_id):
+        log.info('delete_file')
+        if self.api_key:
+            url = f'https://api.openai.com/v1/files/{file_id}'
+            headers = {
+                'Authorization': 'Bearer ' + self.api_key
+            }
+            response = requests.delete(url, headers=headers)
+            data = response.json()
+            log.info('success' if 'error' not in data else 'error')
+            return jsonify({'success': 0 if 'error' in data else 1, 'response': data})
+        else:
+            log.info('No API key')
+            return jsonify({'success': 0, 'file_id': file_id, 'response': {'error': {'code': 'No API key', 'message': 'Set your API key to OPENAI_API_KEY=KEY in .env file'}}})
+
+    def delete_file_request(self, request):
+        log.info('delete_file_request')
+        request_data = request.json
+        file_id = request_data.get('file_id')
+        return self.delete_file(file_id)

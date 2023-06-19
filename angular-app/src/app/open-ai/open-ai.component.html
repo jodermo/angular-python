@@ -48,23 +48,55 @@
       </label>
 
     </div>
-    <form (ngSubmit)="openAi.submitRequest()">
-      <textarea type="text" [(ngModel)]="openAi.text" [disabled]="openAi.sending" name="textToSpeech"
-                placeholder="Type a text..."></textarea>
-      <button [disabled]="!openAi.text || openAi.sending" type="submit">Send</button>
-    </form>
+    <div class="open-ai-message-input">
+          <textarea type="text" [(ngModel)]="openAi.newMessage" [disabled]="openAi.sending" name="textToSpeech"
+                    placeholder="Type a text..."></textarea>
+
+    </div>
+
+    <div class="open-ai-buttons">
+      <form (ngSubmit)="openAi.addMessage()">
+        <button [disabled]="!openAi.newMessage || openAi.sending" type="submit">Add Message</button>
+      </form>
+      <form (ngSubmit)="openAi.submitRequest()">
+        <button [disabled]="(!openAi.newMessage && !openAi.messages.length) || openAi.sending" type="submit">Send Messages</button>
+      </form>
+    </div>
+
     <app-speech-recognition-button [disabled]="openAi.sending"
                                    (onResult)="onSpeechRecognitionResult($event)"></app-speech-recognition-button>
+
   </div>
   <div class="open-ai-results">
     <ul>
+      <li *ngIf="!openAi.sending">
+        <div *ngFor="let message of openAi.messages">
+          <b>{{message.role}}: </b>
+          <p><i>"{{message.content}}"</i></p>
+        </div>
+      </li>
       <li *ngIf="openAi.sending">
-        <h3>Calculating response for <i>"{{openAi.text}}", please wait..</i></h3>
+        <h3>Calculating response for, please wait..</h3>
+        <div *ngFor="let message of openAi.messages">
+          <b>{{message.role}}: </b>
+          <p><i>"{{message.content}}"</i></p>
+        </div>
+      </li>
+      <li *ngIf="openAi.results && openAi.results.length">
+        <h2>Results</h2>
       </li>
       <li class="open-ai-result" *ngFor="let openAiResult of openAi.results">
-        <div class="open-ai-result-question">
-          <b>You: </b><span><i>"{{openAiResult.text || openAiResult.prompt}}"</i></span>
+        <div class="open-ai-question-prompt" *ngIf="openAiResult.prompt">
+          <b>Prompt: </b><span><i>"{{openAiResult.prompt}}"</i></span>
         </div>
+        <div class="open-ai-question-messages" *ngIf="openAiResult.messages">
+          <b>Your messages: </b>
+          <div *ngFor="let message of openAiResult.messages">
+            <b>{{message.role}}: </b>
+            <p><i>"{{message.content}}"</i></p>
+          </div>
+        </div>
+
         <div class="open-ai-result-answers" *ngIf="openAiResult.response">
           <div class="open-ai-choices" *ngIf="openAiResult.response.choices">
             <div class="open-ai-choice" *ngFor="let choice of openAiResult.response.choices; let i = index">

@@ -5,10 +5,7 @@ import {AppService} from "../app.service";
 export interface OpenAiResponseChoice {
   index: number;
   finish_reason: string;
-  message: {
-    role: string,
-    content: string
-  };
+  message: OpenAiChatMessage;
 }
 
 export interface OpenAiResponseData {
@@ -27,12 +24,16 @@ export interface OpenAiResponseData {
 
 
 export interface OpenAiResponse {
-  text?: string;
+  messages?: OpenAiChatMessage[];
+  model?: string;
   prompt?: string;
+  file_id?: string;
   number?: number;
+  temperature?: number;
   size?: string;
   response: OpenAiResponseData;
-  time:number;
+  time: number;
+  target_language?: string;
 }
 
 export const OpenAiModeAliases = ['chat', 'image', 'completion'];
@@ -57,6 +58,12 @@ export type OpenAiCompletionModel = typeof OpenAiCompletionModels[0];
 export const OpenAiImageSizes = ['256x256x', '512x512', '1024x1024'];
 export type OpenAiImageSize = typeof OpenAiImageSizes[0];
 
+
+export class OpenAiChatMessage {
+  constructor(public content: string = '', public role: OpenAiChatRole = OpenAiChatRoles[0]) {
+  }
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -65,14 +72,16 @@ export class OpenAiService {
   modes = OpenAiModes;
   mode: OpenAiMode = OpenAiModes[0];
 
-  text?: string;
+  messages: OpenAiChatMessage[] = [];
 
   roles = OpenAiChatRoles;
   role: OpenAiChatRole = 'assistant';
 
   chatModels = OpenAiChatModels;
-  completionModels = OpenAiCompletionModels;
   chatModel: OpenAiChatModel = 'gpt-3.5-turbo';
+  chatTemperature = 1;
+
+  completionModels = OpenAiCompletionModels;
   completionModel: OpenAiCompletionModel = 'text-davinci-003';
 
   imageSizes = OpenAiImageSizes;
@@ -85,6 +94,7 @@ export class OpenAiService {
   app?: AppService;
   results: OpenAiResponse[] = [];
   sending = false;
+  newMessage?: string;
 
 
   init(app = this.app) {
@@ -92,23 +102,26 @@ export class OpenAiService {
   }
 
 
-  createMessage(text = this.text, role = this.role, model = this.chatModel) {
+  createMessage(messages = this.messages, role = this.role, model = this.chatModel) {
     this.sending = true;
     this.app?.post(this.app?.API.url + '/open-ai/chat', {
-      text,
-      role,
+      messages: messages,
       model,
     }, (result: OpenAiResponse) => {
       result.time = Date.now();
       this.results.push(result);
       this.results.sort((a, b) => a.time + b.time);
-      this.text = undefined;
+      this.messages = [];
       this.sending = false;
     });
   }
 
-  getCompletions(prompt = this.text, role = this.role, model = this.completionModel) {
+  getCompletions(messages = this.messages, role = this.role, model = this.completionModel) {
     this.sending = true;
+    let prompt = '';
+    for (const message of messages) {
+      prompt += message.content + ' \n';
+    }
     this.app?.post(this.app?.API.url + '/open-ai/completions', {
       prompt,
       role,
@@ -117,13 +130,17 @@ export class OpenAiService {
       result.time = Date.now();
       this.results.push(result);
       this.results.sort((a, b) => a.time + b.time);
-      this.text = undefined;
+      this.messages = [];
       this.sending = false;
     });
   }
 
-  generateImage(prompt = this.text, number = this.numberOfImages, size = this.imageSize) {
+  generateImage(messages = this.messages, number = this.numberOfImages, size = this.imageSize) {
     this.sending = true;
+    let prompt = '';
+    for (const message of messages) {
+      prompt += message.content + ' \n';
+    }
     this.app?.post(this.app?.API.url + '/open-ai/images', {
       prompt,
       number,
@@ -132,19 +149,29 @@ export class OpenAiService {
       result.time = Date.now();
       this.results.push(result);
       this.results.sort((a, b) => a.time + b.time);
-      this.text = undefined;
+      this.messages = [];
       this.sending = false;
     });
   }
 
   submitRequest() {
+    if(this.newMessage){
+      this.addMessage()
+    }
     if (this.mode.alias === 'image') {
       this.generateImage();
-    } else if(this.mode.alias === 'completion') {
+    } else if (this.mode.alias === 'completion') {
       this.getCompletions()
-    }else {
+    } else {
       this.createMessage()
     }
 
+  }
+
+  addMessage(message = this.newMessage) {
+    if (message && message.length) {
+      this.messages.push(new OpenAiChatMessage(message, this.role));
+      this.newMessage = undefined;
+    }
   }
 }

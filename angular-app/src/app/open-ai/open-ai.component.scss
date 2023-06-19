@@ -13,6 +13,13 @@
 }
 
 
+.open-ai-buttons{
+  display: flex;
+  form {
+    flex: 1;
+  }
+}
+
 .open-ai-data {
   display: flex;
   flex-wrap: wrap;

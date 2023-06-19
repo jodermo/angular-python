@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import {Component} from '@angular/core';
 import {AppComponent} from "../app.component";
 import {AppService} from "../app.service";
 import {OpenAiService} from "./open-ai.service";
@@ -13,7 +13,6 @@ import {SpeechRecognitionResponse} from "../speech-recognition/speech-recognitio
 export class OpenAiComponent extends AppComponent {
 
 
-
   constructor(app: AppService, public openAi: OpenAiService) {
     super(app);
     openAi.init(app);
@@ -21,8 +20,8 @@ export class OpenAiComponent extends AppComponent {
 
 
   onSpeechRecognitionResult(result?: SpeechRecognitionResponse) {
-    if(result && result.text && result.text.length){
-      this.openAi.text = result.text;
+    if (result && result.text && result.text.length) {
+      this.openAi.addMessage(result.text);
       this.openAi.submitRequest();
     }
   }

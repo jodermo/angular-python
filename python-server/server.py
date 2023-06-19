@@ -44,7 +44,6 @@ class Server:
         self.app.config['MAX_CONTENT_LENGTH'] = self.max_content_length
 
         self.app.before_request(self.handle_chunking)
-
         self.app.add_url_rule('/', methods=['GET'], view_func=self.angular_build)
         self.app.add_url_rule('/<filename>', methods=['GET'], view_func=self.angular_build)
         self.app.add_url_rule('/data', methods=['GET'], view_func=self.get_data)
@@ -58,9 +57,19 @@ class Server:
         self.app.add_url_rule('/text-to-speech', methods=['POST'], view_func=self.send_text_to_speech)
         self.app.add_url_rule('/text-to-speech', methods=['GET'], view_func=self.get_text_to_speech)
         self.app.add_url_rule('/speech-recognition', methods=['GET'], view_func=self.get_recognize_file)
-        self.app.add_url_rule('/open-ai/chat', methods=['POST'], view_func=self.post_gpt_chat)
-        self.app.add_url_rule('/open-ai/completions', methods=['POST'], view_func=self.post_gpt_completions)
-        self.app.add_url_rule('/open-ai/images', methods=['POST'], view_func=self.post_gpt_images)
+        self.app.add_url_rule('/open-ai/chat', methods=['POST'], view_func=self.gpt_create_chat_completion_request)
+        self.app.add_url_rule('/open-ai/completions', methods=['POST'], view_func=self.gpt_create_completion_request)
+        self.app.add_url_rule('/open-ai/images', methods=['POST'], view_func=self.gpt_generate_image_request)
+        self.app.add_url_rule('/open-ai/models', methods=['GET'], view_func=self.gpt_list_models_request)
+        self.app.add_url_rule('/open-ai/models/<model>', methods=['GET'], view_func=self.gpt_retrieve_model_request)
+        self.app.add_url_rule('/open-ai/edits', methods=['POST'], view_func=self.gpt_create_edit_request)
+        self.app.add_url_rule('/open-ai/embeddings', methods=['POST'], view_func=self.gpt_create_embeddings_request)
+        self.app.add_url_rule('/open-ai/audio/transcription', methods=['POST'], view_func=self.gpt_create_audio_transcription_request)
+        self.app.add_url_rule('/open-ai/audio/translation', methods=['POST'], view_func=self.gpt_create_audio_translation_request)
+        self.app.add_url_rule('/open-ai/files/', methods=['GET'], view_func=self.gpt_list_files_request)
+        self.app.add_url_rule('/open-ai/files/<file_id>', methods=['DELETE'], view_func=self.gpt_delete_file_request)
+
+
         self.app.errorhandler(Exception)(self.handle_error)
         log.info('setup_app')
 
@@ -104,14 +113,42 @@ class Server:
     def delete_file(self):
         return self.file_server.delete_file(request)
 
-    def post_gpt_chat(self):
-        return self.open_ai.post_chat_request(request)
+    def gpt_create_chat_completion_request(self):
+        log.info('create_chat_completion_request')
+        return self.open_ai.create_chat_completion_request(request)
 
-    def post_gpt_completions(self):
-        return self.open_ai.post_completions_request(request)
 
-    def post_gpt_images(self):
+    def gpt_create_completion_request(self):
+        return self.open_ai.create_completion_request(request)
+
+    def gpt_generate_image_request(self):
         return self.open_ai.generate_image_request(request)
+
+
+    def gpt_list_models_request(self):
+        return self.open_ai.list_models_request(request)
+
+    def gpt_retrieve_model_request(self):
+        return self.open_ai.retrieve_model_request(request)
+
+    def gpt_create_edit_request(self):
+        return self.open_ai.create_edit_request(request)
+
+    def gpt_create_embeddings_request(self):
+        return self.open_ai.create_embeddings_request(request)
+
+    def gpt_create_audio_transcription_request(self):
+        return self.open_ai.create_audio_transcription_request(request)
+
+    def gpt_create_audio_translation_request(self):
+        return self.open_ai.create_audio_translation_request(request)
+
+    def gpt_list_files_request(self):
+        return self.open_ai.list_files_request(request)
+
+    def gpt_delete_file_request(self):
+        return self.open_ai.delete_file_request(request)
+
 
     def handle_error(self, e):
         log.exception(str(e))
@@ -134,6 +171,7 @@ class Server:
         else:
             log.exception('SSL inactive')
             server.app.run(host=self.host, port=self.port)
+
 
 if __name__ == '__main__':
     server = Server()

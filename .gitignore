@@ -54,10 +54,13 @@ angular-app/.editorconfig
 
 
 /python-server/server.log
+/python-server/*.log
 /python-server/Dockerfile
 /python-server/ssl/*
 !/python-server/ssl/README.md
 
+/python-server/www/*
+!/python-server/www/README.md
 postgres-data/*
 
 # System files
