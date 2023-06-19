@@ -160,6 +160,17 @@ To run the project, follow these steps:
    git update-index --assume-unchanged angular-app/src/environments/environment.prod.ts
     ```
 
+
+## OpenAI integration
+To user OpenAI functionality, you need an OpenAI API-Key [signup to OpenAI](https://platform.openai.com/signup)
+
+Add your API-Key to the server environment file: [.env](./.env)
+- Change (uncomment) `# OPENAI_API_KEY=<your OpenAi api key>` to `OPENAI_API_KEY=<your OpenAi api key>`
+- Change (uncomment) `# OPENAI_ORGANISATION_ID=<your OpenAi organisation id>` to `OPENAI_ORGANISATION_ID=<your OpenAi organisation id>`
+
+# optional:
+# OPENAI_ORGANISATION_ID=<your OpenAi organisation id>
+
 #### Experiment and develop:
 
 - Modify the Python server code in the python-server/ directory as per your experimentation requirements.
