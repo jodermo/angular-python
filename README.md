@@ -27,7 +27,7 @@ The project structure is as follows:
 - angular-python/
   - .env
   - [docker-compose.yml](./docker-compose.yml) `Docker Composition`
-  - [postgres-data/](postgres-data/) `Database data`
+  - postgres-data/ `Database data` (will be generated on first start)
   - [python-server/](./python-server) `Python server files`
     - [Dockerfile](./python-server/Dockerfile) `Docker configuration`
     - [requirements.txt](./python-server/requirements.txt) `Python requirements file`
