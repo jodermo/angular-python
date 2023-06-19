@@ -54,6 +54,7 @@ angular-app/.editorconfig
 
 
 /python-server/server.log
+/python-server/Dockerfile
 /python-server/ssl/*
 !/python-server/ssl/README.md
 
