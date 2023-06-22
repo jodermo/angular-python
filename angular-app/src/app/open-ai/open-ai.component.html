@@ -2,6 +2,9 @@
   <h1>OpenAI</h1>
   <span>API reference: <a href="https://platform.openai.com/docs/api-reference" target="_blank">https://platform.openai.com/docs/api-reference</a></span>
 
+
+
+
   <div class="open-ai-config">
     <label>
       <span>Mode</span>
@@ -21,7 +24,72 @@
 
   </div>
 
+  <div class="open-ai-results">
+    <div class="open-ai-results-wrapper">
+      <div *ngIf="!openAi.sending">
+        <div *ngFor="let message of openAi.messages">
+          <b>{{message.role}}: </b>
+          <p><i>"{{message.content}}"</i></p>
+        </div>
+      </div>
+      <div *ngIf="openAi.sending">
+        <h3>Calculating response for, please wait..</h3>
+        <div *ngFor="let message of openAi.messages">
+          <b>{{message.role}}: </b>
+          <p><i>"{{message.content}}"</i></p>
+        </div>
+      </div>
+      <div class="open-ai-results-container" >
+        <div class="open-ai-results-content">
+          <div class="open-ai-result" *ngFor="let openAiResult of openAi.results">
+            <div class="open-ai-question-prompt" *ngIf="openAiResult.prompt">
+              <b>Prompt: </b><span><i>"{{openAiResult.prompt}}"</i></span>
+            </div>
+            <div class="open-ai-question-messages" *ngIf="openAiResult.messages">
+              <div *ngFor="let message of openAiResult.messages">
+                <b>{{message.role}} prompt: </b>
+                <p><i>"{{message.content}}"</i></p>
+              </div>
+            </div>
 
+            <div class="open-ai-result-answers" *ngIf="openAiResult.response">
+              <div class="open-ai-choices" *ngIf="openAiResult.response.choices">
+                <div class="open-ai-choice" *ngFor="let choice of openAiResult.response.choices; let i = index">
+                  <div *ngIf="choice.message">
+                    <div class="open-ai-choice-title">
+                      <b>{{choice.message.role}} result: </b>
+                    </div>
+                    <div class="open-ai-choice-content">
+                      <i>{{choice.message.content}}</i>
+                    </div>
+                    <div class="open-ai-choice-actions">
+                      <app-text-to-speech-button [text]="choice.message.content"
+                                                 [autoplay]="openAi.readResults && i === 0 && openAiResult.dbEntry"></app-text-to-speech-button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="open-ai-data" *ngIf="openAiResult.response.data">
+                <div class="open-ai-data-entry" *ngFor="let data of openAiResult.response.data; let i = index">
+                  <div class="image-preview" *ngIf="data.url">
+                    <img [src]="data.url">
+                  </div>
+                  <a [href]="data.url" target="_blank">Open Image</a>
+                </div>
+              </div>
+            </div>
+            <div *ngIf="openAiResult.response && openAiResult.response.error">
+              <p *ngIf="openAiResult.response.error.message">
+                {{openAiResult.response.error.message}}
+              </p>
+              <app-text-to-speech-button [text]="openAiResult.response.error.message"
+                                         [autoplay]="openAi.readResults && true && openAiResult.dbEntry"></app-text-to-speech-button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
   <div class="open-ai-functions" *ngIf="openAi.mode.alias === 'chat' && openAi.newMessage.role === 'function'">
     <h3>Functions</h3>
     <div class="new-function-inputs">
@@ -102,7 +170,7 @@
 
 
   <div class="open-ai-input">
-    <h3>Message prompt</h3>
+
 
     <div class="open-ai-chat-config" *ngIf="openAi.mode.alias === 'chat'">
       <label *ngIf="openAi.mode.alias === 'chat'">
@@ -218,70 +286,5 @@
   <label>
     <input type="checkbox" [(ngModel)]="openAi.readResults">Read Results (text to speech)
   </label>
-  <div class="open-ai-results">
-    <div class="open-ai-results-wrapper">
-      <div *ngIf="!openAi.sending">
-        <div *ngFor="let message of openAi.messages">
-          <b>{{message.role}}: </b>
-          <p><i>"{{message.content}}"</i></p>
-        </div>
-      </div>
-      <div *ngIf="openAi.sending">
-        <h3>Calculating response for, please wait..</h3>
-        <div *ngFor="let message of openAi.messages">
-          <b>{{message.role}}: </b>
-          <p><i>"{{message.content}}"</i></p>
-        </div>
-      </div>
-      <div class="open-ai-results-container" >
-        <div class="open-ai-results-content">
-          <div class="open-ai-result" *ngFor="let openAiResult of openAi.results">
-            <div class="open-ai-question-prompt" *ngIf="openAiResult.prompt">
-              <b>Prompt: </b><span><i>"{{openAiResult.prompt}}"</i></span>
-            </div>
-            <div class="open-ai-question-messages" *ngIf="openAiResult.messages">
-              <div *ngFor="let message of openAiResult.messages">
-                <b>{{message.role}} prompt: </b>
-                <p><i>"{{message.content}}"</i></p>
-              </div>
-            </div>
 
-            <div class="open-ai-result-answers" *ngIf="openAiResult.response">
-              <div class="open-ai-choices" *ngIf="openAiResult.response.choices">
-                <div class="open-ai-choice" *ngFor="let choice of openAiResult.response.choices; let i = index">
-                  <div *ngIf="choice.message">
-                    <div class="open-ai-choice-title">
-                      <b>{{choice.message.role}} result: </b>
-                    </div>
-                    <div class="open-ai-choice-content">
-                      <i>{{choice.message.content}}</i>
-                    </div>
-                    <div class="open-ai-choice-actions">
-                      <app-text-to-speech-button [text]="choice.message.content"
-                                                 [autoplay]="openAi.readResults && i === 0 && openAiResult.dbEntry"></app-text-to-speech-button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="open-ai-data" *ngIf="openAiResult.response.data">
-                <div class="open-ai-data-entry" *ngFor="let data of openAiResult.response.data; let i = index">
-                  <div class="image-preview" *ngIf="data.url">
-                    <img [src]="data.url">
-                  </div>
-                  <a [href]="data.url" target="_blank">Open Image</a>
-                </div>
-              </div>
-            </div>
-            <div *ngIf="openAiResult.response && openAiResult.response.error">
-              <p *ngIf="openAiResult.response.error.message">
-                {{openAiResult.response.error.message}}
-              </p>
-              <app-text-to-speech-button [text]="openAiResult.response.error.message"
-                                         [autoplay]="openAi.readResults && true && openAiResult.dbEntry"></app-text-to-speech-button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
 </div>
