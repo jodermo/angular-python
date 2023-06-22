@@ -74,6 +74,8 @@
           margin-bottom: 1rem;
           border-bottom: 1px solid white;
 
+          padding: .5rem;
+
           .websocket-message-content {
             background: white;
             border-radius: .5rem;
@@ -83,6 +85,7 @@
             font-size: 1.25rem;
             line-height: 1.3rem;
             margin: .5rem 0;
+
           }
         }
       }
