@@ -236,7 +236,7 @@
         <div class="open-ai-question-messages" *ngIf="openAiResult.messages">
           <b>Your messages: </b>
           <div *ngFor="let message of openAiResult.messages">
-            <b>{{message.role}}: </b>
+            <b>{{message.role}} prompt: </b>
             <p><i>"{{message.content}}"</i></p>
           </div>
         </div>
@@ -245,7 +245,7 @@
           <div class="open-ai-choices" *ngIf="openAiResult.response.choices">
             <div class="open-ai-choice" *ngFor="let choice of openAiResult.response.choices; let i = index">
               <div *ngIf="choice.message">
-                <b>{{choice.message.role}}: </b>
+                <b>{{choice.message.role}} result: </b>
                 <p><i>"{{choice.message.content}}"</i></p>
                 <app-text-to-speech-button [text]="choice.message.content"
                                            [autoplay]="openAi.readResults && i === 0 && openAiResult.dbEntry"></app-text-to-speech-button>
