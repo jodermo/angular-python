@@ -3,16 +3,20 @@ import os
 import openai
 import requests
 import json
+from datetime import datetime
 from dotenv import load_dotenv
 from flask import jsonify
 from modules.server_logging import server_logging
+from modules.postgres_api import postgres_api
 
 mode = os.getenv("MODE")
 mode = mode if mode else 'dev'
 log = server_logging("open_ai.log", mode)
 
+
 class open_ai:
     def __init__(self):
+        self.postgres_api = postgres_api()
         self.api_key = os.getenv("OPENAI_API_KEY") if os.getenv("OPENAI_API_KEY") else 0
         self.organisation_id = os.getenv("OPENAI_ORGANISATION_ID") if os.getenv("OPENAI_ORGANISATION_ID") else 0
         if self.api_key:
@@ -41,6 +45,9 @@ class open_ai:
         log.info('list_models_request')
         return self.list_models()
 
+
+
+
     def retrieve_model(self, model):
         log.info('retrieve_model')
         if self.api_key:
@@ -60,6 +67,9 @@ class open_ai:
         log.info('retrieve_model_request')
         model = request.args.get('model')  # Assuming model is passed as a query parameter
         return self.retrieve_model(model)
+
+    def add_response_to_database(self, result):
+        return self.postgres_api.add_or_update_api_entry('open-ai-response', result)
 
     def create_completion(self, prompt, role='user', model='gpt-3.5-turbo', max_tokens=None, temperature=None, top_p=None, n=None, stop=None):
         log.info('create_completion')
@@ -83,8 +93,12 @@ class open_ai:
             }
             response = requests.post(url, headers=headers, json=payload)
             data = response.json()
+            result = {'success': 0 if 'error' in data else 1, 'prompt': prompt, 'response': data, 'time': datetime.timestamp(datetime.now())}
+            dbEntry = self.add_response_to_database(result)
+            result['dbEntry'] = dbEntry
+            # log.info(data)
             log.info('success' if 'error' in data else 'error')
-            return jsonify({'success': 0 if 'error' in data else 1, 'prompt': prompt, 'response': data})
+            return jsonify(result)
         else:
             log.info('No API key')
             return jsonify({'success': 0, 'prompt': prompt, 'model': model, 'response': {'error': {'code': 'No API key', 'message': 'Set your API key to OPENAI_API_KEY=KEY in .env file'}}})
@@ -120,8 +134,13 @@ class open_ai:
             }
             response = requests.post(url, headers=headers, json=payload)
             data = response.json()
+
+
+            result = {'success': (0 if 'error' in data else 1),'model': model, 'messages': messages, 'temperature': temperature, 'response': data, 'time': datetime.timestamp(datetime.now())}
+            dbEntry = self.add_response_to_database(result)
+            result['dbEntry'] = dbEntry
             log.info('success' if 'error' in data else 'error')
-            return jsonify({'success': (0 if 'error' in data else 1),'model': model, 'messages': messages, 'temperature': temperature, 'response': data})
+            return jsonify(result)
         else:
             log.info('No API key')
             return jsonify({'success': 0, 'messages': messages, 'response': {'error': {'code': 'No API key', 'message': 'Set your API key to OPENAI_API_KEY=KEY in .env file'}}})
@@ -155,8 +174,11 @@ class open_ai:
             response = requests.post(url, headers=headers, json=payload)
             data = response.json()
             data['message'] = 'Successfully generated'
+            result = {'success': 0 if 'error' in data else 1, 'prompt': prompt,  'number': number, 'size': size, 'response': data, 'time': datetime.timestamp(datetime.now())}
+            dbEntry = self.add_response_to_database(result)
+            result['dbEntry'] = dbEntry
             log.info('success' if 'error' in data else 'error')
-            return jsonify({'success': 0 if 'error' in data else 1, 'prompt': prompt,  'number': number, 'size': size, 'response': data})
+            return jsonify(result)
         else:
             log.info('No API key')
             return jsonify({'success': 0, 'prompt': prompt, 'response': {'error': {'code': 'No API key', 'message': 'Set your API key to OPENAI_API_KEY=KEY in .env file'}}})
@@ -167,6 +189,7 @@ class open_ai:
         prompt = request_data.get('prompt')
         number = request_data.get('number') if request_data.get('number') else 1
         size = request_data.get('size') if request_data.get('size') else '1024x1024'
+
         return self.generate_image(prompt, number, size)
 
     def create_edit(self, document):
@@ -180,10 +203,14 @@ class open_ai:
             payload = {
                 'document': document
             }
+
             response = requests.post(url, headers=headers, json=payload)
             data = response.json()
+            result = {'success': 0 if 'error' in data else 1, 'response': data, 'time': datetime.timestamp(datetime.now())}
+            dbEntry = self.add_response_to_database(result)
+            result['dbEntry'] = dbEntry
             log.info('success' if 'error' not in data else 'error')
-            return jsonify({'success': 0 if 'error' in data else 1, 'response': data})
+            return jsonify(result)
         else:
             log.info('No API key')
             return jsonify({'success': 0, 'response': {'error': {'code': 'No API key', 'message': 'Set your API key to OPENAI_API_KEY=KEY in .env file'}}})
@@ -207,8 +234,11 @@ class open_ai:
             }
             response = requests.post(url, headers=headers, json=payload)
             data = response.json()
+            result = {'success': 0 if 'error' in data else 1, 'response': data, 'time': datetime.timestamp(datetime.now())}
+            dbEntry = self.add_response_to_database(result)
+            result['dbEntry'] = dbEntry
             log.info('success' if 'error' not in data else 'error')
-            return jsonify({'success': 0 if 'error' in data else 1, 'response': data})
+            return jsonify(result)
         else:
             log.info('No API key')
             return jsonify({'success': 0, 'response': {'error': {'code': 'No API key', 'message': 'Set your API key to OPENAI_API_KEY=KEY in .env file'}}})
@@ -233,8 +263,11 @@ class open_ai:
             }
             response = requests.post(url, headers=headers, json=payload)
             data = response.json()
+            result = {'success': 0 if 'error' in data else 1, 'response': data, 'time': datetime.timestamp(datetime.now())}
+            dbEntry = self.add_response_to_database(result)
+            result['dbEntry'] = dbEntry
             log.info('success' if 'error' not in data else 'error')
-            return jsonify({'success': 0 if 'error' in data else 1, 'response': data})
+            return jsonify(result)
         else:
             log.info('No API key')
             return jsonify({'success': 0, 'response': {'error': {'code': 'No API key', 'message': 'Set your API key to OPENAI_API_KEY=KEY in .env file'}}})
@@ -259,8 +292,11 @@ class open_ai:
             }
             response = requests.post(url, headers=headers, json=payload)
             data = response.json()
+            result = {'success': 0 if 'error' in data else 1, 'response': data, 'time': datetime.timestamp(datetime.now())}
+            dbEntry = self.add_response_to_database(result)
+            result['dbEntry'] = dbEntry
             log.info('success' if 'error' not in data else 'error')
-            return jsonify({'success': 0 if 'error' in data else 1, 'response': data})
+            return jsonify(result)
         else:
             log.info('No API key')
             return jsonify({'success': 0, 'target_language': target_language, 'response': {'error': {'code': 'No API key', 'message': 'Set your API key to OPENAI_API_KEY=KEY in .env file'}}})
@@ -270,6 +306,7 @@ class open_ai:
         request_data = request.json
         audio = request_data.get('audio')
         target_language = request_data.get('target_language')
+
         return self.create_audio_translation(audio, target_language)
 
     def list_files(self):

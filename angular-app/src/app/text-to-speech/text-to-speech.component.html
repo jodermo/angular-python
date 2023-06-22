@@ -1,5 +1,12 @@
 <div class="content text-to-speech" role="main">
   <div class="text-to-speech-input">
+
+    <select *ngIf="textToSpeech.useElevenLabsAPI && textToSpeech.elevenLabsVoices.length"
+            [(ngModel)]="textToSpeech.elevenLabsVoice">
+      <option *ngFor="let voice of textToSpeech.elevenLabsVoices" [ngValue]="voice">{{voice.name}}</option>
+    </select>
+
+
     <select [(ngModel)]="app.language">
       <option *ngFor="let language of app.languages" [ngValue]="language">{{language.name}}</option>
     </select>
@@ -10,6 +17,15 @@
       <input type="text" [(ngModel)]="textToSpeech.text" name="textToSpeech" placeholder="Type a text...">
       <button [disabled]="!textToSpeech.text" type="submit">Send</button>
     </form>
+    <div>
+      <label>
+        <input type="checkbox" [(ngModel)]="textToSpeech.useElevenLabsAPI"
+               (ngModelChange)="textToSpeech.getElevenLabsVoices();"> Use ll ElevenLabs API
+      </label>
+      <i><a href="https://www.futuretools.io/tools/eleven-labs" target="_blank">https://www.futuretools.io/tools/eleven-labs</a></i>
+
+
+    </div>
 
   </div>
 
@@ -17,10 +33,50 @@
     <ul>
       <li *ngFor="let textToSpeechResult of textToSpeech.results">
         <div>{{textToSpeechResult.text}}</div>
-        <button (click)="textToSpeech.togglePauseOrNext(textToSpeechResult)">
-          <span *ngIf="textToSpeech.playing !== textToSpeechResult || textToSpeech.audio.paused">Play</span>
-          <span *ngIf="textToSpeech.playing === textToSpeechResult && !textToSpeech.audio.paused">Pause</span>
-        </button>
+        <div class="text-to-speech-button" *ngIf="textToSpeechResult.text">
+          <select *ngIf="!textToSpeech.useElevenLabsAPI" [(ngModel)]="app.language"
+                  (ngModelChange)="textToSpeech.stop();">
+            <option *ngFor="let language of app.languages" [ngValue]="language">{{language.name}}</option>
+          </select>
+          <button
+            *ngIf="!textToSpeech.playing || textToSpeech.playing.text !== textToSpeechResult.text || (textToSpeech.audio.currentTime === 0 && textToSpeech.audio.paused)"
+            [disabled]="textToSpeech.isLoading(textToSpeechResult.text)"
+            (click)="textToSpeech.makeFileAndPlay(textToSpeechResult.text, app.language)">
+    <span *ngIf="!textToSpeech.isLoading(textToSpeechResult.text)">
+      Read
+    </span>
+            <span *ngIf="textToSpeech.isLoading(textToSpeechResult.text)">
+      Loading
+    </span>
+          </button>
+          <button
+            [disabled]="(textToSpeech.playing && textToSpeech.playing.text !== textToSpeechResult.text) || ( textToSpeech.audio.currentTime === 0)"
+            (click)="textToSpeech.replay()">
+            Replay
+          </button>
+          <button
+            *ngIf="textToSpeech.playing && textToSpeech.playing.text === textToSpeechResult.text && (textToSpeech.audio.currentTime !== 0 && textToSpeech.audio.paused)"
+            (click)="textToSpeech.play()">
+            Play
+          </button>
+          <button
+            *ngIf="textToSpeech.playing && textToSpeech.playing.text === textToSpeechResult.text && !textToSpeech.audio.paused"
+            (click)="textToSpeech.pause()">
+            Pause
+          </button>
+          <button
+            [disabled]="(textToSpeech.audio.paused && textToSpeech.audio.currentTime === 0)"
+            (click)="textToSpeech.stop()">
+            Stop
+          </button>
+          <span class="spacer"></span>
+          <label>
+            <input type="checkbox" [(ngModel)]="textToSpeech.useElevenLabsAPI"
+                   (ngModelChange)="textToSpeech.getElevenLabsVoices();"> Use ll ElevenLabs API<br>
+            <i><a href="https://www.futuretools.io/tools/eleven-labs" target="_blank">https://www.futuretools.io/tools/eleven-labs</a></i>
+
+          </label>
+        </div>
       </li>
     </ul>
 

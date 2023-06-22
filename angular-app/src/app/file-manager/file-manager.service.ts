@@ -9,7 +9,6 @@ export interface ServerFile {
   path: string;
   directory: string;
   size: number;
-
 }
 
 @Injectable({
@@ -24,8 +23,8 @@ export class FileManagerService {
 
   uploadedFiles: File[] = [];
 
-  serverFiles: any[] = [];
-
+  serverFiles: any = {};
+  serverFilesLoading: any = {};
   previewUrls: any = {};
 
   fallbackImage = '/assets/fallback.png';
@@ -53,7 +52,7 @@ export class FileManagerService {
     this.selectedFile = event.target.files[0] as File;
   }
 
-  async uploadFile(): Promise<void> {
+  async uploadFile(uploadPath = this.uploadPath): Promise<void> {
     if (!this.selectedFile) {
       console.log('No file selected.');
       return;
@@ -61,7 +60,7 @@ export class FileManagerService {
     this.error = undefined;
     const uploadFile = this.selectedFile;
     try {
-      this.app ? await this.app.uploadFile(uploadFile, this.uploadPath) : undefined;
+      this.app ? await this.app.uploadFile(uploadFile, uploadPath) : undefined;
       this.uploadedFiles.push(uploadFile);
       this.uploaded = uploadFile;
       this.init();
@@ -133,16 +132,27 @@ export class FileManagerService {
     }
   }
 
-  loadUploadedFiles() {
+  files(uploadPath = this.uploadPath): ServerFile[] {
+    if (this.serverFiles[uploadPath]) {
+      return this.serverFiles[uploadPath];
+    } else if (!this.serverFilesLoading[uploadPath]) {
+      this.loadUploadedFiles(uploadPath);
+    }
+    return [];
+  }
+
+  loadUploadedFiles(uploadPath = this.uploadPath) {
+    this.serverFilesLoading[uploadPath] = true;
     if (this.uploadPath && this.app) {
       this.app.getFiles(this.uploadPath, (result?: any) => {
-        this.serverFiles = result && result.files ? result.files : [];
+        this.serverFiles[uploadPath] = result && result.files as ServerFile[] ? result.files : [];
+        this.serverFilesLoading[uploadPath] = false;
       })
     }
 
   }
 
-  onUploadPathChanged() {
-    this.loadUploadedFiles();
+  onUploadPathChanged(uploadPath = this.uploadPath) {
+    this.loadUploadedFiles(uploadPath);
   }
 }

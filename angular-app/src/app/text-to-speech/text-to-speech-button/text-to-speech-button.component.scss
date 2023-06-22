@@ -1,6 +1,18 @@
-.text-to-speech-button{
+.text-to-speech-button {
+  position: relative;
+  width: 100%;
   display: flex;
-  select{
+  background: #b3d9ff;
+
+  select {
     width: auto;
   }
+
+  label {
+    width: auto;
+  }
+}
+
+.spacer {
+  flex: 1;
 }

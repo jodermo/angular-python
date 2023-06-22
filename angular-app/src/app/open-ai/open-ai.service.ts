@@ -2,6 +2,32 @@ import {Injectable} from '@angular/core';
 import {AppService} from "../app.service";
 
 
+export interface OpenAiModelPermission {
+  id?: string;
+  created?: number;
+  group?: any;
+  owned_by?: string;
+  is_blocking?: boolean;
+  object?: string;
+  organization?: string;
+  allow_create_engine?: boolean;
+  allow_fine_tuning?: boolean;
+  allow_logprobs?: boolean;
+  allow_sampling?: boolean;
+  allow_search_indices?: boolean;
+  allow_view?: boolean;
+}
+
+export interface OpenAiCompletionModel {
+  id?: string;
+  created?: number;
+  object?: string;
+  owned_by?: string;
+  parent?: any;
+  root?: string;
+  permission?: OpenAiModelPermission[];
+}
+
 export interface OpenAiResponseChoice {
   index: number;
   finish_reason: string;
@@ -34,34 +60,65 @@ export interface OpenAiResponse {
   response: OpenAiResponseData;
   time: number;
   target_language?: string;
+  dbEntry?: any;
 }
 
 export const OpenAiModeAliases = ['chat', 'image', 'completion'];
 export type OpenAiModeAlias = typeof OpenAiModeAliases[number];
 export type OpenAiMode = { name: string, alias: OpenAiModeAlias };
+export const OpenAiMChatMode: OpenAiMode = {name: 'GPT Chat', alias: 'chat'};
+export const OpenAiCompletionMode: OpenAiMode = {name: 'Send Completion', alias: 'completion'};
+export const OpenAiImageMode: OpenAiMode = {name: 'Image Generation', alias: 'image'};
 export const OpenAiModes: OpenAiMode[] = [
-  {name: 'Chat', alias: 'chat'},
-  {name: 'Completion', alias: 'completion'},
-  {name: 'Image', alias: 'image'}
+  OpenAiMChatMode,
+  OpenAiCompletionMode,
+  OpenAiImageMode
 ];
 
-export const OpenAiChatRoles = ['assistant', 'user', 'system'];
+export const OpenAiChatRoles = ['user', 'system', 'assistant', 'function'];
 export type OpenAiChatRole = typeof OpenAiChatRoles[0];
 
 export const OpenAiChatModels = ['gpt-3.5-turbo', 'gpt-3.5-turbo-16k'];
 export type OpenAiChatModel = typeof OpenAiChatModels[0];
 
 
-export const OpenAiCompletionModels = ['text-davinci-003'];
-export type OpenAiCompletionModel = typeof OpenAiCompletionModels[0];
-
 export const OpenAiImageSizes = ['256x256x', '512x512', '1024x1024'];
 export type OpenAiImageSize = typeof OpenAiImageSizes[0];
 
 
 export class OpenAiChatMessage {
-  constructor(public content: string = '', public role: OpenAiChatRole = OpenAiChatRoles[0]) {
+
+
+  // temperature = 1;
+  // top_p = 1;
+  // n = 1;
+  // stream = false;
+  // max_tokens = 0;
+  // presence_penalty = 0;
+  // frequency_penalty = 0;
+  // logit_bias?: string;
+  user?: string;
+  functions?: OpenAiChatFunction[];
+
+  constructor(
+    public content?: string,
+    public role: OpenAiChatRole = OpenAiChatRoles[0],
+    public name?: string,
+    public function_call?: string
+  ) {
   }
+
+  public assignMessage(message: OpenAiChatMessage) {
+    console.log('assignMessage before', this, message);
+    Object.assign(this, message);
+    console.log('assignMessage after', this, message);
+  }
+}
+
+export class OpenAiChatFunction {
+  name: string = '';
+  description: string = '';
+  parameters: any = {};
 }
 
 @Injectable({
@@ -72,17 +129,22 @@ export class OpenAiService {
   modes = OpenAiModes;
   mode: OpenAiMode = OpenAiModes[0];
 
+  functionCall?: string;
+  functions: OpenAiChatFunction[] = [];
+
+  systemMessage = new OpenAiChatMessage('', 'system');
+  assistantMessage = new OpenAiChatMessage('', 'assistant');
   messages: OpenAiChatMessage[] = [];
 
   roles = OpenAiChatRoles;
-  role: OpenAiChatRole = 'assistant';
 
   chatModels = OpenAiChatModels;
-  chatModel: OpenAiChatModel = 'gpt-3.5-turbo';
+  chatModel: OpenAiChatModel = OpenAiChatModels[0];
   chatTemperature = 1;
 
-  completionModels = OpenAiCompletionModels;
-  completionModel: OpenAiCompletionModel = 'text-davinci-003';
+  completionModels: OpenAiCompletionModel[] = [];
+  completionModel?: OpenAiCompletionModel;
+
 
   imageSizes = OpenAiImageSizes;
   imageSize: OpenAiImageSize = '1024x1024';
@@ -94,29 +156,117 @@ export class OpenAiService {
   app?: AppService;
   results: OpenAiResponse[] = [];
   sending = false;
-  newMessage?: string;
+
+  defaultMessage = new OpenAiChatMessage();
+  newMessage = new OpenAiChatMessage();
+  readResults = true;
+  newFunction: OpenAiChatFunction = new OpenAiChatFunction();
 
 
   init(app = this.app) {
     this.app = app;
+    this.initNewMessage();
+    this.listModels();
+    this.loadData();
+
   }
 
+  loadData() {
+    if (this.app) {
+      this.app.API.get('open-ai-response', (results: any) => {
+        console.log('loadData', results);
+        this.results = results?.length ? results : this.results;
+        this.sortResult();
+      })
+    }
+  }
 
-  createMessage(messages = this.messages, role = this.role, model = this.chatModel) {
+  initNewMessage() {
+    this.newMessage = new OpenAiChatMessage();
+    this.newMessage.assignMessage(this.defaultMessage);
+  }
+
+  initFunction() {
+    this.newFunction = new OpenAiChatFunction();
+  }
+
+  addFunction(newFunction = this.newFunction) {
+    if (newFunction && newFunction.name) {
+      this.functions.push(newFunction);
+      this.initFunction();
+    }
+  }
+
+  removeFunction(openAiChatFunction: OpenAiChatFunction) {
+    for (let i = 0; i < this.functions.length; i++) {
+      if (this.functions[i] === openAiChatFunction) {
+        this.functions.splice(i, 1);
+        return;
+      }
+    }
+  }
+
+  addOrSetParamToFunction(key: string, value: string, openAiChatFunction = this.newFunction) {
+    if (!openAiChatFunction.parameters) {
+      openAiChatFunction.parameters = {} as any;
+    }
+    openAiChatFunction.parameters[key] = value;
+  }
+
+  removeParamFromFunction(key: string, openAiChatFunction = this.newFunction) {
+    const newParams: any = {};
+    for (const paramKey in openAiChatFunction.parameters) {
+      if (paramKey !== key) {
+        newParams[paramKey] = openAiChatFunction.parameters[paramKey];
+      }
+    }
+    openAiChatFunction.parameters[key] = newParams;
+  }
+
+  functionParameters(openAiChatFunction = this.newFunction): { key: string, value: string }[] {
+    const parameters: { key: string, value: string }[] = [];
+    for (const paramKey in openAiChatFunction.parameters) {
+      parameters.push({key: paramKey, value: openAiChatFunction.parameters[paramKey]});
+    }
+    return parameters;
+  }
+
+  clearFunctions() {
+    this.functions = [];
+  }
+
+  sendMessages(messages = this.messages, role = this.newMessage.role, model = this.chatModel) {
     this.sending = true;
-    this.app?.post(this.app?.API.url + '/open-ai/chat', {
+    if (this.systemMessage.content && this.systemMessage.content.length) {
+      messages.push(this.systemMessage);
+    }
+    if (this.assistantMessage.content && this.assistantMessage.content.length) {
+      messages.push(this.assistantMessage);
+    }
+    const requestBody: any = {
       messages: messages,
-      model,
-    }, (result: OpenAiResponse) => {
+      model
+    };
+    if (messages.find(message => message.role === 'function')) {
+      requestBody['functions'] = this.functions;
+      if (this.functionCall?.length) {
+        requestBody['function_call'] = this.functionCall;
+      }
+    }
+    this.app?.post(this.app?.API.url + '/open-ai/chat', requestBody, (result: OpenAiResponse) => {
       result.time = Date.now();
       this.results.push(result);
-      this.results.sort((a, b) => a.time + b.time);
+      this.sortResult();
       this.messages = [];
       this.sending = false;
     });
   }
 
-  getCompletions(messages = this.messages, role = this.role, model = this.completionModel) {
+  sortResult() {
+    this.results.sort((a, b) => (a.time|| -1) + (b.time || -1));
+  }
+
+  getCompletions(messages = this.messages, completionModel = this.completionModel) {
     this.sending = true;
     let prompt = '';
     for (const message of messages) {
@@ -124,12 +274,10 @@ export class OpenAiService {
     }
     this.app?.post(this.app?.API.url + '/open-ai/completions', {
       prompt,
-      role,
-      model,
+      model: completionModel?.id || 'gpt-3.5-turbo',
     }, (result: OpenAiResponse) => {
-      result.time = Date.now();
       this.results.push(result);
-      this.results.sort((a, b) => a.time + b.time);
+      this.sortResult();
       this.messages = [];
       this.sending = false;
     });
@@ -148,14 +296,14 @@ export class OpenAiService {
     }, (result: OpenAiResponse) => {
       result.time = Date.now();
       this.results.push(result);
-      this.results.sort((a, b) => a.time + b.time);
+      this.sortResult();
       this.messages = [];
       this.sending = false;
     });
   }
 
   submitRequest() {
-    if(this.newMessage){
+    if (this.newMessage) {
       this.addMessage()
     }
     if (this.mode.alias === 'image') {
@@ -163,15 +311,33 @@ export class OpenAiService {
     } else if (this.mode.alias === 'completion') {
       this.getCompletions()
     } else {
-      this.createMessage()
+      this.sendMessages()
     }
 
   }
 
-  addMessage(message = this.newMessage) {
-    if (message && message.length) {
-      this.messages.push(new OpenAiChatMessage(message, this.role));
-      this.newMessage = undefined;
+  addMessage(message = this.newMessage, mode = this.mode) {
+    if (message && message.content?.length) {
+      this.messages.push(message);
+      this.initNewMessage();
+    }
+  }
+
+
+  listModels() {
+    if (this.app) {
+      this.app.get(this.app.API.url + '/open-ai/models',
+        (result: any) => {
+          if (result?.response && result.response.data) {
+            this.completionModels = result.response.data as OpenAiCompletionModel[];
+            this.completionModel = this.completionModels.length ? this.completionModels[0] : undefined;
+          }
+          console.log('listModels response', this.completionModels);
+        },
+        (error: any) => {
+          console.error('Failed to retrieve models:', error);
+        }
+      );
     }
   }
 }

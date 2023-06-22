@@ -25,14 +25,28 @@ export class WebsocketService {
   newMessage?: string;
   private app?: AppService;
 
+
   constructor() {
-    this.socket = io(environment.serverURL);
+    console.log('WebsocketService', environment.websocketUrl + '/');
+    this.socket = io(environment.websocketUrl);
+  }
+
+  init(appService = this.app) {
+    this.app = appService;
+    this.loadData();
+  }
+
+  loadData(roomName = this.roomName) {
+    if (this.app) {
+      this.app.API.get('websocket-message', (results: any) => {
+        this.chatMessages[roomName] = results?.length ? results : this.chatMessages[roomName] ? this.chatMessages[roomName] : undefined;
+      });
+    }
   }
 
   startMessageListener(appService = this.app): void {
     this.app = appService;
     this.receiveMessage().subscribe((data: WebsocketMessage) => {
-      console.log('receiveMessage', data);
       if (data.roomName) {
         if (!this.chatMessages[data.roomName]) {
           this.chatMessages[data.roomName] = [];
@@ -47,6 +61,7 @@ export class WebsocketService {
     this.chatMessages[roomName] = this.chatMessages[roomName] ? this.chatMessages[roomName] : [];
     this.socket.emit('join_room', {roomName: roomName});
     this.joined[roomName] = true;
+    this.loadData(roomName);
   }
 
   leaveRoom(roomName = this.roomName): void {

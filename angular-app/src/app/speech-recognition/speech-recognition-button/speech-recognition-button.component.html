@@ -1,7 +1,7 @@
 <div class="speech-recognition-button">
   <div class="speech-recognition-actions">
     <div>
-      <select [(ngModel)]="app.language" [disabled]="disabled">
+      <select [(ngModel)]="app.language" [disabled]="disabled" >
         <option *ngFor="let language of app.languages" [ngValue]="language">{{language.name}}</option>
       </select>
     </div>

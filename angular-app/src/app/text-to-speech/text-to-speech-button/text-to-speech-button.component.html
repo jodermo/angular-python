@@ -1,9 +1,22 @@
 <div class="text-to-speech-button" *ngIf="text">
+  <select *ngIf="!textToSpeech.useElevenLabsAPI" [(ngModel)]="app.language" [disabled]="disabled"  (ngModelChange)="textToSpeech.stop();">
+    <option *ngFor="let language of app.languages" [ngValue]="language">{{language.name}}</option>
+  </select>
   <button
     *ngIf="!textToSpeech.playing || textToSpeech.playing.text !== text || (textToSpeech.audio.currentTime === 0 && textToSpeech.audio.paused)"
-    [disabled]="disabled"
+    [disabled]="disabled || textToSpeech.isLoading(text)"
     (click)="textToSpeech.makeFileAndPlay(text, app.language)">
-    Read
+    <span *ngIf="!textToSpeech.isLoading(text)">
+      Read
+    </span>
+    <span *ngIf="textToSpeech.isLoading(text)">
+      Loading
+    </span>
+  </button>
+  <button
+    [disabled]="(textToSpeech.playing && textToSpeech.playing.text !== text) || (disabled || textToSpeech.audio.currentTime === 0)"
+    (click)="textToSpeech.replay()">
+    Replay
   </button>
   <button
     *ngIf="textToSpeech.playing && textToSpeech.playing.text === text && (textToSpeech.audio.currentTime !== 0 && textToSpeech.audio.paused)"
@@ -15,8 +28,16 @@
           (click)="textToSpeech.pause()">
     Pause
   </button>
-  <select [(ngModel)]="app.language" [disabled]="disabled">
-    <option *ngFor="let language of app.languages" [ngValue]="language">{{language.name}}</option>
-  </select>
+  <button
+    [disabled]="(textToSpeech.audio.paused && textToSpeech.audio.currentTime === 0)"
+    (click)="textToSpeech.stop()">
+    Stop
+  </button>
   <span class="spacer"></span>
+  <label>
+    <input type="checkbox" [(ngModel)]="textToSpeech.useElevenLabsAPI"
+           (ngModelChange)="textToSpeech.getElevenLabsVoices();"> Use ll ElevenLabs API<br>
+    <i><a href="https://www.futuretools.io/tools/eleven-labs" target="_blank">https://www.futuretools.io/tools/eleven-labs</a></i>
+
+  </label>
 </div>

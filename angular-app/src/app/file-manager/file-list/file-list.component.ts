@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import {Component, Input} from '@angular/core';
 import {FileManagerComponent} from "../file-manager.component";
 
 @Component({
@@ -7,6 +7,7 @@ import {FileManagerComponent} from "../file-manager.component";
   styleUrls: ['./file-list.component.scss']
 })
 export class FileListComponent extends FileManagerComponent{
+  @Input() filePath?: string;
 
   deleteFile(serverFile: any) {
     this.app.deleteFile(serverFile, ()=>{

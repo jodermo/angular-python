@@ -1,55 +1,64 @@
 <div class="content websocket-wrapper" role="main">
   <div class="websocket">
-    <div class="websocket-options">
-      <label for="roomName">Room name:</label>
-      <input type="text" id="roomName" [(ngModel)]="websocket.roomName" name="apiName" required><br>
-      <button *ngIf="!websocket.joined[websocket.roomName]" (click)="websocket.joinRoom(websocket.roomName)">Join Room
+
+    <div class="websocket-room-options">
+      <div class="websocket-room-name" *ngIf="!websocket.joined[websocket.roomName]">
+        <input type="text" id="roomName" [(ngModel)]="websocket.roomName" name="apiName" required><br>
+      </div>
+      <div class="websocket-room-name" *ngIf="websocket.joined[websocket.roomName]">
+        <b>{{websocket.roomName}}</b>
+      </div>
+      <div>
+        <label for="autoReadMessages" class="checkbox-container">
+          <input id="autoReadMessages" name="autoReadMessages" type="checkbox" [(ngModel)]="autoReadMessages"/>
+          Automatically read messages
+        </label>
+      </div>
+      <button *ngIf="!websocket.joined[websocket.roomName]" (click)="websocket.joinRoom(websocket.roomName)">Join
+        Room
       </button>
       <button *ngIf="websocket.joined[websocket.roomName]" (click)="websocket.leaveRoom(websocket.roomName)">Leave
         Room
       </button>
       <button [disabled]="!websocket.joined[websocket.roomName]" (click)="websocket.closeRoom()">Close Room</button>
     </div>
-
-    <form *ngIf="websocket.joined[websocket.roomName]" (ngSubmit)="websocket.sendMessage()">
-      <input type="text" [(ngModel)]="websocket.newMessage" name="message" placeholder="Type a message...">
-      <button type="submit" [disabled]="!websocket.newMessage">Send</button>
-    </form>
-
-    <div class="chat-room" *ngIf="websocket.joined[websocket.roomName]">
-      <div class="chat-room-title">
-        <h2>{{ websocket.roomName }}</h2>
-        <span class="spacer"></span>
-        <div>
-          <label for="autoReadMessages" class="checkbox-container">Automatically read messages
-            <input id="autoReadMessages" name="autoReadMessages" type="checkbox" [(ngModel)]="autoReadMessages"/>
-          </label>
-        </div>
-
-      </div>
-
-
-      <ul class="chat-messages" *ngIf="websocket.chatMessages[websocket.roomName]">
-        <li *ngFor="let messageData of websocket.chatMessages[websocket.roomName]">
-          <div class="websocket-message">
-            <div class="websocket-message-header">
+    <div class="websocket-placeholder" *ngIf="!websocket.joined[websocket.roomName]">
+      <h2>Join a room</h2>
+    </div>
+    <div class="websocket-output" *ngIf="websocket.joined[websocket.roomName]">
+      <div class="chat-room-output" >
+        <div class="chat-messages" *ngIf="websocket.chatMessages[websocket.roomName]">
+          <div class="websocket-message" *ngFor="let messageData of websocket.chatMessages[websocket.roomName]">
+            <div class="websocket-message-wrapper">
+              <div class="websocket-message-header">
               <span *ngIf="messageData.user">
                 <b>{{messageData.user.username}}</b>
               </span>
-              <span class="spacer"></span>
-              <span *ngIf="messageData.date">
+                <span class="spacer"></span>
+                <span *ngIf="messageData.date">
                 <i>{{websocket.parseDate(messageData.date)}}</i>
               </span>
+              </div>
+              <div class="websocket-message-content">
+                <i>{{messageData.message}}</i>
+              </div>
+              <app-text-to-speech-button [text]="messageData.message"
+                                         [autoplay]="autoReadMessages"></app-text-to-speech-button>
             </div>
-            <div class="websocket-message-content">
-              {{messageData.message}}
-            </div>
-            <app-text-to-speech-button [text]="messageData.message"
-                                       [autoplay]="autoReadMessages"></app-text-to-speech-button>
           </div>
-        </li>
-      </ul>
+        </div>
 
+
+      </div>
+    </div>
+
+    <div class="websocket-input">
+
+
+      <form class="input-form" *ngIf="websocket.joined[websocket.roomName]" (ngSubmit)="websocket.sendMessage()">
+        <input type="text" [(ngModel)]="websocket.newMessage" name="message" placeholder="Type a message...">
+        <button type="submit" [disabled]="!websocket.newMessage">Send</button>
+      </form>
 
     </div>
   </div>

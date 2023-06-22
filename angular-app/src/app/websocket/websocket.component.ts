@@ -15,7 +15,8 @@ export class WebsocketComponent extends AppComponent {
 
   constructor(app: AppService, public websocket: WebsocketService, public textToSpeech: TextToSpeechService) {
     super(app);
-    websocket.startMessageListener(app);
+    websocket.init(app);
+    websocket.startMessageListener();
     textToSpeech.init(app);
   }
 

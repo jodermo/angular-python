@@ -2,6 +2,7 @@ import {Injectable} from '@angular/core';
 import {ServerFile} from './file-manager/file-manager.service';
 import {TextToSpeechResponse} from "./text-to-speech/text-to-speech.service";
 import {environment} from "../environments/environment.prod";
+import {SpeechRecognitionResponse} from "./speech-recognition/speech-recognition.service";
 
 // Define available header types
 export const HeaderTypes = ['JSON', 'form'];
@@ -49,7 +50,7 @@ export class AppService {
   };
   // API configuration
   API = {
-    url: environment.serverURL, // API base URL
+    url: environment.serverURL + environment.apiRoute, // API base URL
     headers: {
       JSON: {
         'Content-Type': 'application/json' // JSON headers
@@ -65,7 +66,7 @@ export class AppService {
       onSuccess?: (result?: any) => void,
       onError?: (error?: any) => void
     ): Promise<any> => {
-      return this.get(this.API.url + '/data?tableName=' + tableName, onSuccess, onError);
+      return this.get(this.API.url + '/data', onSuccess, onError, '&tableName=' + tableName);
     },
     getById: async (
       tableName: string,
@@ -73,7 +74,7 @@ export class AppService {
       onSuccess?: (result?: any) => void,
       onError?: (error?: any) => void
     ): Promise<any> => {
-      return this.get(this.API.url + '/data?tableName=' + tableName + '&id=' + id, onSuccess, onError);
+      return this.get(this.API.url + '/data', onSuccess, onError, '&tableName=' + tableName + '&id=' + id);
     },
     // POST request
     add: async (
@@ -135,11 +136,12 @@ export class AppService {
     url: string,
     onSuccess?: (result?: any) => void,
     onError?: (error?: any) => void,
+    paramUrl = '',
     headerType: HeaderType = 'JSON'
   ): Promise<any> {
     try {
       const timestamp = Date.now(); // Get the current timestamp
-      const cacheBusterUrl = `${url}&_=${timestamp}`; // Append the timestamp as a query parameter
+      const cacheBusterUrl = `${url}?_=${timestamp}${paramUrl}`; // Append the timestamp as a query parameter
       const response = await fetch(cacheBusterUrl, {
         method: 'GET',
         headers: headerType === 'form' ? this.API.headers.form : this.API.headers.JSON
@@ -395,7 +397,7 @@ export class AppService {
     onSuccess?: (result?: any) => void,
     onError?: (error?: any) => void
   ) {
-    return this.get(this.API.url + '/files?path=' + uploadPath, onSuccess, onError);
+    return this.get(this.API.url + '/files', onSuccess, onError, '&path=' + uploadPath);
   }
 
   getFile(
@@ -434,5 +436,9 @@ export class AppService {
       );
     }
     return undefined;
+  }
+
+  speechRecognitionValue(speechRecognitionResponse?: SpeechRecognitionResponse) {
+    return speechRecognitionResponse && speechRecognitionResponse.text ? speechRecognitionResponse.text : speechRecognitionResponse?.error ? speechRecognitionResponse.error : '';
   }
 }

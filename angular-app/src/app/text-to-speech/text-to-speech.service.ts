@@ -1,5 +1,6 @@
 import {Injectable} from '@angular/core';
 import {AppLanguage, AppLanguages, AppLanguageType, AppService} from "../app.service";
+import {environment} from "../../environments/environment.prod";
 
 export interface TextToSpeechResponse {
   text: string;
@@ -7,6 +8,33 @@ export interface TextToSpeechResponse {
   lang: string;
   play: boolean;
   time: number;
+}
+
+
+export interface ElevenLabsVoice {
+  available_for_tiers: string[];
+  category: string;
+  description: string | null;
+  fine_tuning: {
+    fine_tuning_requested: boolean;
+    finetuning_state: string;
+    is_allowed_to_fine_tune: boolean;
+    language: string | null;
+    manual_verification: string | null;
+    manual_verification_requested: boolean;
+    model_id: string | null;
+    slice_ids: string[] | null;
+    verification_attempts: any[] | null;
+    verification_attempts_count: number;
+    verification_failures: any[];
+  };
+  labels: Record<string, any>;
+  name: string;
+  preview_url: string;
+  samples: any[] | null;
+  settings: any[] | null;
+  sharing: any[] | null;
+  voice_id: string;
 }
 
 @Injectable({
@@ -26,9 +54,17 @@ export class TextToSpeechService {
   played = false;
   playing?: TextToSpeechResponse;
 
+  useElevenLabsAPI = environment.useElevenLabsAPI ? true : false;
+  elevenLabsVoices: ElevenLabsVoice[] = [];
+  elevenLabsVoice?: ElevenLabsVoice;
+  elevenLabsVoicesLoaded = false;
+  private loading: any = {};
 
   constructor() {
     this.audio.oncanplay = () => {
+      if(this.currentResult){
+        this.loading[this.currentResult.text] = true;
+      }
       if (!this.played) {
         this.played = true;
         this.play();
@@ -42,9 +78,30 @@ export class TextToSpeechService {
 
   init(app = this.app) {
     this.app = app;
+    this.getElevenLabsVoices();
+  }
+  loadData(){
+    if(this.app){
+      this.app.API.get('text-to-speech', (results: any)=>{
+        this.results = results?.length ?  results : this.results;
+      })
+    }
   }
 
-  addResult(result: TextToSpeechResponse, language = this.language) {
+  getElevenLabsVoices() {
+    if (this.app && this.useElevenLabsAPI && !this.elevenLabsVoicesLoaded) {
+      this.app.get(this.app?.API.url + '/eleven-labs/voices', (result?: any) => {
+        if (result?.voices) {
+          this.elevenLabsVoices = result.voices as ElevenLabsVoice[];
+          this.elevenLabsVoice = this.elevenLabsVoices.length ? this.elevenLabsVoices[0] : undefined;
+          this.elevenLabsVoicesLoaded = true;
+        }
+      });
+    }
+
+  }
+
+  addResult(result: TextToSpeechResponse, language = this.language, ready = true) {
     result.time = Date.now();
     if (!this.textResults[language.iso]) {
       this.textResults[language.iso] = {} as any;
@@ -52,59 +109,93 @@ export class TextToSpeechService {
     this.textResults[language.iso][result.text] = result;
     this.results.push(result);
     this.results.sort((a, b) => a.time + b.time);
+    this.loading[result.text] = ready;
   }
 
-  makeFile(text = this.text, lang = this.language, filename = this.filename) {
+  makeFile(text = this.text, lang = this.language, filename = this.filename, useElevenLabsAPI = this.useElevenLabsAPI) {
 
-    if (text?.length) {
-      this.app?.post(this.app?.API.url + '/text-to-speech', {text, lang, filename}, (result?: TextToSpeechResponse) => {
+    if (text && text.length && !this.loading[text]) {
+      this.app?.post(this.app?.API.url + (useElevenLabsAPI ? '/eleven-labs' : '') + '/text-to-speech', {
+        text,
+        lang,
+        filename,
+        stability: 1,
+        similarity_boost: 1,
+        voice_id: this.elevenLabsVoice?.voice_id
+      }, (result?: TextToSpeechResponse) => {
+
         if (result?.text) {
           this.text = undefined;
           this.addResult(result, lang);
+        } else {
+          this.loading[text] = false;
         }
+
+      }, () => {
+        this.loading[text] = false;
       });
     }
   }
 
-  makeFileAndPlay(text = this.text, language = this.language, filename = this.filename, fromAutoplay = false) {
-    if (text?.length) {
+  makeFileAndPlay(text = this.text, language = this.language, filename = this.filename, fromAutoplay = false, useElevenLabsAPI = this.useElevenLabsAPI) {
+    if (text && text.length && !this.loading[text]) {
       if (this.textResults[language.iso] && this.textResults[language.iso][text]) {
         this.playResult(this.textResults[language.iso][text], fromAutoplay);
       } else {
-        this.app?.post(this.app?.API.url + '/text-to-speech', {
+        this.loading[text] = true;
+        this.app?.post(this.app?.API.url + (useElevenLabsAPI ? '/eleven-labs' : '') + '/text-to-speech', {
           text,
           lang: language.iso,
-          filename
+          filename,
+          stability: 1,
+          similarity_boost: 1,
+          voice_id: this.elevenLabsVoice?.voice_id
         }, (result?: TextToSpeechResponse) => {
           if (result?.text) {
             this.text = undefined;
-            this.addResult(result, language);
+            this.addResult(result, language, false);
             this.playResult(result, fromAutoplay);
+          }else{
+            this.loading[text] = false;
           }
+
+        }, () => {
+          this.loading[text] = false;
         });
       }
 
     }
   }
 
-  playTextOnServer(text = this.text, lang = this.language, filename = this.filename) {
-    this.app?.post(this.app?.API.url + '/text-to-speech?play=1', {
-      text,
-      lang,
-      filename
-    }, (result?: TextToSpeechResponse) => {
-      if (result?.text) {
-        this.text = undefined;
-        this.addResult(result, lang);
-      }
-    });
+  playTextOnServer(text = this.text, lang = this.language, filename = this.filename, useElevenLabsAPI = this.useElevenLabsAPI) {
+    if (text && text.length && !this.loading[text]) {
+      this.loading[text] = true;
+      this.app?.post(this.app?.API.url + (useElevenLabsAPI ? '/eleven-labs' : '') + '/text-to-speech?play=1', {
+        text,
+        lang,
+        filename,
+        stability: 1,
+        similarity_boost: 1,
+        voice_id: this.elevenLabsVoice?.voice_id
+      }, (result?: TextToSpeechResponse) => {
+        if (result?.text) {
+          this.text = undefined;
+          this.addResult(result, lang);
+
+        }
+      }, () => {
+        this.loading[text] = false;
+      });
+    }
+
   }
 
-  resultFileSrc(result: TextToSpeechResponse) {
-    return this.app?.API.url + '/text-to-speech?filename=' + result.filename;
+  resultFileSrc(result: TextToSpeechResponse, useElevenLabsAPI = this.useElevenLabsAPI) {
+    return this.app?.API.url + (useElevenLabsAPI ? '/eleven-labs' : '') + '/text-to-speech?filename=' + result.filename;
   }
 
   playResult(textToSpeechResult = this.playing, fromAutoplay = false) {
+
     if (this.app) {
       const played = this.app.playedTextToSpeechResults.find((played: TextToSpeechResponse) => played === textToSpeechResult);
       if (fromAutoplay && played) {
@@ -114,12 +205,14 @@ export class TextToSpeechService {
       }
     }
     if (textToSpeechResult && textToSpeechResult !== this.playing) {
+      this.loading[textToSpeechResult.text] = true;
       this.played = false;
       this.playing = textToSpeechResult;
       const src = this.resultFileSrc(textToSpeechResult);
       this.pause();
       this.audio.src = '';
       this.audio.src = src;
+      this.loading[textToSpeechResult.text] = false;
     } else if (textToSpeechResult === this.playing) {
       this.play();
     }
@@ -152,8 +245,25 @@ export class TextToSpeechService {
   }
 
   play() {
+
     if (this.audio.src && this.audio.paused) {
       this.audio.play();
     }
+  }
+
+  replay() {
+    if (this.audio.src && this.audio.paused) {
+      this.audio.currentTime = 0;
+      this.play();
+    }
+  }
+
+  stop() {
+    this.pause();
+    this.audio.currentTime = 0;
+  }
+
+  isLoading(text?: string) {
+    return text && text.length ? this.loading[text] ? true : false : false;
   }
 }

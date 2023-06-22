@@ -8,3 +8,4 @@ gTTS==2.2.3
 SpeechRecognition==3.10.0
 pydub==0.25.1
 cryptography==3.4.8
+discord.py==1.7.3

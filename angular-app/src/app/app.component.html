@@ -1,28 +1,43 @@
-<!-- Toolbar -->
-<div class="toolbar" role="banner">
-  <img
-    routerLink="/"
-    width="40"
-    alt="Angular Logo"
-    src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTAgMjUwIj4KICAgIDxwYXRoIGZpbGw9IiNERDAwMzEiIGQ9Ik0xMjUgMzBMMzEuOSA2My4ybDE0LjIgMTIzLjFMMTI1IDIzMGw3OC45LTQzLjcgMTQuMi0xMjMuMXoiIC8+CiAgICA8cGF0aCBmaWxsPSIjQzMwMDJGIiBkPSJNMTI1IDMwdjIyLjItLjFWMjMwbDc4LjktNDMuNyAxNC4yLTEyMy4xTDEyNSAzMHoiIC8+CiAgICA8cGF0aCAgZmlsbD0iI0ZGRkZGRiIgZD0iTTEyNSA1Mi4xTDY2LjggMTgyLjZoMjEuN2wxMS43LTI5LjJoNDkuNGwxMS43IDI5LjJIMTgzTDEyNSA1Mi4xem0xNyA4My4zaC0zNGwxNy00MC45IDE3IDQwLjl6IiAvPgogIDwvc3ZnPg=="
-  />
-  <a routerLink="/" style="color: white;">
-    Welcome
-  </a>
 
-
-  <!-- Navigation -->
-  <ng-container *ngFor="let route of routes">
-    <a *ngIf="route.data && route.data['showInNavigation']" routerLink="/{{route.path}}" routerLinkActive="active"
-       style="color: white; margin-left: 1rem">
-      {{ route.data['title'] ? route.data['title'] : route.path}}
+<div class="app-wrapper">
+  <!-- Toolbar -->
+  <div class="toolbar" role="banner">
+    <img
+      routerLink="/"
+      width="40"
+      alt="Angular Logo"
+      src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTAgMjUwIj4KICAgIDxwYXRoIGZpbGw9IiNERDAwMzEiIGQ9Ik0xMjUgMzBMMzEuOSA2My4ybDE0LjIgMTIzLjFMMTI1IDIzMGw3OC45LTQzLjcgMTQuMi0xMjMuMXoiIC8+CiAgICA8cGF0aCBmaWxsPSIjQzMwMDJGIiBkPSJNMTI1IDMwdjIyLjItLjFWMjMwbDc4LjktNDMuNyAxNC4yLTEyMy4xTDEyNSAzMHoiIC8+CiAgICA8cGF0aCAgZmlsbD0iI0ZGRkZGRiIgZD0iTTEyNSA1Mi4xTDY2LjggMTgyLjZoMjEuN2wxMS43LTI5LjJoNDkuNGwxMS43IDI5LjJIMTgzTDEyNSA1Mi4xem0xNyA4My4zaC0zNGwxNy00MC45IDE3IDQwLjl6IiAvPgogIDwvc3ZnPg=="
+    />
+    <a routerLink="/" style="color: white;">
+      Welcome
     </a>
-  </ng-container>
 
-  <div class="spacer"></div>
-  <div class="padding-left padding-right text-right float-right" *ngIf="app.user">
-    <span>User: <b>{{app.user.username}}</b></span>
+
+    <!-- Navigation -->
+    <ng-container *ngFor="let route of routes">
+      <a *ngIf="route.data && route.data['showInNavigation']" routerLink="/{{route.path}}" routerLinkActive="active"
+         style="color: white; margin-left: 1rem">
+        {{ route.data['title'] ? route.data['title'] : route.path}}
+      </a>
+    </ng-container>
+
+    <div class="spacer"></div>
+    <div class="padding-left padding-right text-right float-right" *ngIf="app.user">
+      <span>User: <b>{{app.user.username}}</b></span>
+    </div>
   </div>
-</div>
-<router-outlet></router-outlet>
 
+  <div class="main">
+    <router-outlet></router-outlet>
+  </div>
+
+  <div class="footer">
+    <i>
+      <span>© 2023 - </span>
+      <span><a href="https://github.com/jodermo/angular-python" target="_blank">github.com/jodermo/angular-python </a></span>
+      <span>by Moritz Petzka <a href="https://petzka.com" target="_blank">petzka.com</a></span>
+    </i>
+  </div>
+
+
+</div>

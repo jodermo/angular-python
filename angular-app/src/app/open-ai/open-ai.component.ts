@@ -12,6 +12,8 @@ import {SpeechRecognitionResponse} from "../speech-recognition/speech-recognitio
 })
 export class OpenAiComponent extends AppComponent {
 
+  systemConfig = false;
+
 
   constructor(app: AppService, public openAi: OpenAiService) {
     super(app);
@@ -19,12 +21,18 @@ export class OpenAiComponent extends AppComponent {
   }
 
 
-  onSpeechRecognitionResult(result?: SpeechRecognitionResponse) {
+  onSpeechRecognitionResult(result?: SpeechRecognitionResponse, submit = false) {
     if (result && result.text && result.text.length) {
-      this.openAi.addMessage(result.text);
-      this.openAi.submitRequest();
+      this.openAi.newMessage.content = result.text;
+      if(submit){
+        this.openAi.submitRequest();
+      }
     }
   }
 
 
+  setValue(content: string, text: string) {
+
+    text ? content = text : content = content;
+  }
 }

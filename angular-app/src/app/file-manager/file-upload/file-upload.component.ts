@@ -6,7 +6,8 @@ import {FileManagerComponent} from "../file-manager.component";
   templateUrl: './file-upload.component.html',
   styleUrls: ['./file-upload.component.scss']
 })
-export class FileUploadComponent extends FileManagerComponent{
+export class FileUploadComponent extends FileManagerComponent {
 
   @Input() showUploadList = false;
+  @Input() filePath?: string;
 }
