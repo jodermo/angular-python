@@ -1,5 +1,6 @@
 import {Injectable} from '@angular/core';
 import {AppService} from "../app.service";
+import {ServerFile} from "../file-manager/file-manager.service";
 
 
 export interface OpenAiModelPermission {
@@ -61,13 +62,17 @@ export interface OpenAiResponse {
   time: number;
   target_language?: string;
   dbEntry?: any;
+  files?: { filename: string, prompt: string, n: string, imageResult: ServerFile }[];
 }
+
 
 export const OpenAiModeAliases = ['chat', 'image', 'completion'];
 export type OpenAiModeAlias = typeof OpenAiModeAliases[number];
 export type OpenAiMode = { name: string, alias: OpenAiModeAlias };
 export const OpenAiMChatMode: OpenAiMode = {name: 'GPT Chat', alias: 'chat'};
 export const OpenAiCompletionMode: OpenAiMode = {name: 'Send Completion', alias: 'completion'};
+export const OpenAiCompletionModels = ['text-davinci-003', 'text-davinci-002', 'text-curie-001', 'text-babbage-001', 'text-ada-001'];
+export const OpenAiChatModels = ['gpt-3.5-turbo','gpt-4', 'gpt-4-0613', 'gpt-4-32k', 'gpt-4-32k-0613', 'gpt-3.5-turbo-0613', 'gpt-3.5-turbo-16k', 'gpt-3.5-turbo-16k-0613'];
 export const OpenAiImageMode: OpenAiMode = {name: 'Image Generation', alias: 'image'};
 export const OpenAiModes: OpenAiMode[] = [
   OpenAiMChatMode,
@@ -78,7 +83,6 @@ export const OpenAiModes: OpenAiMode[] = [
 export const OpenAiChatRoles = ['user', 'system', 'assistant', 'function'];
 export type OpenAiChatRole = typeof OpenAiChatRoles[0];
 
-export const OpenAiChatModels = ['gpt-3.5-turbo', 'gpt-3.5-turbo-16k'];
 export type OpenAiChatModel = typeof OpenAiChatModels[0];
 
 
@@ -109,9 +113,7 @@ export class OpenAiChatMessage {
   }
 
   public assignMessage(message: OpenAiChatMessage) {
-    console.log('assignMessage before', this, message);
     Object.assign(this, message);
-    console.log('assignMessage after', this, message);
   }
 }
 
@@ -138,9 +140,12 @@ export class OpenAiService {
 
   roles = OpenAiChatRoles;
 
-  chatModels = OpenAiChatModels;
-  chatModel: OpenAiChatModel = OpenAiChatModels[0];
+  chatModels: OpenAiCompletionModel[] = [];
+  chatModel?: OpenAiCompletionModel;
   chatTemperature = 1;
+
+
+  allModels: OpenAiCompletionModel[] = [];
 
   completionModels: OpenAiCompletionModel[] = [];
   completionModel?: OpenAiCompletionModel;
@@ -174,7 +179,6 @@ export class OpenAiService {
   loadData() {
     if (this.app) {
       this.app.API.get('open-ai-response', (results: any) => {
-        console.log('loadData', results);
         this.results = results?.length ? results : this.results;
         this.sortResult();
       })
@@ -245,7 +249,7 @@ export class OpenAiService {
     }
     const requestBody: any = {
       messages: messages,
-      model
+      model: model?.id || 'gpt-3.5-turbo',
     };
     if (messages.find(message => message.role === 'function')) {
       requestBody['functions'] = this.functions;
@@ -263,7 +267,7 @@ export class OpenAiService {
   }
 
   sortResult() {
-    this.results.sort((a, b) => (a.time|| -1) + (b.time || -1));
+    this.results.sort((a, b) => (a.time || -1) + (b.time || -1));
   }
 
   getCompletions(messages = this.messages, completionModel = this.completionModel) {
@@ -329,10 +333,13 @@ export class OpenAiService {
       this.app.get(this.app.API.url + '/open-ai/models',
         (result: any) => {
           if (result?.response && result.response.data) {
-            this.completionModels = result.response.data as OpenAiCompletionModel[];
+            this.allModels = result.response.data as OpenAiCompletionModel[];
+            this.completionModels = this.allModels.filter(model => OpenAiCompletionModels.find(modelName => model.id === modelName));
+            this.chatModels = this.allModels.filter(model => OpenAiChatModels.find(modelName => model.id === modelName));
+            ;
             this.completionModel = this.completionModels.length ? this.completionModels[0] : undefined;
+            this.chatModel = this.chatModels.length ? this.chatModels[0] : undefined;
           }
-          console.log('listModels response', this.completionModels);
         },
         (error: any) => {
           console.error('Failed to retrieve models:', error);

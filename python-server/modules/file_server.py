@@ -5,6 +5,8 @@ from flask import jsonify, send_file
 from modules.server_logging import server_logging
 from datetime import datetime
 
+load_dotenv()
+
 mode = os.getenv("MODE")
 mode = mode if mode else 'dev'
 log = server_logging("file_upload.log", mode)
@@ -40,7 +42,7 @@ class file_server:
                     file_size = os.path.getsize(item_path)  # Get the file size
                     mime_type, _ = mimetypes.guess_type(item_path)  # Get the MIME type
                     file_list.append({
-                        'name': item,
+                        'filename': item,
                         'type': 'file',
                         'path': return_path,
                         'size': file_size,
@@ -49,7 +51,7 @@ class file_server:
                     })
                 elif os.path.isdir(item_path):
                     file_list.append({
-                        'name': item,
+                        'filename': item,
                         'type': 'directory',
                         'path': return_path
                     })
@@ -74,33 +76,66 @@ class file_server:
     def post_file(self, request):
         log.info('post_file')
         path = request.args.get('path')
-        file_path = '/' + self.uploadRoot + self.uploadDirectory + path  # File path to save the uploaded file
-        log.info(file_path)
         if 'file' not in request.files:
             return jsonify({'error': 'No file provided'})
         file = request.files['file']
-        file_extension = os.path.splitext(file.filename)[1]  # Get the file extension
         timestamp = datetime.now().strftime("%Y%m%d%H%M%S")  # Generate timestamp
         file_name = f"{timestamp}_{file.filename}"  # Append timestamp to file name
-        full_file_path = file_path + '/' + file_name
-        log.info(file.filename)
-        if file.filename == '':
-            return jsonify({'error': 'No file selected'})
-        if file and self.allowed_file(file.filename):
+        return self.save_file(file, file_name, path, True)
+
+    def save_file(self, file, file_name, path, json_response = False):
+        log.info('save_file')
+        file_path = '/' + self.uploadRoot + self.uploadDirectory + path  # File path to save the uploaded file
+        log.info(file_path)
+        log.info(file_name)
+
+        if hasattr(file, 'filename'):
+            # Case: File from form data
+            file_extension = os.path.splitext(file.filename)[1]  # Get the file extension
+            full_file_path = file_path + '/' + file_name
+            log.info(file_name)
+            if file_name == '':
+                data = {'error': 'No file selected'}
+                return jsonify(data) if json_response else data
+            if file and self.allowed_file(file_name):
+                try:
+                    # Create the directory if it doesn't exist
+                    os.makedirs(os.path.dirname(full_file_path), exist_ok=True)
+                    # Open and save the file with the appropriate encoding
+                    with open(full_file_path, 'wb') as f:
+                        f.write(file.read())
+                    log.info('File uploaded successfully')
+                    data = {'message': 'File uploaded successfully', 'filename': file_name, 'path': path}
+                    return jsonify(data) if json_response else data
+                except Exception as e:
+                    log.error(str(e))
+                    data = {'error': str(e)}
+                    return jsonify(data) if json_response else data
+            else:
+                log.error('Invalid file type')
+                data = {'error': 'Invalid file type'}
+                return jsonify(data) if json_response else data
+
+        elif hasattr(file, 'read'):
+            # Case: File from io object
             try:
                 # Create the directory if it doesn't exist
-                os.makedirs(os.path.dirname(full_file_path), exist_ok=True)
-                # Open and save the file with the appropriate encoding
-                with open(full_file_path, 'wb') as f:
+                os.makedirs(file_path, exist_ok=True)
+                # Save the file with the appropriate encoding
+                with open(os.path.join(file_path, file_name), 'wb') as f:
                     f.write(file.read())
-                log.info('File uploaded successfully')
-                return jsonify({'message': 'File uploaded successfully', 'filename': file_name, 'originalname': file.filename, 'path': path})
+                log.info('File saved successfully')
+                data = {'message': 'File saved successfully', 'filename': file_name, 'path': path}
+                return jsonify(data) if json_response else data
             except Exception as e:
-                log.error(str(e))
-                return jsonify({'error': str(e)})
+                log.error('Error while saving the file: ' + str(e))
+                data = {'error': 'Error while saving the file: ' + str(e)}
+                return jsonify(data) if json_response else data
         else:
-            log.error('Invalid file type')
-            return jsonify({'error': 'Invalid file type'})
+            log.error('Invalid file object')
+            data = {'error': 'Invalid file object'}
+            return jsonify(data) if json_response else data
+
 
     def delete_file(self, request):
         log.info('delete_file')

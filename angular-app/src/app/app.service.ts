@@ -429,7 +429,7 @@ export class AppService {
         '/file?path=' +
         serverFile.directory +
         '&filename=' +
-        serverFile.name,
+        serverFile.filename,
         {file: serverFile},
         onSuccess,
         onError

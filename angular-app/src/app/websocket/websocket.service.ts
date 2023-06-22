@@ -27,7 +27,6 @@ export class WebsocketService {
 
 
   constructor() {
-    console.log('WebsocketService', environment.websocketUrl + '/');
     this.socket = io(environment.websocketUrl);
   }
 

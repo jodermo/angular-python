@@ -3,7 +3,7 @@ import {AppService} from "../app.service";
 
 
 export interface ServerFile {
-  name: string;
+  filename: string;
   type: string;
   mime_type: string;
   path: string;
@@ -54,7 +54,6 @@ export class FileManagerService {
 
   async uploadFile(uploadPath = this.uploadPath): Promise<void> {
     if (!this.selectedFile) {
-      console.log('No file selected.');
       return;
     }
     this.error = undefined;

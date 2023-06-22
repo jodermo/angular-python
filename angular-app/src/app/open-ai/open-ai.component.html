@@ -69,12 +69,20 @@
                   </div>
                 </div>
               </div>
-              <div class="open-ai-data" *ngIf="openAiResult.response.data">
+              <div class="open-ai-data" *ngIf="openAiResult.response.data && !(openAiResult.files && openAiResult.files.length)">
                 <div class="open-ai-data-entry" *ngFor="let data of openAiResult.response.data; let i = index">
                   <div class="image-preview" *ngIf="data.url">
                     <img [src]="data.url">
                   </div>
                   <a [href]="data.url" target="_blank">Open Image</a>
+                </div>
+              </div>
+              <div class="open-ai-data" *ngIf="(openAiResult.files && openAiResult.files.length)">
+                <div class="open-ai-data-entry" *ngFor="let serverFile of openAiResult.files; let i = index">
+                  <div class="image-preview" *ngIf="serverFile.imageResult">
+                    <img [src]="app.fileSrc(serverFile.imageResult.filename, serverFile.imageResult.path)" alt="{{serverFile.imageResult.filename}}" class="file-preview" />
+                  </div>
+                  <a [href]="app.fileSrc(serverFile.imageResult.filename, serverFile.imageResult.path)" target="_blank">Download Image</a>
                 </div>
               </div>
             </div>
@@ -222,7 +230,7 @@
         <span>Model</span>
         <select [(ngModel)]="openAi.chatModel">
           <option *ngFor="let model of openAi.chatModels" [ngValue]="model">
-            {{model}}
+            {{model.id}}
           </option>
         </select>
       </label>

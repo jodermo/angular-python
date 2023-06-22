@@ -1,13 +1,18 @@
 # https://platform.openai.com/docs/api-reference
+import io
 import os
 import openai
 import requests
 import json
+import urllib.request
 from datetime import datetime
 from dotenv import load_dotenv
 from flask import jsonify
 from modules.server_logging import server_logging
 from modules.postgres_api import postgres_api
+from modules.file_server import file_server
+
+load_dotenv()
 
 mode = os.getenv("MODE")
 mode = mode if mode else 'dev'
@@ -17,6 +22,7 @@ log = server_logging("open_ai.log", mode)
 class open_ai:
     def __init__(self):
         self.postgres_api = postgres_api()
+        self.file_server = file_server()
         self.api_key = os.getenv("OPENAI_API_KEY") if os.getenv("OPENAI_API_KEY") else 0
         self.organisation_id = os.getenv("OPENAI_ORGANISATION_ID") if os.getenv("OPENAI_ORGANISATION_ID") else 0
         if self.api_key:
@@ -155,8 +161,10 @@ class open_ai:
         return self.create_chat_completion(messages, model, temperature)
 
 
-    def generate_image(self, prompt, number = 1, size = '1024x1024'):
-        log.info('post_completions')
+
+
+    def generate_image(self, prompt, number=1, size='1024x1024'):
+        log.info('generate_image')
         log.info(prompt)
         log.info(number)
         log.info(size)
@@ -173,15 +181,79 @@ class open_ai:
             }
             response = requests.post(url, headers=headers, json=payload)
             data = response.json()
-            data['message'] = 'Successfully generated'
-            result = {'success': 0 if 'error' in data else 1, 'prompt': prompt,  'number': number, 'size': size, 'response': data, 'time': datetime.timestamp(datetime.now())}
+            result = {
+                'success': (0 if 'error' in data else 1),
+                'prompt': prompt,
+                'n': number,
+                'size': size,
+                'response': data,
+                'time': datetime.timestamp(datetime.now()),
+                'files': []
+            }
+            images = data['data'] if 'data' in data else []
+            for image in images:
+                image_url = image['url']
+                log.info('image_url: ' + image_url)
+                timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+                filename = f"image_{timestamp}.png"
+                try:
+                    image_response = requests.get(image_url)
+                    if image_response.status_code == 200:
+                        image_data = image_response.content
+                        image_stream = io.BytesIO(image_data)
+                        image_stream.seek(0)
+                        imageResult = self.file_server.save_file(image_stream, filename, 'open-ai-images')
+                        if 'error' in imageResult:
+                            log.error(imageResult['error'])
+                            fileResult = {
+                                'success': 0,
+                                'error': imageResult['error'],
+                                'prompt': prompt,
+                                'n': number,
+                                'size': size,
+                                'response': data,
+                                'time': datetime.timestamp(datetime.now())
+                            }
+                        else:
+                            log.info('Image generated and saved successfully')
+                            fileResult = {
+                                'success': 1,
+                                'filename': filename,
+                                'prompt': prompt,
+                                'n': number,
+                                'size': size,
+                                'response': data,
+                                'imageResult': imageResult,
+                                'time': datetime.timestamp(datetime.now())
+                            }
+                    else:
+                        log.error('Error while retrieving the image: ' + str(image_response.status_code))
+                        fileResult = {
+                            'success': 0,
+                            'error': 'Error while retrieving the image',
+                            'prompt': prompt,
+                            'n': number,
+                            'size': size,
+                            'response': data,
+                            'time': datetime.timestamp(datetime.now())
+                        }
+                except Exception as e:
+                    log.error('Error while saving the image: ' + str(e))
+                    fileResult = {
+                        'success': 0,
+                        'error': 'Error while saving the image',
+                        'prompt': prompt,
+                        'n': number,
+                        'size': size,
+                        'response': data,
+                        'time': datetime.timestamp(datetime.now())
+                    }
+                result['files'].append(fileResult)
             dbEntry = self.add_response_to_database(result)
             result['dbEntry'] = dbEntry
             log.info('success' if 'error' in data else 'error')
             return jsonify(result)
-        else:
-            log.info('No API key')
-            return jsonify({'success': 0, 'prompt': prompt, 'response': {'error': {'code': 'No API key', 'message': 'Set your API key to OPENAI_API_KEY=KEY in .env file'}}})
+
 
     def generate_image_request(self, request):
         log.info('post_completions_request')
