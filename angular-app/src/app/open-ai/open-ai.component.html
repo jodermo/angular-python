@@ -22,8 +22,6 @@
   </div>
 
 
-
-
   <div class="open-ai-functions" *ngIf="openAi.mode.alias === 'chat' && openAi.newMessage.role === 'function'">
     <h3>Functions</h3>
     <div class="new-function-inputs">
@@ -51,7 +49,9 @@
           <tr *ngFor="let parameter of openAi.functionParameters(openAi.newFunction)">
             <th>{{parameter.key}}</th>
             <td>{{parameter.value}}</td>
-            <td><button (click)="openAi.removeParamFromFunction(parameter.key, openAi.newFunction)">delete</button></td>
+            <td>
+              <button (click)="openAi.removeParamFromFunction(parameter.key, openAi.newFunction)">delete</button>
+            </td>
           </tr>
           <tr>
             <th>
@@ -60,7 +60,12 @@
             <td>
               <input type="text" placeholder="Value" #newFunctionParamValue>
             </td>
-            <td><button (click)="openAi.addOrSetParamToFunction(newFunctionParamKey.value, newFunctionParamValue.value, openAi.newFunction)">add</button></td>
+            <td>
+              <button
+                (click)="openAi.addOrSetParamToFunction(newFunctionParamKey.value, newFunctionParamValue.value, openAi.newFunction)">
+                add
+              </button>
+            </td>
           </tr>
           </tbody>
         </table>
@@ -94,7 +99,6 @@
       </div>
     </div>
   </div>
-
 
 
   <div class="open-ai-input">
@@ -192,83 +196,92 @@
   </div>
 
 
-
   <div class="open-ai-buttons">
     <app-speech-recognition-button [disabled]="openAi.sending"
                                    (onResult)="onSpeechRecognitionResult($event, true)"></app-speech-recognition-button>
     <form *ngIf="openAi.mode.alias === 'chat'" (ngSubmit)="openAi.addMessage()">
-      <button [disabled]="!openAi.newMessage || openAi.sending || (openAi.newMessage.role === 'function' && !openAi.newMessage.name && !openAi.functions.length)" type="submit">Add Message</button>
+      <button
+        [disabled]="!openAi.newMessage || openAi.sending || (openAi.newMessage.role === 'function' && !openAi.newMessage.name && !openAi.functions.length)"
+        type="submit">Add Message
+      </button>
     </form>
     <form (ngSubmit)="openAi.submitRequest()">
-      <button [disabled]="(!openAi.newMessage && !openAi.messages.length || (openAi.newMessage.role === 'function' && (!openAi.newMessage.name) && !openAi.functions.length)) || openAi.sending" type="submit">Send
+      <button
+        [disabled]="(!openAi.newMessage && !openAi.messages.length || (openAi.newMessage.role === 'function' && (!openAi.newMessage.name) && !openAi.functions.length)) || openAi.sending"
+        type="submit">Send
         Messages
       </button>
     </form>
   </div>
 
 
-
   <label>
     <input type="checkbox" [(ngModel)]="openAi.readResults">Read Results (text to speech)
   </label>
   <div class="open-ai-results">
-    <ul>
-      <li *ngIf="!openAi.sending">
+    <div class="open-ai-results-wrapper">
+      <div *ngIf="!openAi.sending">
         <div *ngFor="let message of openAi.messages">
           <b>{{message.role}}: </b>
           <p><i>"{{message.content}}"</i></p>
         </div>
-      </li>
-      <li *ngIf="openAi.sending">
+      </div>
+      <div *ngIf="openAi.sending">
         <h3>Calculating response for, please wait..</h3>
         <div *ngFor="let message of openAi.messages">
           <b>{{message.role}}: </b>
           <p><i>"{{message.content}}"</i></p>
         </div>
-      </li>
-      <li *ngIf="openAi.results && openAi.results.length">
-        <h2>Results</h2>
-      </li>
-      <li class="open-ai-result" *ngFor="let openAiResult of openAi.results">
-        <div class="open-ai-question-prompt" *ngIf="openAiResult.prompt">
-          <b>Prompt: </b><span><i>"{{openAiResult.prompt}}"</i></span>
-        </div>
-        <div class="open-ai-question-messages" *ngIf="openAiResult.messages">
-          <b>Your messages: </b>
-          <div *ngFor="let message of openAiResult.messages">
-            <b>{{message.role}} prompt: </b>
-            <p><i>"{{message.content}}"</i></p>
-          </div>
-        </div>
+      </div>
+      <div class="open-ai-results-container" >
+        <div class="open-ai-results-content">
+          <div class="open-ai-result" *ngFor="let openAiResult of openAi.results">
+            <div class="open-ai-question-prompt" *ngIf="openAiResult.prompt">
+              <b>Prompt: </b><span><i>"{{openAiResult.prompt}}"</i></span>
+            </div>
+            <div class="open-ai-question-messages" *ngIf="openAiResult.messages">
+              <div *ngFor="let message of openAiResult.messages">
+                <b>{{message.role}} prompt: </b>
+                <p><i>"{{message.content}}"</i></p>
+              </div>
+            </div>
 
-        <div class="open-ai-result-answers" *ngIf="openAiResult.response">
-          <div class="open-ai-choices" *ngIf="openAiResult.response.choices">
-            <div class="open-ai-choice" *ngFor="let choice of openAiResult.response.choices; let i = index">
-              <div *ngIf="choice.message">
-                <b>{{choice.message.role}} result: </b>
-                <p><i>"{{choice.message.content}}"</i></p>
-                <app-text-to-speech-button [text]="choice.message.content"
-                                           [autoplay]="openAi.readResults && i === 0 && openAiResult.dbEntry"></app-text-to-speech-button>
+            <div class="open-ai-result-answers" *ngIf="openAiResult.response">
+              <div class="open-ai-choices" *ngIf="openAiResult.response.choices">
+                <div class="open-ai-choice" *ngFor="let choice of openAiResult.response.choices; let i = index">
+                  <div *ngIf="choice.message">
+                    <div class="open-ai-choice-title">
+                      <b>{{choice.message.role}} result: </b>
+                    </div>
+                    <div class="open-ai-choice-content">
+                      <i>{{choice.message.content}}</i>
+                    </div>
+                    <div class="open-ai-choice-actions">
+                      <app-text-to-speech-button [text]="choice.message.content"
+                                                 [autoplay]="openAi.readResults && i === 0 && openAiResult.dbEntry"></app-text-to-speech-button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="open-ai-data" *ngIf="openAiResult.response.data">
+                <div class="open-ai-data-entry" *ngFor="let data of openAiResult.response.data; let i = index">
+                  <div class="image-preview" *ngIf="data.url">
+                    <img [src]="data.url">
+                  </div>
+                  <a [href]="data.url" target="_blank">Open Image</a>
+                </div>
               </div>
             </div>
-          </div>
-          <div class="open-ai-data" *ngIf="openAiResult.response.data">
-            <div class="open-ai-data-entry" *ngFor="let data of openAiResult.response.data; let i = index">
-              <div class="image-preview" *ngIf="data.url">
-                <img [src]="data.url">
-              </div>
-              <a [href]="data.url" target="_blank">Open Image</a>
+            <div *ngIf="openAiResult.response && openAiResult.response.error">
+              <p *ngIf="openAiResult.response.error.message">
+                {{openAiResult.response.error.message}}
+              </p>
+              <app-text-to-speech-button [text]="openAiResult.response.error.message"
+                                         [autoplay]="openAi.readResults && true && openAiResult.dbEntry"></app-text-to-speech-button>
             </div>
           </div>
         </div>
-        <div *ngIf="openAiResult.response && openAiResult.response.error">
-          <p *ngIf="openAiResult.response.error.message">
-            {{openAiResult.response.error.message}}
-          </p>
-          <app-text-to-speech-button [text]="openAiResult.response.error.message"
-                                     [autoplay]="openAi.readResults && true && openAiResult.dbEntry"></app-text-to-speech-button>
-        </div>
-      </li>
-    </ul>
+      </div>
+    </div>
   </div>
 </div>

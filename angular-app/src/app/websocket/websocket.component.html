@@ -26,36 +26,40 @@
       <h2>Join a room</h2>
     </div>
     <div class="websocket-output" *ngIf="websocket.joined[websocket.roomName]">
-      <div class="chat-room-output" >
+      <div class="chat-room-output">
         <div class="chat-messages" *ngIf="websocket.chatMessages[websocket.roomName]">
-          <div class="websocket-message" *ngFor="let messageData of websocket.chatMessages[websocket.roomName]">
-            <div class="websocket-message-wrapper">
-              <div class="websocket-message-header">
+          <div class="chat-messages-wrapper">
+            <span class="spacer"></span>
+            <div class="websocket-message" *ngFor="let messageData of websocket.chatMessages[websocket.roomName]">
+              <div class="websocket-message-wrapper">
+                <div class="websocket-message-header">
               <span *ngIf="messageData.user">
                 <b>{{messageData.user.username}}</b>
               </span>
-                <span class="spacer"></span>
-                <span *ngIf="messageData.date">
+                  <span class="spacer"></span>
+                  <span *ngIf="messageData.date">
                 <i>{{websocket.parseDate(messageData.date)}}</i>
               </span>
+                </div>
+                <div class="websocket-message-content">
+                  <i>{{messageData.message}}</i>
+                </div>
+                <app-text-to-speech-button [text]="messageData.message"
+                                           [autoplay]="autoReadMessages"></app-text-to-speech-button>
               </div>
-              <div class="websocket-message-content">
-                <i>{{messageData.message}}</i>
-              </div>
-              <app-text-to-speech-button [text]="messageData.message"
-                                         [autoplay]="autoReadMessages"></app-text-to-speech-button>
             </div>
           </div>
+
         </div>
 
 
       </div>
     </div>
 
-    <div class="websocket-input">
+    <div class="websocket-input" *ngIf="websocket.joined[websocket.roomName]">
+      <b>Your Message:</b>
 
-
-      <form class="input-form" *ngIf="websocket.joined[websocket.roomName]" (ngSubmit)="websocket.sendMessage()">
+      <form class="input-form"  (ngSubmit)="websocket.sendMessage()">
         <input type="text" [(ngModel)]="websocket.newMessage" name="message" placeholder="Type a message...">
         <button type="submit" [disabled]="!websocket.newMessage">Send</button>
       </form>
