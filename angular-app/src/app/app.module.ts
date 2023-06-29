@@ -29,7 +29,11 @@ import {OpenAiService} from "./open-ai/open-ai.service";
 import { SpeechRecognitionComponent } from './speech-recognition/speech-recognition.component';
 import {SpeechRecognitionService} from "./speech-recognition/speech-recognition.service";
 import { SpeechRecognitionButtonComponent } from './speech-recognition/speech-recognition-button/speech-recognition-button.component';
-
+import { FilePreviewComponent } from './file-manager/file-preview/file-preview.component';
+import { FullscreenFileComponent } from './file-manager/fullscreen-file/fullscreen-file.component';
+import { ParsedMessageComponent } from './open-ai/parsed-message/parsed-message.component';
+import {AppWidgetsModule} from "./app-widgets/app-widgets.module";
+import { ApiResultValueComponent } from './api-manager/api-result/api-result-value/api-result-value.component';
 @NgModule({
   declarations: [
     AppComponent,
@@ -48,7 +52,11 @@ import { SpeechRecognitionButtonComponent } from './speech-recognition/speech-re
     TextToSpeechButtonComponent,
     OpenAiComponent,
     SpeechRecognitionComponent,
-    SpeechRecognitionButtonComponent
+    SpeechRecognitionButtonComponent,
+    FilePreviewComponent,
+    FullscreenFileComponent,
+    ParsedMessageComponent,
+    ApiResultValueComponent
   ],
   imports: [
     CommonModule,
@@ -56,7 +64,8 @@ import { SpeechRecognitionButtonComponent } from './speech-recognition/speech-re
     HttpClientModule,
     FormsModule,
     AppRoutingModule,
-    ExampleProjectModule
+    ExampleProjectModule,
+    AppWidgetsModule
   ],
   providers: [
     AppService,

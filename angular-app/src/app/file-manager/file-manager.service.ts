@@ -31,15 +31,29 @@ export class FileManagerService {
   uploadPath = 'upload';
 
   private app?: AppService;
+  fullscreenFile?: ServerFile;
 
+  private initialized = false;
   constructor() {
   }
 
 
   init(app = this.app) {
     this.app = app;
-    this.selectedFile = undefined;
-    this.loadUploadedFiles();
+    if(this.app && !this.initialized){
+      this.initialized = true;
+      this.selectedFile = undefined;
+      this.loadUploadedFiles();
+    }
+
+  }
+
+  showFullscreen(fullscreenFile = this.fullscreenFile) {
+    this.fullscreenFile = fullscreenFile;
+  }
+
+  closeFullscreen() {
+    this.fullscreenFile = undefined;
   }
 
   reset() {
@@ -153,5 +167,21 @@ export class FileManagerService {
 
   onUploadPathChanged(uploadPath = this.uploadPath) {
     this.loadUploadedFiles(uploadPath);
+  }
+
+  isImage(file?: ServerFile) {
+    return file && file.mime_type.toLowerCase().includes('image');
+  }
+
+  isAudio(file?: ServerFile) {
+    return file && file.mime_type.toLowerCase().includes('audio');
+  }
+
+  isVideo(file?: ServerFile) {
+    return file && file.mime_type.toLowerCase().includes('video');
+  }
+
+  isDocument(file?: ServerFile) {
+    return !(this.isImage(file) || this.isAudio(file) || this.isVideo(file));
   }
 }

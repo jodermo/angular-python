@@ -1,31 +1,45 @@
 <div class="content text-to-speech" role="main">
   <div class="text-to-speech-input">
+    <form (ngSubmit)="textToSpeech.makeFileAndPlay(textToSpeech.text, app.language)">
+      <input type="text" [(ngModel)]="textToSpeech.text" name="textToSpeech" placeholder="Type a text...">
+      <button [disabled]="!textToSpeech.text" type="submit">Send</button>
+    </form>
+  </div>
+  <div class="text-to-speech-button">
 
-    <select *ngIf="textToSpeech.useElevenLabsAPI && textToSpeech.elevenLabsVoices.length"
+
+    <select *ngIf="textToSpeech.mode.alias === 'gtts'" [(ngModel)]="app.language">
+      <option *ngFor="let language of app.languages" [ngValue]="language">{{language.name}}</option>
+    </select>
+
+    <select *ngIf="textToSpeech.mode.alias === 'polly' &&  textToSpeech.pollyEngines.length"
+            [(ngModel)]="textToSpeech.pollyEngine" (ngModelChange)="textToSpeech.filterPollyVoices(textToSpeech.pollyEngine)" >
+      <option *ngFor="let pollyEngine of textToSpeech.pollyEngines" [ngValue]="pollyEngine">{{pollyEngine}}</option>
+    </select>
+
+    <select *ngIf="textToSpeech.mode.alias === 'polly' &&  textToSpeech.pollyEngineVoices.length"
+            [(ngModel)]="textToSpeech.pollyVoice">
+      <option *ngFor="let voice of textToSpeech.pollyEngineVoices" [ngValue]="voice">{{voice.Name}}</option>
+    </select>
+
+    <select *ngIf="textToSpeech.mode.alias === 'eleven-labs' &&  textToSpeech.elevenLabsVoices.length"
             [(ngModel)]="textToSpeech.elevenLabsVoice">
       <option *ngFor="let voice of textToSpeech.elevenLabsVoices" [ngValue]="voice">{{voice.name}}</option>
     </select>
 
 
-    <select [(ngModel)]="app.language">
-      <option *ngFor="let language of app.languages" [ngValue]="language">{{language.name}}</option>
-    </select>
-    <div class="text-to-speech-actions">
-    </div>
+    <span class="spacer"></span>
 
-    <form (ngSubmit)="textToSpeech.makeFileAndPlay(textToSpeech.text, app.language)">
-      <input type="text" [(ngModel)]="textToSpeech.text" name="textToSpeech" placeholder="Type a text...">
-      <button [disabled]="!textToSpeech.text" type="submit">Send</button>
-    </form>
     <div>
-      <label>
-        <input type="checkbox" [(ngModel)]="textToSpeech.useElevenLabsAPI"
-               (ngModelChange)="textToSpeech.getElevenLabsVoices();"> Use ll ElevenLabs API
-      </label>
-      <i><a href="https://www.futuretools.io/tools/eleven-labs" target="_blank">https://www.futuretools.io/tools/eleven-labs</a></i>
+      <select [(ngModel)]="textToSpeech.mode">
+        <option *ngFor="let mode of textToSpeech.modes" [ngValue]="mode">{{mode.name}}</option>
+      </select><br>
+      <i *ngIf="textToSpeech.mode.infoUrl"><a href="{{textToSpeech.mode.infoUrl}}"
+                                              target="_blank">{{textToSpeech.mode.infoUrl}}</a></i>
 
 
     </div>
+
 
   </div>
 
@@ -34,7 +48,7 @@
       <li *ngFor="let textToSpeechResult of textToSpeech.results">
         <div>{{textToSpeechResult.text}}</div>
         <div class="text-to-speech-button" *ngIf="textToSpeechResult.text">
-          <select *ngIf="!textToSpeech.useElevenLabsAPI" [(ngModel)]="app.language"
+          <select *ngIf="textToSpeech.mode.alias === 'gtts'" [(ngModel)]="app.language"
                   (ngModelChange)="textToSpeech.stop();">
             <option *ngFor="let language of app.languages" [ngValue]="language">{{language.name}}</option>
           </select>
@@ -71,9 +85,11 @@
           </button>
           <span class="spacer"></span>
           <label>
-            <input type="checkbox" [(ngModel)]="textToSpeech.useElevenLabsAPI"
-                   (ngModelChange)="textToSpeech.getElevenLabsVoices();"> Use ll ElevenLabs API<br>
-            <i><a href="https://www.futuretools.io/tools/eleven-labs" target="_blank">https://www.futuretools.io/tools/eleven-labs</a></i>
+            <select [(ngModel)]="textToSpeech.mode">
+              <option *ngFor="let mode of textToSpeech.modes" [ngValue]="mode">{{mode.name}}</option>
+            </select>
+            <i *ngIf="textToSpeech.mode.infoUrl"><a href="{{textToSpeech.mode.infoUrl}}"
+                                                    target="_blank">{{textToSpeech.mode.infoUrl}}</a></i>
 
           </label>
         </div>

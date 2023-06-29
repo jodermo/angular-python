@@ -1,0 +1,9 @@
+<div class="fullscreen-file" *ngIf="fileManager.fullscreenFile">
+  <button class="close-fullscreen" (click)="fileManager.closeFullscreen()">close</button>
+  <ng-container *ngIf="fileManager.isImage(fileManager.fullscreenFile)">
+    <div class="image-container" (click)="fileManager.fullscreenFile = file;">
+      <img [src]="app.fileSrc(fileManager.fullscreenFile.filename, (fileManager.fullscreenFile.directory|| fileManager.uploadPath))" alt="{{fileManager.fullscreenFile.filename}}">
+    </div>
+    <p>{{fileManager.fullscreenFile.filename}} <i><small>[{{ fileManager.getFileSize(fileManager.fullscreenFile.size) }}]</small></i></p>
+  </ng-container>
+</div>

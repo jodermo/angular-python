@@ -10,6 +10,8 @@ from modules.speech_recognition import speech_recognition
 from modules.open_ai import open_ai
 from modules.discord import discord
 from modules.eleven_labs import eleven_labs
+from modules.aws_polly import aws_polly
+
 import os
 from dotenv import load_dotenv
 
@@ -26,7 +28,6 @@ class Server:
         log.info('__init__')
         self.app = Flask(__name__)
         max_content_length = 1 * 1024 * 1024 * 1024
-
         self.max_content_length = int(os.getenv("MAX_CONTENT_LENGTH", str(max_content_length)))
         self.host = os.getenv("SERVER_HOST", "0.0.0.0")
         self.port = int(os.getenv("SERVER_PORT", 80))
@@ -40,8 +41,8 @@ class Server:
         self.open_ai = open_ai()
         self.discord = discord()
         self.eleven_labs = eleven_labs()
+        self.aws_polly = aws_polly()
         log.info(max_content_length)
-
         self.setup_app()
 
 
@@ -51,7 +52,6 @@ class Server:
         self.app.config['MAX_CONTENT_LENGTH'] = self.max_content_length
 
         self.app.before_request(self.handle_chunking)
-
 
         self.app.add_url_rule('/', methods=['GET'], view_func=self.angular_build)
         self.app.add_url_rule('/<filename>', methods=['GET'], view_func=self.angular_build)
@@ -83,7 +83,6 @@ class Server:
         self.app.add_url_rule(self.apiRoute +'/open-ai/files/', methods=['GET'], view_func=self.gpt_list_files_request)
         self.app.add_url_rule(self.apiRoute +'/open-ai/files/<file_id>', methods=['DELETE'], view_func=self.gpt_delete_file_request)
 
-
         self.app.add_url_rule(self.apiRoute +'/discord/acknowledgement', methods=['POST'], view_func=self.discord_acknowledgement)
         self.app.add_url_rule(self.apiRoute +'/discord/scrolled', methods=['POST'], view_func=self.discord_scrolled)
         self.app.add_url_rule(self.apiRoute +'/discord/interactions', methods=['POST'], view_func=self.discord_interaction)
@@ -94,11 +93,12 @@ class Server:
         self.app.add_url_rule(self.apiRoute +'/eleven-labs/text-to-speech', methods=['GET'], view_func=self.eleven_labs_get_text_to_speech)
         self.app.add_url_rule(self.apiRoute +'/eleven-labs/text-to-speech', methods=['POST'], view_func=self.eleven_labs_send_text_to_speech)
 
+        self.app.add_url_rule(self.apiRoute +'/polly/voices', methods=['GET'], view_func=self.polly_get_voices)
+        self.app.add_url_rule(self.apiRoute +'/polly/text-to-speech', methods=['GET'], view_func=self.polly_get_text_to_speech)
+        self.app.add_url_rule(self.apiRoute +'/polly/text-to-speech', methods=['POST'], view_func=self.polly_send_text_to_speech)
 
         self.app.errorhandler(Exception)(self.handle_error)
         log.info('setup_app')
-
-
 
     def angular_build(self, filename=None):
         log.exception('filename: ' + str(filename))
@@ -106,7 +106,6 @@ class Server:
             return send_file('../angular-app/' + str(filename))
         else:
             return send_file('../angular-app/index.html')
-
 
     def discord_acknowledgement(self):
         return self.discord.send_acknowledgement_request(request)
@@ -160,13 +159,11 @@ class Server:
         log.info('create_chat_completion_request')
         return self.open_ai.create_chat_completion_request(request)
 
-
     def gpt_create_completion_request(self):
         return self.open_ai.create_completion_request(request)
 
     def gpt_generate_image_request(self):
         return self.open_ai.generate_image_request(request)
-
 
     def gpt_list_models_request(self):
         return self.open_ai.list_models_request(request)
@@ -195,14 +192,20 @@ class Server:
     def eleven_labs_get_voices(self):
         return self.eleven_labs.get_voices_request(request)
 
-    def eleven_labs_get_voices(self):
-        return self.eleven_labs.get_voices_request(request)
-
     def eleven_labs_get_text_to_speech(self):
         return self.eleven_labs.get_text_to_speech(request)
 
     def eleven_labs_send_text_to_speech(self):
         return self.eleven_labs.send_text_to_speech(request)
+
+    def polly_get_voices(self):
+        return self.aws_polly.get_voices_request(request)
+
+    def polly_get_text_to_speech(self):
+        return self.aws_polly.get_text_to_speech(request)
+
+    def polly_send_text_to_speech(self):
+        return self.aws_polly.send_text_to_speech(request)
 
     def handle_error(self, e):
         log.exception(str(e))

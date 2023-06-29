@@ -1,30 +1,34 @@
 <div class="content open-ai" role="main">
-  <h1>OpenAI</h1>
-  <span>API reference: <a href="https://platform.openai.com/docs/api-reference" target="_blank">https://platform.openai.com/docs/api-reference</a></span>
 
-
-
-
-  <div class="open-ai-config">
-    <label>
-      <span>Mode</span>
-      <select [(ngModel)]="openAi.mode">
-        <option *ngFor="let mode of openAi.modes" [ngValue]="mode">
-          {{mode.name}}
-        </option>
-      </select>
-      <div class="open-ai-modes">
-        <div class="open-ai-mode" *ngFor="let mode of openAi.modes" (click)="openAi.mode = mode"
-             [ngClass]="{active:(openAi.mode === mode)}">
-          {{mode.name}}
-        </div>
-      </div>
-    </label>
-
-
+  <div class="open-ai-header" *ngIf="!fullscreenResults">
+    <h1>OpenAI</h1>
+    <span>API reference: <a href="https://platform.openai.com/docs/api-reference" target="_blank">https://platform.openai.com/docs/api-reference</a></span>
   </div>
 
+  <div class="open-ai-config" *ngIf="!fullscreenResults">
+    <div class="open-ai-modes">
+      <div class="open-ai-mode" *ngFor="let mode of openAi.modes" (click)="openAi.mode = mode"
+           [ngClass]="{active:(openAi.mode === mode)}">
+        {{mode.name}}
+      </div>
+    </div>
+  </div>
+
+
   <div class="open-ai-results">
+
+    <div class="open-ai-results-overlay">
+
+      <label>
+        <input type="checkbox" [(ngModel)]="openAi.readResults">Read Results (text to speech)
+      </label>
+      <button class="fullscreen-button" (click)="fullscreenResults = !fullscreenResults">
+        <span *ngIf="!fullscreenResults">Expand</span>
+        <span *ngIf="fullscreenResults">Collapse</span>
+      </button>
+    </div>
+
+
     <div class="open-ai-results-wrapper">
       <div *ngIf="!openAi.sending">
         <div *ngFor="let message of openAi.messages">
@@ -39,7 +43,7 @@
           <p><i>"{{message.content}}"</i></p>
         </div>
       </div>
-      <div class="open-ai-results-container" >
+      <div class="open-ai-results-container">
         <div class="open-ai-results-content">
           <div class="open-ai-result" *ngFor="let openAiResult of openAi.results">
             <div class="open-ai-question-prompt" *ngIf="openAiResult.prompt">
@@ -48,7 +52,7 @@
             <div class="open-ai-question-messages" *ngIf="openAiResult.messages">
               <div *ngFor="let message of openAiResult.messages">
                 <b>{{message.role}} prompt: </b>
-                <p><i>"{{message.content}}"</i></p>
+                <p><i>{{message.content}}"</i></p>
               </div>
             </div>
 
@@ -60,7 +64,8 @@
                       <b>{{choice.message.role}} result: </b>
                     </div>
                     <div class="open-ai-choice-content">
-                      <i>{{choice.message.content}}</i>
+                      <app-parsed-message [parsedTexts]="openAi.parseMessageText(choice)"></app-parsed-message>
+                      <app-copy-to-clipboard *ngIf="choice.message" [text]="choice.message.content"></app-copy-to-clipboard>
                     </div>
                     <div class="open-ai-choice-actions">
                       <app-text-to-speech-button [text]="choice.message.content"
@@ -69,7 +74,8 @@
                   </div>
                 </div>
               </div>
-              <div class="open-ai-data" *ngIf="openAiResult.response.data && !(openAiResult.files && openAiResult.files.length)">
+              <div class="open-ai-data"
+                   *ngIf="openAiResult.response.data && !(openAiResult.files && openAiResult.files.length)">
                 <div class="open-ai-data-entry" *ngFor="let data of openAiResult.response.data; let i = index">
                   <div class="image-preview" *ngIf="data.url">
                     <img [src]="data.url">
@@ -80,9 +86,11 @@
               <div class="open-ai-data" *ngIf="(openAiResult.files && openAiResult.files.length)">
                 <div class="open-ai-data-entry" *ngFor="let serverFile of openAiResult.files; let i = index">
                   <div class="image-preview" *ngIf="serverFile.imageResult">
-                    <img [src]="app.fileSrc(serverFile.imageResult.filename, serverFile.imageResult.path)" alt="{{serverFile.imageResult.filename}}" class="file-preview" />
+                    <img [src]="app.fileSrc(serverFile.imageResult.filename, serverFile.imageResult.path)"
+                         alt="{{serverFile.imageResult.filename}}" class="file-preview"/>
                   </div>
-                  <a [href]="app.fileSrc(serverFile.imageResult.filename, serverFile.imageResult.path)" target="_blank">Download Image</a>
+                  <a [href]="app.fileSrc(serverFile.imageResult.filename, serverFile.imageResult.path)" target="_blank">Download
+                    Image</a>
                 </div>
               </div>
             </div>
@@ -98,157 +106,172 @@
       </div>
     </div>
   </div>
-  <div class="open-ai-functions" *ngIf="openAi.mode.alias === 'chat' && openAi.newMessage.role === 'function'">
-    <h3>Functions</h3>
-    <div class="new-function-inputs">
 
+
+  <div class="open-ai-input-wrapper" *ngIf="!fullscreenResults">
+    <div class="open-ai-functions"
+         *ngIf="openAi.mode.alias === 'chat' && openAi.newMessage.role === 'function'">
+      <h3>Functions</h3>
+      <div class="new-function-inputs">
+
+        <div>
+          <label>
+            Name
+          </label>
+          <input type="text" [(ngModel)]="openAi.newFunction.name">
+        </div>
+
+        <div>
+          <label>
+            Description
+          </label>
+          <input type="text" [(ngModel)]="openAi.newFunction.description">
+        </div>
+
+        <div>
+          <label>
+            Parameters
+          </label>
+          <table>
+            <tbody>
+            <tr *ngFor="let parameter of openAi.functionParameters(openAi.newFunction)">
+              <th>{{parameter.key}}</th>
+              <td>{{parameter.value}}</td>
+              <td>
+                <button (click)="openAi.removeParamFromFunction(parameter.key, openAi.newFunction)">delete</button>
+              </td>
+            </tr>
+            <tr>
+              <th>
+                <input type="text" placeholder="Key" #newFunctionParamKey>
+              </th>
+              <td>
+                <input type="text" placeholder="Value" #newFunctionParamValue>
+              </td>
+              <td>
+                <button
+                  (click)="openAi.addOrSetParamToFunction(newFunctionParamKey.value, newFunctionParamValue.value, openAi.newFunction)">
+                  add
+                </button>
+              </td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+
+
+      </div>
       <div>
-        <label>
-          Name
-        </label>
-        <input type="text" [(ngModel)]="openAi.newFunction.name">
+        <button [disabled]="(!openAi.newFunction.name)" (click)="openAi.addFunction(openAi.newFunction)">Add Function
+        </button>
+      </div>
+      <div class="open-ai-chat-functions">
+        <div class="open-ai-chat-function" *ngIf="!openAi.functions.length">
+          <span><i>Add a function</i></span>
+        </div>
+        <div class="open-ai-chat-function" *ngFor="let function of openAi.functions">
+
+          <div>
+            {{function.name}}
+          </div>
+
+          <div>
+            {{function.description}}
+          </div>
+
+          <div>
+            {{function.parameters}}
+          </div>
+
+          <button (click)="openAi.removeFunction(function)">Delete</button>
+        </div>
+      </div>
+    </div>
+
+
+    <div class="open-ai-input">
+      <div class="open-ai-chat-config" *ngIf="openAi.mode.alias === 'file'">
+        <app-file-upload [filePath]="'open-ai-uploads'"></app-file-upload>
       </div>
 
-      <div>
-        <label>
-          Description
+      <div class="open-ai-chat-config" *ngIf="openAi.mode.alias === 'chat'">
+        <label *ngIf="openAi.mode.alias === 'chat'">
+          <input type="checkbox" [(ngModel)]="systemConfig">Show default GPT configuration
         </label>
-        <input type="text" [(ngModel)]="openAi.newFunction.description">
+        <div class="open-ai-system-config" *ngIf="systemConfig">
+          <div>
+            <label>System</label>
+            <textarea type="text" [(ngModel)]="openAi.systemMessage.content" [disabled]="openAi.sending"
+                      name="openAiSystemMessage"
+                      placeholder="Type text for system configuration"></textarea>
+          </div>
+          <div>
+            <label>Assistant</label>
+            <textarea type="text" [(ngModel)]="openAi.assistantMessage.content" [disabled]="openAi.sending"
+                      name="openAiAssistantMessage"
+                      placeholder="Type text for assistant configuration"></textarea>
+          </div>
+        </div>
+
+        <div class="open-ai-function-input" *ngIf="systemConfig && openAi.newMessage.role === 'function'">
+          <div>
+            <input type="text" placeholder="Main function_call" [(ngModel)]="openAi.functionCall">
+          </div>
+        </div>
+
       </div>
 
-      <div>
-        <label>
-          Parameters
+
+      <div class="open-ai-options">
+
+        <label *ngIf="openAi.mode.alias === 'chat'">
+          <span>Role</span>
+          <select [(ngModel)]="openAi.newMessage.role">
+            <option *ngFor="let role of openAi.roles" [ngValue]="role">
+              {{role}}
+            </option>
+          </select>
         </label>
-        <table>
-          <tbody>
-          <tr *ngFor="let parameter of openAi.functionParameters(openAi.newFunction)">
-            <th>{{parameter.key}}</th>
-            <td>{{parameter.value}}</td>
-            <td>
-              <button (click)="openAi.removeParamFromFunction(parameter.key, openAi.newFunction)">delete</button>
-            </td>
-          </tr>
-          <tr>
-            <th>
-              <input type="text" placeholder="Key" #newFunctionParamKey>
-            </th>
-            <td>
-              <input type="text" placeholder="Value" #newFunctionParamValue>
-            </td>
-            <td>
-              <button
-                (click)="openAi.addOrSetParamToFunction(newFunctionParamKey.value, newFunctionParamValue.value, openAi.newFunction)">
-                add
-              </button>
-            </td>
-          </tr>
-          </tbody>
-        </table>
+        <label *ngIf="openAi.mode.alias === 'completion'">
+          <span>Model</span>
+          <select [(ngModel)]="openAi.completionModel">
+            <option *ngFor="let model of openAi.completionModels" [ngValue]="model">
+              {{model.id}}
+            </option>
+          </select>
+        </label>
+        <label *ngIf="openAi.mode.alias === 'chat'">
+          <span>Model</span>
+          <select [(ngModel)]="openAi.chatModel">
+            <option *ngFor="let model of openAi.chatModels" [ngValue]="model">
+              {{model.id}}
+            </option>
+          </select>
+        </label>
+        <label *ngIf="openAi.mode.alias === 'image'">
+          <span>Number of images</span>
+          <input type="number" [(ngModel)]="openAi.numberOfImages" [min]="1" [max]="openAi.maxNumberOfImages"
+                 [step]="1"/>
+        </label>
+        <label *ngIf="openAi.mode.alias === 'image'">
+          <span>Size</span>
+          <select [(ngModel)]="openAi.imageSize">
+            <option *ngFor="let size of openAi.imageSizes" [ngValue]="size">
+              {{size}}
+            </option>
+          </select>
+        </label>
+
       </div>
 
 
     </div>
-    <div>
-      <button [disabled]="(!openAi.newFunction.name)" (click)="openAi.addFunction(openAi.newFunction)">Add Function
-      </button>
-    </div>
-    <div class="open-ai-chat-functions">
-      <div class="open-ai-chat-function" *ngIf="!openAi.functions.length">
-        <span><i>Add a function</i></span>
-      </div>
-      <div class="open-ai-chat-function" *ngFor="let function of openAi.functions">
 
-        <div>
-          {{function.name}}
-        </div>
 
-        <div>
-          {{function.description}}
-        </div>
 
-        <div>
-          {{function.parameters}}
-        </div>
-
-        <button (click)="openAi.removeFunction(function)">Delete</button>
-      </div>
-    </div>
   </div>
 
-
-  <div class="open-ai-input">
-
-
-    <div class="open-ai-chat-config" *ngIf="openAi.mode.alias === 'chat'">
-      <label *ngIf="openAi.mode.alias === 'chat'">
-        <input type="checkbox" [(ngModel)]="systemConfig">Show default GPT configuration
-      </label>
-      <div class="open-ai-system-config" *ngIf="systemConfig">
-        <div>
-          <label>System</label>
-          <textarea type="text" [(ngModel)]="openAi.systemMessage.content" [disabled]="openAi.sending"
-                    name="openAiSystemMessage"
-                    placeholder="Type text for system configuration"></textarea>
-        </div>
-        <div>
-          <label>Assistant</label>
-          <textarea type="text" [(ngModel)]="openAi.assistantMessage.content" [disabled]="openAi.sending"
-                    name="openAiAssistantMessage"
-                    placeholder="Type text for assistant configuration"></textarea>
-        </div>
-      </div>
-
-      <div class="open-ai-function-input" *ngIf="systemConfig && openAi.newMessage.role === 'function'">
-        <div>
-          <input type="text" placeholder="Main function_call" [(ngModel)]="openAi.functionCall">
-        </div>
-      </div>
-
-    </div>
-
-
-    <div class="open-ai-options">
-
-      <label *ngIf="openAi.mode.alias === 'chat'">
-        <span>Role</span>
-        <select [(ngModel)]="openAi.newMessage.role">
-          <option *ngFor="let role of openAi.roles" [ngValue]="role">
-            {{role}}
-          </option>
-        </select>
-      </label>
-      <label *ngIf="openAi.mode.alias === 'completion'">
-        <span>Model</span>
-        <select [(ngModel)]="openAi.completionModel">
-          <option *ngFor="let model of openAi.completionModels" [ngValue]="model">
-            {{model.id}}
-          </option>
-        </select>
-      </label>
-      <label *ngIf="openAi.mode.alias === 'chat'">
-        <span>Model</span>
-        <select [(ngModel)]="openAi.chatModel">
-          <option *ngFor="let model of openAi.chatModels" [ngValue]="model">
-            {{model.id}}
-          </option>
-        </select>
-      </label>
-      <label *ngIf="openAi.mode.alias === 'image'">
-        <span>Number of images</span>
-        <input type="number" [(ngModel)]="openAi.numberOfImages" [min]="1" [max]="openAi.maxNumberOfImages" [step]="1"/>
-      </label>
-      <label *ngIf="openAi.mode.alias === 'image'">
-        <span>Size</span>
-        <select [(ngModel)]="openAi.imageSize">
-          <option *ngFor="let size of openAi.imageSizes" [ngValue]="size">
-            {{size}}
-          </option>
-        </select>
-      </label>
-
-    </div>
-
+  <div>
     <div class="open-ai-message-input">
 
 
@@ -267,32 +290,25 @@
 
 
     </div>
-
+    <div class="open-ai-buttons">
+      <app-speech-recognition-button [disabled]="openAi.sending"
+                                     (onResult)="onSpeechRecognitionResult($event, true)"></app-speech-recognition-button>
+      <form *ngIf="openAi.mode.alias === 'chat'" (ngSubmit)="openAi.addMessage()">
+        <button
+          [disabled]="!openAi.newMessage || openAi.sending || (openAi.newMessage.role === 'function' && !openAi.newMessage.name && !openAi.functions.length)"
+          type="submit">Add Message
+        </button>
+      </form>
+      <form (ngSubmit)="openAi.submitRequest()">
+        <button
+          [disabled]="(!openAi.newMessage && !openAi.messages.length || (openAi.newMessage.role === 'function' && (!openAi.newMessage.name) && !openAi.functions.length)) || openAi.sending"
+          type="submit">Send
+          Messages
+        </button>
+      </form>
+    </div>
 
   </div>
 
-
-  <div class="open-ai-buttons">
-    <app-speech-recognition-button [disabled]="openAi.sending"
-                                   (onResult)="onSpeechRecognitionResult($event, true)"></app-speech-recognition-button>
-    <form *ngIf="openAi.mode.alias === 'chat'" (ngSubmit)="openAi.addMessage()">
-      <button
-        [disabled]="!openAi.newMessage || openAi.sending || (openAi.newMessage.role === 'function' && !openAi.newMessage.name && !openAi.functions.length)"
-        type="submit">Add Message
-      </button>
-    </form>
-    <form (ngSubmit)="openAi.submitRequest()">
-      <button
-        [disabled]="(!openAi.newMessage && !openAi.messages.length || (openAi.newMessage.role === 'function' && (!openAi.newMessage.name) && !openAi.functions.length)) || openAi.sending"
-        type="submit">Send
-        Messages
-      </button>
-    </form>
-  </div>
-
-
-  <label>
-    <input type="checkbox" [(ngModel)]="openAi.readResults">Read Results (text to speech)
-  </label>
 
 </div>

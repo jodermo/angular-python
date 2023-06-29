@@ -41,11 +41,12 @@ export class ApiManagerService {
 
 
   newApi() {
-    this.editApi = {} as Api;
+    this.editApi = new Api();
   }
 
 
   callApi(api?: Api) {
+    console.log('callApi', api);
     if (api) {
       const result = new ApiResult(this, api);
       this.selectedResult = result;

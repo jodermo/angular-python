@@ -1,9 +1,8 @@
 <div class="file-upload">
-  <div>
+  <div *ngIf="!filePath">
     <label >Path</label>
-    <input *ngIf="filePath" id="uploadPath" name="uploadPath" type="text" [(ngModel)]="filePath"
-           (ngModelChange)="fileManager.onUploadPathChanged(filePath)"/>
-    <input  type="text" [(ngModel)]="fileManager.uploadPath"
+
+    <input   type="text" [(ngModel)]="fileManager.uploadPath"
             (ngModelChange)="fileManager.onUploadPathChanged(fileManager.uploadPath)"/>
   </div><br>
 
@@ -12,7 +11,7 @@
        (dragover)="fileManager.onDragOver($event)"
        (dragleave)="fileManager.onDragLeave($event)"
        (drop)="fileManager.onFileDrop($event)">
-    <p>Drag and drop files, or click here</p>
+    <p>Drag and drop files, or click to upload</p>
   </div>
   <div *ngIf="!fileManager.error && fileManager.selectedFile" class="file-drop-box done">
     <div *ngIf="fileManager.isImageFile(fileManager.selectedFile)" class="file-preview-container">

@@ -42,12 +42,12 @@ export class ApiResultComponent extends ApiManagerComponent {
     return this.apiResult?.contentType?.startsWith('application/json') && !this.apiResult.isArray;
   }
 
-  getObjectResultKeys() {
-    return Object.entries(this.apiResult?.result).map(([key, value]) => ({key, value}));
+  getObjectResultKeys(result = this.apiResult?.result) {
+    return Object.entries(result).map(([key, value]) => ({key, value}));
   }
 
   isOtherResult() {
-    return !this.isTextResult() && !this.isImageResult();
+    return !this.isTextResult() && !this.isImageResult() && !this.isObjectResult();
   }
 
 }

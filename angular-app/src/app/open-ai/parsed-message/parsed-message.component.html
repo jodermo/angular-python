@@ -1,0 +1,8 @@
+<div class="parsed-message">
+  <ng-container *ngFor="let parsedText of parsedTexts">
+    <ng-container [ngSwitch]="parsedText.type">
+      <div *ngSwitchCase="'text'" [innerHTML]="parsedText.text"></div>
+      <app-code-preview *ngSwitchCase="'code'" [code]="parsedText.code"></app-code-preview>
+    </ng-container>
+  </ng-container>
+</div>

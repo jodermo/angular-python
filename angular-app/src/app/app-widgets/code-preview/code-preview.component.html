@@ -1,0 +1,4 @@
+<div class="code-preview" *ngIf="code">
+  <pre><code [class]="language"  #codeElement>{{code}}</code></pre>
+  <app-copy-to-clipboard [text]="code"></app-copy-to-clipboard>
+</div>

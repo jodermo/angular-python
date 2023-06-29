@@ -22,20 +22,20 @@ export const AppLanguages = [
 export type AppLanguageType = typeof AppLanguages[number];
 
 
-export interface Api {
-  id: number;
-  api_name: string;
-  api_url: string;
-  method: string;
-  mode: string;
-  cache: string;
-  credentials: string;
+export class Api {
+  id?: number;
+  api_name?: string;
+  api_url?: string;
+  method: string = 'GET';
+  mode: string = 'no-cors';
+  cache: string = 'no-cache';
+  credentials?: string;
   headers: {
     key: string;
     value: string;
-  }[];
-  redirect: string;
-  referrerPolicy: string;
+  }[] = [];
+  redirect?: string;
+  referrerPolicy?: string;
   body: any;
 }
 
@@ -440,5 +440,34 @@ export class AppService {
 
   speechRecognitionValue(speechRecognitionResponse?: SpeechRecognitionResponse) {
     return speechRecognitionResponse && speechRecognitionResponse.text ? speechRecognitionResponse.text : speechRecognitionResponse?.error ? speechRecognitionResponse.error : '';
+  }
+
+  download(src: string) {
+    const link = document.createElement('a');
+    link.href = src;
+    link.download = '';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
+  isObject(value: any) {
+    return typeof value === 'object';
+  }
+
+  isArray(value: any) {
+    return Array.isArray(value);
+  }
+
+  isString(value: any) {
+    return typeof value === 'string';
+  }
+
+  isNumber(value: any) {
+    return typeof value === 'number';
+  }
+
+  getObjectResultKeys(result: any) {
+    return Object.entries(result).map(([key, value]) => ({key, value}));
   }
 }

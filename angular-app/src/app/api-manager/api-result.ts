@@ -28,54 +28,61 @@ export class ApiResult {
           headers[header.key] = header.value;
         }
       }
+      if (this.api.api_url) {
+        try {
+          await fetch(this.api.api_url, {
+            method: this.api.method,
+            headers: headers,
+            body: JSON.stringify(this.api.body),
+          }).then(result => {
+            try {
+              result = this.result.json();
+              this.isArray = Array.isArray(this.result);
+            } catch (e) {
+              // do nothing
+            }
+            this.result = result;
+            return result;
+          });
 
-      try {
-        this.result = await fetch(this.api.api_url, {
-          method: this.api.method,
-          headers: headers,
-          body: JSON.stringify(this.api.body),
-        }).then(result => {
-          try {
-            result = this.result.json();
-            this.isArray = Array.isArray(this.result);
-          } catch (e) {
-            // do nothing
+
+          this.contentType = this.result.headers.get("content-type");
+          if (!this.result.ok) {
+            throw new Error(`${this.result.status} ${this.result.statusText}`);
           }
-          return result;
-        });
-
-
-        this.contentType = this.result.headers.get("content-type");
-        if (!this.result.ok) {
-          throw new Error(`${this.result.status} ${this.result.statusText}`);
-        }
-        if (this.contentType?.startsWith("text")) {
-          this.result = await this.result.text();
-        }else{
-          try{
-            this.result = await this.result.json();
-          }catch (e) {
-            // do nothing
+          if (this.contentType?.startsWith("text")) {
+            this.result = await this.result.text();
+          } else {
+            try {
+              this.result = await this.result.json();
+            } catch (e) {
+              // do nothing
+            }
           }
+          this.resultFile = this.result.blob ? await this.result.blob() : undefined;
+          if (onSuccess) {
+            onSuccess(this.result);
+          }
+        } catch (error: any) {
+          this.error = {
+            message: error.message,
+            status: error.name,
+            statusText: error.message,
+          };
+          if (onError) {
+            onError(this.error);
+          }
+
         }
-        this.resultFile = this.result.blob ? await this.result.blob() : undefined;
-        if (onSuccess) {
-          onSuccess(this.result);
-        }
-      } catch (error: any) {
-        this.error = {
-          message: error.message,
-          status: error.name,
-          statusText: error.message,
-        };
-        this.result = error;
+        this.loading = false;
+      } else {
         if (onError) {
-          onError(this.error);
+          onError('no API url');
         }
       }
-
-      this.loading = false;
     }
+
+
     this.ready = true;
   }
 

@@ -264,7 +264,80 @@ class open_ai:
 
         return self.generate_image(prompt, number, size)
 
-    def create_edit(self, document):
+
+    def create_image_edit(self, image, prompt, mask=None, n=1, size='1024x1024', response_format='url', user=None):
+        if self.api_key:
+            url = 'https://api.openai.com/v1/images/edits'
+            headers = {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + self.api_key
+            }
+            payload = {
+                'image': image,
+                'mask': mask,
+                'prompt': prompt,
+                'n': n,
+                'size': size,
+                'response_format': response_format,
+                'user': user
+            }
+            response = requests.post(url, headers=headers, json=payload)
+            data = response.json()
+            return data
+
+    def create_image_edit_request(self, request):
+        log.info('create_image_edit_request')
+        if 'image' not in request.files:
+            return jsonify({'error': 'No image provided'})
+
+        image = request.files['image']
+        mask = request.files['mask'] if 'mask' in request.files else None
+
+        request_data = request.json
+        prompt = request_data.get('prompt')
+        number = request_data.get('number') if request_data.get('number') else 1
+        size = request_data.get('size') if request_data.get('size') else '1024x1024'
+        response_format = request_data.get('response_format') if request_data.get('response_format') else 'url'
+        user = request_data.get('user') if request_data.get('user') else None
+
+        return self.create_image_edit(image, prompt, mask, number, size, response_format, user)
+
+
+    def create_image_variation(self, image, n=1, size='1024x1024', response_format='url', user=None):
+        if self.api_key:
+            url = 'https://api.openai.com/v1/images/variations'
+            headers = {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + self.api_key
+            }
+            payload = {
+                'image': image,
+                'n': n,
+                'size': size,
+                'response_format': response_format,
+                'user': user
+            }
+            response = requests.post(url, headers=headers, json=payload)
+            data = response.json()
+            return data
+
+    def create_image_variation_request(self, request):
+        log.info('create_image_variation_request')
+        if 'image' not in request.files:
+            return jsonify({'error': 'No image provided'})
+
+        image = request.files['image']
+
+        request_data = request.json
+        number = request_data.get('number') if request_data.get('number') else 1
+        size = request_data.get('size') if request_data.get('size') else '1024x1024'
+        response_format = request_data.get('response_format') if request_data.get('response_format') else 'url'
+        user = request_data.get('user') if request_data.get('user') else None
+
+        return self.create_image_variation(image, number, size, response_format, user)
+
+
+    def create_edit(self, input, instruction = '', n = 1, temperature = 1, top_p= 1, model = 'text-davinci-edit-001'):
         log.info('create_edit')
         if self.api_key:
             url = 'https://api.openai.com/v1/edits'
@@ -273,7 +346,12 @@ class open_ai:
                 'Content-Type': 'application/json'
             }
             payload = {
-                'document': document
+                'model': model,
+                'input': input,
+                'instruction': instruction,
+                'n': n,
+                'temperature': temperature,
+                'top_p': top_p,
             }
 
             response = requests.post(url, headers=headers, json=payload)
@@ -287,13 +365,18 @@ class open_ai:
             log.info('No API key')
             return jsonify({'success': 0, 'response': {'error': {'code': 'No API key', 'message': 'Set your API key to OPENAI_API_KEY=KEY in .env file'}}})
 
+
     def create_edit_request(self, request):
         log.info('create_edit_request')
-        request_data = request.json
-        document = request_data.get('document')
-        return self.create_edit(document)
+        input = request_data.get('input') if request_data.get('input') else ''
+        instruction = request_data.get('instruction') if request_data.get('instruction') else ''
+        n = request_data.get('n') if request_data.get('n') else 1
+        temperature = request_data.get('temperature') if request_data.get('temperature') else 1
+        top_p = request_data.get('top_p') if request_data.get('top_p') else 1
+        model = request_data.get('model') if request_data.get('model') else 'text-davinci-edit-001'
+        return self.create_edit(file, input, instruction,  n, temperature, top_p, model)
 
-    def create_embeddings(self, texts):
+    def create_embeddings(self, texts, user=None, model='text-embedding-ada-002'):
         log.info('create_embeddings')
         if self.api_key:
             url = 'https://api.openai.com/v1/embeddings'
@@ -302,18 +385,32 @@ class open_ai:
                 'Content-Type': 'application/json'
             }
             payload = {
-                'documents': texts
+                'model': model,
+                'input': texts,
+                'user': user
             }
             response = requests.post(url, headers=headers, json=payload)
             data = response.json()
-            result = {'success': 0 if 'error' in data else 1, 'response': data, 'time': datetime.timestamp(datetime.now())}
+            result = {
+                'success': 0 if 'error' in data else 1,
+                'response': data,
+                'time': datetime.timestamp(datetime.now())
+            }
             dbEntry = self.add_response_to_database(result)
             result['dbEntry'] = dbEntry
             log.info('success' if 'error' not in data else 'error')
             return jsonify(result)
         else:
             log.info('No API key')
-            return jsonify({'success': 0, 'response': {'error': {'code': 'No API key', 'message': 'Set your API key to OPENAI_API_KEY=KEY in .env file'}}})
+            return jsonify({
+                'success': 0,
+                'response': {
+                    'error': {
+                        'code': 'No API key',
+                        'message': 'Set your API key to OPENAI_API_KEY=KEY in .env file'
+                    }
+                }
+            })
 
     def create_embeddings_request(self, request):
         log.info('create_embeddings_request')
@@ -322,7 +419,8 @@ class open_ai:
         return self.create_embeddings(texts)
 
 
-    def create_audio_transcription(self, audio):
+
+    def create_audio_transcription(self, audio, model='whisper-1', prompt=None, response_format='json', temperature=0, language=None):
         log.info('create_audio_transcription')
         if self.api_key:
             url = 'https://api.openai.com/v1/audio/transcriptions'
@@ -331,26 +429,50 @@ class open_ai:
                 'Content-Type': 'application/json'
             }
             payload = {
-                'audio': audio
+                'file': audio,
+                'model': model,
+                'prompt': prompt,
+                'response_format': response_format,
+                'temperature': temperature,
+                'language': language
             }
             response = requests.post(url, headers=headers, json=payload)
             data = response.json()
-            result = {'success': 0 if 'error' in data else 1, 'response': data, 'time': datetime.timestamp(datetime.now())}
+            result = {
+                'success': 0 if 'error' in data else 1,
+                'response': data,
+                'time': datetime.timestamp(datetime.now())
+            }
             dbEntry = self.add_response_to_database(result)
             result['dbEntry'] = dbEntry
             log.info('success' if 'error' not in data else 'error')
             return jsonify(result)
         else:
             log.info('No API key')
-            return jsonify({'success': 0, 'response': {'error': {'code': 'No API key', 'message': 'Set your API key to OPENAI_API_KEY=KEY in .env file'}}})
+            return jsonify({
+                'success': 0,
+                'response': {
+                    'error': {
+                        'code': 'No API key',
+                        'message': 'Set your API key to OPENAI_API_KEY=KEY in .env file'
+                    }
+                }
+            })
 
     def create_audio_transcription_request(self, request):
         log.info('create_audio_transcription_request')
-        request_data = request.json
-        audio = request_data.get('audio')
-        return self.create_audio_transcription(audio)
+        if 'file' not in request.files:
+            return jsonify({'error': 'No file provided'})
+        audio = request.files['file']
+        model = request.form.get('model', 'whisper-1')
+        prompt = request.form.get('prompt')
+        response_format = request.form.get('response_format', 'json')
+        temperature = float(request.form.get('temperature', 0))
+        language = request.form.get('language')
+        return self.create_audio_transcription(audio, model, prompt, response_format, temperature, language)
 
-    def create_audio_translation(self, audio, target_language):
+
+    def create_audio_translation(self, audio, model='whisper-1', prompt=None, response_format='json', temperature=0):
         log.info('create_audio_translation')
         if self.api_key:
             url = 'https://api.openai.com/v1/audio/translations'
@@ -359,27 +481,46 @@ class open_ai:
                 'Content-Type': 'application/json'
             }
             payload = {
-                'audio': audio,
-                'target_language': target_language
+                'file': audio,
+                'model': model,
+                'prompt': prompt,
+                'response_format': response_format,
+                'temperature': temperature
             }
             response = requests.post(url, headers=headers, json=payload)
             data = response.json()
-            result = {'success': 0 if 'error' in data else 1, 'response': data, 'time': datetime.timestamp(datetime.now())}
+            result = {
+                'success': 0 if 'error' in data else 1,
+                'response': data,
+                'time': datetime.timestamp(datetime.now())
+            }
             dbEntry = self.add_response_to_database(result)
             result['dbEntry'] = dbEntry
             log.info('success' if 'error' not in data else 'error')
             return jsonify(result)
         else:
             log.info('No API key')
-            return jsonify({'success': 0, 'target_language': target_language, 'response': {'error': {'code': 'No API key', 'message': 'Set your API key to OPENAI_API_KEY=KEY in .env file'}}})
+            return jsonify({
+                'success': 0,
+                'response': {
+                    'error': {
+                        'code': 'No API key',
+                        'message': 'Set your API key to OPENAI_API_KEY=KEY in .env file'
+                    }
+                }
+            })
 
     def create_audio_translation_request(self, request):
         log.info('create_audio_translation_request')
-        request_data = request.json
-        audio = request_data.get('audio')
-        target_language = request_data.get('target_language')
+        if 'file' not in request.files:
+            return jsonify({'error': 'No file provided'})
+        audio = request.files['file']
+        model = request.form.get('model', 'whisper-1')
+        prompt = request.form.get('prompt')
+        response_format = request.form.get('response_format', 'json')
+        temperature = float(request.form.get('temperature', 0))
+        return self.create_audio_translation(audio, model, prompt, response_format, temperature)
 
-        return self.create_audio_translation(audio, target_language)
 
     def list_files(self):
         log.info('list_files')

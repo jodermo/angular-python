@@ -1,6 +1,18 @@
 <div class="text-to-speech-button" *ngIf="text">
-  <select *ngIf="!textToSpeech.useElevenLabsAPI" [(ngModel)]="app.language" [disabled]="disabled"  (ngModelChange)="textToSpeech.stop();">
+  <select *ngIf="textToSpeech.mode.alias === 'gtts' || textToSpeech.mode.alias === 'polly'" [(ngModel)]="app.language" [disabled]="disabled"  (ngModelChange)="textToSpeech.filterPollyVoices(textToSpeech.pollyEngine);">
     <option *ngFor="let language of app.languages" [ngValue]="language">{{language.name}}</option>
+  </select>
+  <select *ngIf="textToSpeech.mode.alias === 'polly' &&  textToSpeech.pollyEngines.length"
+          [(ngModel)]="textToSpeech.pollyEngine" (ngModelChange)="textToSpeech.filterPollyVoices(textToSpeech.pollyEngine)" >
+    <option *ngFor="let pollyEngine of textToSpeech.pollyEngines" [ngValue]="pollyEngine">{{pollyEngine}}</option>
+  </select>
+
+  <select *ngIf="textToSpeech.mode.alias === 'polly' &&  textToSpeech.pollyEngineVoices.length"
+          [(ngModel)]="textToSpeech.pollyVoice">
+    <option *ngFor="let voice of textToSpeech.pollyEngineVoices" [ngValue]="voice">{{voice.Name}}</option>
+  </select>
+  <select *ngIf="textToSpeech.mode.alias === 'eleven-labs'" [(ngModel)]="textToSpeech.elevenLabsVoice" [disabled]="disabled"  (ngModelChange)="textToSpeech.stop();">
+    <option *ngFor="let voice of textToSpeech.elevenLabsVoices" [ngValue]="voice">{{voice.name}}</option>
   </select>
   <button
     *ngIf="!textToSpeech.playing || textToSpeech.playing.text !== text || (textToSpeech.audio.currentTime === 0 && textToSpeech.audio.paused)"
@@ -33,11 +45,17 @@
     (click)="textToSpeech.stop()">
     Stop
   </button>
+  <button
+    [disabled]="(!textToSpeech.isAvailable(text))"
+    (click)="textToSpeech.download(text)">
+    Download
+  </button>
   <span class="spacer"></span>
-  <label>
-    <input type="checkbox" [(ngModel)]="textToSpeech.useElevenLabsAPI"
-           (ngModelChange)="textToSpeech.getElevenLabsVoices();"> Use ll ElevenLabs API<br>
-    <i><a href="https://www.futuretools.io/tools/eleven-labs" target="_blank">https://www.futuretools.io/tools/eleven-labs</a></i>
+  <div>
+    <select [(ngModel)]="textToSpeech.mode">
+      <option *ngFor="let mode of textToSpeech.modes" [ngValue]="mode">{{mode.name}}</option>
+    </select><br>
+    <i *ngIf="textToSpeech.mode.infoUrl"><a href="{{textToSpeech.mode.infoUrl}}" target="_blank">More infos</a></i>
 
-  </label>
+  </div>
 </div>

@@ -1,0 +1,17 @@
+<div class="api-result-value" *ngIf="value">
+  <ng-container *ngIf="app.isObject(value)">
+    <table >
+      <tr *ngFor="let valueItem of app.getObjectResultKeys(value)">
+        <th>
+          {{valueItem.key}}
+        </th>
+        <td>
+          <app-api-result-value  [value]="valueItem.value"></app-api-result-value>
+        </td>
+      </tr>
+    </table>
+  </ng-container>
+  <ng-container *ngIf="app.isNumber(value) || app.isString(value)">
+    {{value}}
+  </ng-container>
+</div>

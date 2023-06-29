@@ -63,7 +63,7 @@ class text_to_speech:
         log.info(unique_filename)
         file_path = self.play(text, unique_filename, lang, slow) if play else self.save_to_file(text, unique_filename, lang, slow)
 
-        result = {'text': text, 'filename': unique_filename, 'lang': lang, 'play': play}
+        result = {'mode': 'gtts', 'text': text, 'filename': unique_filename, 'lang': lang, 'play': play}
         dbEntry = self.add_response_to_database(result)
         result['dbEntry'] = dbEntry
 

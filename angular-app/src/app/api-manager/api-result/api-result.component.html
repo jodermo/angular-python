@@ -21,10 +21,17 @@
       <p>{{apiResult.result}}</p>
     </div>
     <div *ngIf="isObjectResult()">
-      <h4>Object Result:</h4>
-      <div *ngFor="let item of getObjectResultKeys()">
-        <p><strong>{{item.key}}:</strong> {{item.value}}</p>
-      </div>
+      <table>
+        <tbody>
+        <tr *ngFor="let item of getObjectResultKeys(apiResult.result)">
+          <th>
+            {{item.key}}
+          </th>
+          <td>
+            <app-api-result-value [value]="item.value"></app-api-result-value>
+          </td>
+        </tbody>
+      </table>
     </div>
   </div>
 </div>

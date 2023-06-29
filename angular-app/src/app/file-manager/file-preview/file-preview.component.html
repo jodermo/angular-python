@@ -1,0 +1,32 @@
+<div class="file-preview" *ngIf="file">
+  <ng-container *ngIf="fileManager.isImage(file)">
+    <div class="image-container" (click)="fileManager.fullscreenFile = file;">
+      <img [src]="app.fileSrc(file.filename, (file.directory|| fileManager.uploadPath))" alt="{{file.filename}}">
+    </div>
+  </ng-container>
+  <ng-container *ngIf="fileManager.isVideo(file)">
+    <div class="video-container">
+      <video  controls>
+        <source [src]="app.fileSrc(file.filename, (file.directory|| fileManager.uploadPath))" type="{{file.mime_type}}">
+        Your browser does not support the video tag.
+      </video>
+    </div>
+  </ng-container>
+  <ng-container *ngIf="fileManager.isAudio(file)">
+    <div class="audio-container">
+      <audio controls>
+        <source [src]="app.fileSrc(file.filename, (file.directory|| fileManager.uploadPath))" type="{{file.mime_type}}">
+        Your browser does not support the audio element.
+      </audio>
+    </div>
+  </ng-container>
+  <ng-container *ngIf="fileManager.isDocument(file)">
+    <div class="image-container">
+
+    </div>
+  </ng-container>
+
+  <a class="download-link" [href]="app.fileSrc(file.filename, (file.directory|| fileManager.uploadPath))"  target="_blank" >
+   {{file.filename}} <i><small>[{{ fileManager.getFileSize(file.size) }}]</small></i>
+  </a>
+</div>

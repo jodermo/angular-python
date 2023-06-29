@@ -20,10 +20,11 @@ angular-app/dist/
 /angular-app/bazel-out
 
 # Node
+/node_modules
 /angular-app/node_modules
 angular-app/npm-debug.log
 angular-app/yarn-error.log
-
+*package-lock.json
 # IDEs and editors
 .idea/
 .project

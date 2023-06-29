@@ -1,3 +1,5 @@
+@import '~highlight.js/styles/default.css';
+
 html, body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
   font-size: 14px;
@@ -12,6 +14,7 @@ html, body {
   left: 0;
   padding: 0;
   margin: 0;
+  font-size: 14px;
 }
 
 h1,
@@ -25,6 +28,10 @@ h6 {
 
 p {
   margin: 0;
+}
+
+.button, button{
+  cursor: pointer;
 }
 
 * {
@@ -195,7 +202,15 @@ button {
   }
 
 }
-
+pre {
+  background-color: #333;
+  color: #fff;
+  padding: 10px;
+  border-radius: 4px;
+  font-family: Menlo, Monaco, Consolas, 'Courier New', monospace;
+  font-size: 14px;
+  line-height: 1.4;
+}
 .content {
   width: 100%;
   padding: 0 1rem 1rem 1rem;
@@ -440,7 +455,11 @@ svg#clouds {
     transform: rotate(-5deg);
   }
 }
-
+@media screen and (max-width: 1000px) {
+ html, body{
+   font-size: 10px;
+ }
+}
 @media screen and (max-width: 575px) {
   svg#rocket-smoke {
     display: none;

@@ -13,7 +13,7 @@ import {SpeechRecognitionResponse} from "../speech-recognition/speech-recognitio
 export class OpenAiComponent extends AppComponent {
 
   systemConfig = false;
-
+  fullscreenResults = false;
 
   constructor(app: AppService, public openAi: OpenAiService) {
     super(app);

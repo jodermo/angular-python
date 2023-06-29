@@ -1,6 +1,7 @@
 import {Injectable} from '@angular/core';
 import {AppService} from "../app.service";
 import {ServerFile} from "../file-manager/file-manager.service";
+import {ParsedText} from "./parsed-message/parsed-message.component";
 
 
 export interface OpenAiModelPermission {
@@ -71,13 +72,16 @@ export type OpenAiModeAlias = typeof OpenAiModeAliases[number];
 export type OpenAiMode = { name: string, alias: OpenAiModeAlias };
 export const OpenAiMChatMode: OpenAiMode = {name: 'GPT Chat', alias: 'chat'};
 export const OpenAiCompletionMode: OpenAiMode = {name: 'Send Completion', alias: 'completion'};
+export const OpenAiImageMode: OpenAiMode = {name: 'Image Generation', alias: 'image'};
+export const OpenAiFileMode: OpenAiMode = {name: 'File', alias: 'file'};
 export const OpenAiCompletionModels = ['text-davinci-003', 'text-davinci-002', 'text-curie-001', 'text-babbage-001', 'text-ada-001'];
 export const OpenAiChatModels = ['gpt-3.5-turbo','gpt-4', 'gpt-4-0613', 'gpt-4-32k', 'gpt-4-32k-0613', 'gpt-3.5-turbo-0613', 'gpt-3.5-turbo-16k', 'gpt-3.5-turbo-16k-0613'];
-export const OpenAiImageMode: OpenAiMode = {name: 'Image Generation', alias: 'image'};
+
 export const OpenAiModes: OpenAiMode[] = [
   OpenAiMChatMode,
   OpenAiCompletionMode,
-  OpenAiImageMode
+  OpenAiImageMode,
+  OpenAiFileMode
 ];
 
 export const OpenAiChatRoles = ['user', 'system', 'assistant', 'function'];
@@ -347,4 +351,54 @@ export class OpenAiService {
       );
     }
   }
+   escapeHtml(html: string): string {
+    return html.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+
+  parseMessageText(choice: OpenAiResponseChoice): ParsedText[] {
+    const content = choice.message.content || '';
+    const parsedTexts: ParsedText[] = [];
+
+    // Parse triple backticks for code/pre tags
+    const codeRegex = /```(\w*?)\s*([\s\S]*?)\s*```/g;
+    let lastIndex = 0;
+    let match;
+
+    while ((match = codeRegex.exec(content)) !== null) {
+      const textBefore = content.substring(lastIndex, match.index);
+      const code = this.escapeHtml(match[2].replace(/^\s*\w+\s*/, ''));
+      const language = match[1].trim();
+
+      if (textBefore) {
+        parsedTexts.push({
+          type: 'text',
+          text: this.escapeHtml(textBefore)
+        });
+      }
+
+      parsedTexts.push({
+        type: 'code',
+        text: match[0],
+        code: code,
+        language: language
+      });
+
+      lastIndex = codeRegex.lastIndex;
+    }
+
+    if (lastIndex < content.length) {
+      const textAfter = content.substring(lastIndex);
+      parsedTexts.push({
+        type: 'text',
+        text: this.escapeHtml(textAfter)
+      });
+    }
+
+    return parsedTexts;
+  }
+
+
+
+
 }
