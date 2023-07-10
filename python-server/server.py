@@ -49,7 +49,6 @@ class Server:
         log.info(max_content_length)
         self.setup_app()
 
-
     def setup_app(self):
         cors_allowed_origins = os.getenv('ALLOWED_ORIGINS', '*').split(',')
         CORS(self.app, origins=cors_allowed_origins if cors_allowed_origins else ['*'])
@@ -104,7 +103,6 @@ class Server:
         self.app.add_url_rule(self.apiRoute +'/polly/text-to-speech', methods=['GET'], view_func=self.polly_get_text_to_speech)
         self.app.add_url_rule(self.apiRoute +'/polly/text-to-speech', methods=['POST'], view_func=self.polly_send_text_to_speech)
 
-
         self.app.add_url_rule(self.apiRoute +'/webcam/video', methods=['GET'], view_func=self.get_webcam_video)
         self.app.add_url_rule(self.apiRoute +'/webcam/image', methods=['POST'], view_func=self.send_webcam_image)
 
@@ -116,7 +114,7 @@ class Server:
             '/',
             '/<filename>',
             self.apiRoute + '/auth',
-            '?filename=',
+            'filename=',
             'socket.io'
         ]
         # Check if the current request matches any excluded route
@@ -263,7 +261,6 @@ class Server:
         else:
             log.exception('SSL inactive')
             server.app.run(host=self.host, port=self.port)
-
 
 if __name__ == '__main__':
     server = Server()

@@ -11,7 +11,7 @@ export class WebcamService {
   loading = false;
   started = false;
   filePath = 'webcam-recording';
-  fileName = 'webcam.mp4';
+  fileName = 'webcam.webm';
   outputVideo?: HTMLVideoElement;
   outputVideoIsValid = false;
   updateVideo = false;
@@ -21,14 +21,17 @@ export class WebcamService {
   constructor() {
   }
 
+
   init(appService = this.app) {
     this.app = appService;
     if (this.app) {
       this.app.webcam = this;
     }
+
   }
 
   start(videoElement = this.video, outputVideoElement = this.outputVideo) {
+    console.log('start', this.video , this.outputVideo);
     this.video = videoElement || this.video;
     this.outputVideo = outputVideoElement || this.outputVideo;
     this.loading = true;
@@ -37,8 +40,10 @@ export class WebcamService {
       video: true
     };
     this.errorMessage = undefined;
+    console.log('start', this.video , this.outputVideo);
     navigator.mediaDevices.getUserMedia(constraints).then(
       (stream: MediaStream) => {
+        console.log('start stream', stream);
         this.errorMessage = undefined;
         this.video.srcObject = stream;
         this.video.play();
@@ -48,6 +53,7 @@ export class WebcamService {
         this.videoUpdate();
       },
       (error: any) => {
+        console.log('start error', error);
         if (error.name === 'NotAllowedError') {
           // User denied permission to access the webcam
           this.errorMessage = 'User denied permission to access the webcam.';
@@ -75,7 +81,6 @@ export class WebcamService {
     if (this.videoUpdateTimeout) {
       clearTimeout(this.videoUpdateTimeout);
     }
-    console.log('videoUpdate', this.video, this.updateVideo);
     if (this.updateVideo) {
       if (this.video) {
         this.captureImageAndSendToServer(this.video);
@@ -118,12 +123,10 @@ export class WebcamService {
       video.onerror = () => {
         // Video source is not valid
         this.outputVideoIsValid = false;
-        console.log('Invalid video source');
       };
       video.onloadeddata = () => {
         // Video source is valid
         this.outputVideoIsValid = true;
-        console.log('Valid video source');
       };
       video.src = this.videoSrc();
       video.load();
@@ -132,7 +135,7 @@ export class WebcamService {
 
   videoSrc(filename = this.fileName, path = this.filePath): string {
     const apiUrl = this.app ? this.app.API.url : '';
-    const videoUrl = `${apiUrl}/webcam/video?filename=${filename}&path=${path}`;
+    const videoUrl = `${apiUrl}/webcam/video?path=${path}&filename=${filename}&v=` + Date.now();
     return videoUrl;
   }
 
@@ -144,9 +147,11 @@ export class WebcamService {
       tracks.forEach((track) => {
         track.stop();
       });
+      this.checkVideoSrcValidity();
       this.video.srcObject = null;
       this.started = false;
       this.updateVideo = false;
+
     }
   }
 }

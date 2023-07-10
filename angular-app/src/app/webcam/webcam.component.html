@@ -2,15 +2,15 @@
   <app-login></app-login>
 </div>
 
-<div class="content webcam-page" role="main" *ngIf="app.token">
+<div class="content webcam-page" role="main" [ngClass]="{'hidden': (!webcam.started)}">
   <div class="webcam">
-    <button *ngIf="!webcam.started" (click)="startWebcam()">Start</button>
-    <button *ngIf="webcam.started" (click)="stopWebcam()">Stop</button>
+    <button *ngIf="app.token && !webcam.started" (click)="startWebcam()">Start</button>
+    <button *ngIf="app.token && webcam.started" (click)="stopWebcam()">Stop</button>
 
     <div class="videos">
-      <video #video autoplay></video>
-      <video #outputVideo controls>
-        <source [src]="webcam.videoSrc()" type="video/mp4">
+      <video #video autoplay [ngClass]="{'hidden': (!webcam.started)}"></video>
+      <video  *ngIf="app.token" #outputVideo controls [ngClass]="{'hidden': (webcam.started)}" >
+        <source [src]="webcam.videoSrc()" type="video/webm">
       </video>
 
     </div>

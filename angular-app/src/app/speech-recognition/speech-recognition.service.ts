@@ -66,7 +66,7 @@ export class SpeechRecognitionService {
     const language = (this.app && this.app.language ? this.app.language.lang : this.language ? this.language.lang : 'en-US');
     this.loading = true;
     this.app?.get(
-      this.app?.API.url + '/speech-recognition?filename=' + filename + '&path=' + directory + '&language=' + language,
+      this.app?.API.url + '/speech-recognition?path=' + directory + '&language=' + language + '&filename=' + filename + '',
       (result?: SpeechRecognitionResponse) => {
         if (result) {
           result.time = Date.now();

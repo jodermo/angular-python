@@ -24,7 +24,7 @@
     <div class="spacer"></div>
     <div  class="padding-left padding-right text-right float-right" *ngIf="app.user && app.token">
       <span>User: <b *ngIf="!app.token">{{app.user.username}}</b><b *ngIf="app.token">{{app.loginData.username}}</b></span>
-      <button  (click)="app.logout()">Logout</button>
+      <button *ngIf="app.tokenProtection"  (click)="app.logout()">Logout</button>
     </div>
   </div>
 

@@ -46,7 +46,6 @@ export class ApiManagerService {
 
 
   callApi(api?: Api) {
-    console.log('callApi', api);
     if (api) {
       const result = new ApiResult(this, api);
       this.selectedResult = result;

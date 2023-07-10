@@ -13,5 +13,6 @@ boto3==1.17.82
 face-recognition==1.3.0
 opencv-python==4.7.0.72
 pyttsx3==2.90
-jwt==1.3.1
+PyAudio==0.2.13
+python-espeak==0.6.3
 PyJWT==2.7.0

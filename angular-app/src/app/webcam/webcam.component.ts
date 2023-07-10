@@ -22,6 +22,7 @@ export class WebcamComponent  extends  AppComponent{
   }
 
   startWebcam(){
+    console.log('startWebcam', this.videoElement);
     if(this.videoElement){
       this.webcam.start(this.videoElement.nativeElement, this.outputVideoElement?.nativeElement);
     }

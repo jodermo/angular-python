@@ -5,13 +5,14 @@ FROM python:3.9
 WORKDIR /app
 
 # Install the required system packages
-RUN apt-get update && apt-get install -y libasound2-dev ffmpeg mplayer espeak espeak-ng libespeak-dev libportaudio2 libportaudiocpp0 portaudio19-dev libsndfile1-dev
+RUN apt-get update && apt-get install -y libasound2-dev ffmpeg mplayer espeak espeak-ng libespeak-dev libportaudio2 libportaudiocpp0 portaudio19-dev libsndfile1-dev libvpx-dev
 
 
 # Install the Python dependencies
 
 RUN pip install pyaudio
 RUN pip install python-espeak
+RUN pip install PyJWT
 
 COPY ./python-server/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt

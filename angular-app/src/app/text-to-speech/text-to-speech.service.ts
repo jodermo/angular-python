@@ -149,7 +149,6 @@ export class TextToSpeechService {
     if (this.app) {
       this.app.API.get('text-to-speech', (results: any) => {
         this.results = results?.length ? results : this.results;
-        console.log('text-to-speech loadData', this.results);
       })
     }
   }

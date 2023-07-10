@@ -9,6 +9,7 @@ from io import BytesIO
 from modules.server_logging import server_logging
 from modules.postgres_api import postgres_api
 
+
 mode = os.getenv("MODE")
 mode = mode if mode else 'dev'
 log = server_logging("text_to_speech.log", mode)

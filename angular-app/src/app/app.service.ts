@@ -137,6 +137,7 @@ export class AppService {
     username: '',
     password: ''
   };
+  tokenProtection = false;
 
   constructor() {
     const appUsername = localStorage.getItem('app-username');
@@ -149,7 +150,8 @@ export class AppService {
     }
     const username = localStorage.getItem('auth-username');
     const token = localStorage.getItem('auth-token');
-    this.token = token ? token : environment.tokenProtection ? '' : 'undefined';
+    this.tokenProtection = environment.tokenProtection;
+    this.token = token ? token : this.tokenProtection ? '' : 'undefined';
     this.loginData.username = username ? username : '';
 
   }
@@ -161,7 +163,7 @@ export class AppService {
         this.loggedIn = true;
         this.token = response.token;
         if (this.token) {
-          localStorage.setItem('auth-username', this.user.username);
+          localStorage.setItem('auth-username', this.loginData.username);
           localStorage.setItem('auth-token', this.token);
           this.API.headers.JSON['Authorization'] = `Bearer ${this.token}`;
           this.API.headers.form['Authorization'] = `Bearer ${this.token}`;
@@ -285,7 +287,6 @@ export class AppService {
   ): Promise<any> {
     try {
       const headers = (headerType === 'form' ? this.API.headers.form : this.API.headers.JSON);
-      console.log('headers', headers);
       const response = await fetch(url, {
         method: 'POST',
         headers: headers,
