@@ -1,4 +1,8 @@
-<div class="content file-manager" role="main">
+<div *ngIf="!app.token">
+  <app-login></app-login>
+</div>
+
+<div class="content file-manager" role="main" *ngIf="app.token">
   <h2>File Manager</h2>
   <app-file-upload></app-file-upload>
   <app-file-list></app-file-list>

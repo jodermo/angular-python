@@ -1,4 +1,20 @@
-<div class="content example-project" role="main">
+<div class="login-container" *ngIf="!app.token">
+  <h2>Login</h2>
+  <form (submit)="app.login()">
+    <div class="form-group">
+      <label for="username">Username:</label>
+      <input type="text" id="username" name="username" [(ngModel)]="app.loginData.username" required>
+    </div>
+    <div class="form-group">
+      <label for="password">Password:</label>
+      <input type="password" id="password" name="password" [(ngModel)]="app.loginData.password" required>
+    </div>
+    <button type="submit" [disabled]="!app.loginData.username || !app.loginData.password">Login</button>
+  </form>
+</div>
+
+
+<div class="content example-project" role="main" *ngIf="app.token">
   <h1>{{exampleProject.projectTitle}}</h1>
   <p>
     This is an example project template that demonstrates data management functionality. It consists of a form and a

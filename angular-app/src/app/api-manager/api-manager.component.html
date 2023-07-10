@@ -1,4 +1,9 @@
-<div class="content api-manager" role="main">
+
+<div *ngIf="!app.token">
+  <app-login></app-login>
+</div>
+
+<div class="content api-manager" role="main" *ngIf="app.token">
   <h2>API Manager</h2>
   <ng-container *ngIf="!apiManager.api && !apiManager.editApi && !apiManager.selectedResult">
     <app-api-list></app-api-list>

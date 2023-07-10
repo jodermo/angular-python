@@ -10,6 +10,8 @@
 - PostgreSQL Database
 - SocketIO Websocket
 - OpenAI integration
+- Different Text-To-Speech engines (like gTTS, AWS Polly, ll ElevenLabs, pyttsx3)
+- Webcam Tools
 
 #### Example Usage
 This project incorporates various functions accompanied by code examples for both the backend and frontend components.
@@ -19,7 +21,10 @@ This project incorporates various functions accompanied by code examples for bot
 - Websocket Chat: Enables real-time chat functionality using websockets.
 - Text to Speech: Converts text into speech audio files.
 - Speech Recognition: Converts speech (voice) into text.
+- Face Recognition: Recognizes faces and gestures
 - OpenAI Tool: Integrates with the OpenAI API for various functionalities.
+- Custom API Manager: Test and implement third-party APIs
+
 
 ## Prerequisites
 
@@ -78,6 +83,11 @@ The project structure is as follows:
 
 ```dotenv
 MODE=dev
+
+USER_NAME=Admin
+USER_PASSWORD=password
+SECRET_KEY=secret_key
+
 SERVER_HOST=0.0.0.0
 SERVER_DOMAIN=localhost
 SERVER_PORT=80
@@ -106,9 +116,13 @@ FLASK_DEBUG=1
 FLASK_ENV=development
 
 OPENAI_API_KEY=<your OpenAi api key>
-
-# optional: 
 # OPENAI_ORGANISATION_ID=<your OpenAi organisation id>
+
+ELEVEN_LABS_API_KEY=<your ll ElevenLabs API key>
+
+AWS_ACCESS_KEY_ID=<your AWS access key>
+AWS_SECRET_ACCESS_KEY=<your AWS secret key>
+AWS_DEFAULT_REGION=us-east-1
 
 
 ```

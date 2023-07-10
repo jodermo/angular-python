@@ -1,101 +1,138 @@
-<div class="content text-to-speech" role="main">
+<div *ngIf="!app.token">
+  <app-login></app-login>
+</div>
+
+<div class="content text-to-speech" role="main" *ngIf="app.token">
+
+
+  <div class="text-to-speech-results" *ngIf="textToSpeech.results && textToSpeech.results.length">
+    <div class="text-to-speech-results-wrapper">
+      <div class="text-to-speech-results-container">
+
+        <ng-container *ngFor="let textToSpeechResult of textToSpeech.results">
+          <div *ngIf="!textToSpeechResult.id">
+            <div>{{textToSpeechResult.text}}</div>
+            <div class="text-to-speech-button" *ngIf="textToSpeechResult.text">
+              <select *ngIf="textToSpeech.mode.alias === 'gtts'" [(ngModel)]="app.language"
+                      (ngModelChange)="textToSpeech.stop();">
+                <option *ngFor="let language of app.languages" [ngValue]="language">{{language.name}}</option>
+              </select>
+              <button
+                *ngIf="!textToSpeech.playing || textToSpeech.playing.text !== textToSpeechResult.text || (textToSpeech.audio.currentTime === 0 && textToSpeech.audio.paused)"
+                [disabled]="textToSpeech.isLoading(textToSpeechResult.text)"
+                (click)="textToSpeech.makeFileAndPlay(textToSpeechResult.text, app.language)">
+    <span *ngIf="!textToSpeech.isLoading(textToSpeechResult.text)">
+      Read
+    </span>
+                <span *ngIf="textToSpeech.isLoading(textToSpeechResult.text)">
+      Loading
+    </span>
+              </button>
+              <button
+                [disabled]="(textToSpeech.playing && textToSpeech.playing.text !== textToSpeechResult.text) || ( textToSpeech.audio.currentTime === 0)"
+                (click)="textToSpeech.replay()">
+                Replay
+              </button>
+              <button
+                *ngIf="textToSpeech.playing && textToSpeech.playing.text === textToSpeechResult.text && (textToSpeech.audio.currentTime !== 0 && textToSpeech.audio.paused)"
+                (click)="textToSpeech.play()">
+                Play
+              </button>
+              <button
+                *ngIf="textToSpeech.playing && textToSpeech.playing.text === textToSpeechResult.text && !textToSpeech.audio.paused"
+                (click)="textToSpeech.pause()">
+                Pause
+              </button>
+              <button
+                [disabled]="(textToSpeech.audio.paused && textToSpeech.audio.currentTime === 0)"
+                (click)="textToSpeech.stop()">
+                Stop
+              </button>
+              <button
+                [disabled]="(!textToSpeech.isAvailable(textToSpeechResult.text))"
+                (click)="textToSpeech.download(textToSpeechResult.text)">
+                Download
+              </button>
+              <span class="spacer"></span>
+              <label>
+                <select [(ngModel)]="textToSpeech.mode">
+                  <option *ngFor="let mode of textToSpeech.modes" [ngValue]="mode">{{mode.name}}</option>
+                </select>
+                <i *ngIf="textToSpeech.mode.infoUrl"><a href="{{textToSpeech.mode.infoUrl}}"
+                                                        target="_blank">{{textToSpeech.mode.infoUrl}}</a></i>
+
+              </label>
+            </div>
+          </div>
+          <div *ngIf="textToSpeechResult.id" class="text-to-speech-result">
+            <div class="text-to-speech-result-container">
+              <div class="text-to-speech-text">{{textToSpeechResult.text}}</div>
+              <button (click)="textToSpeech.play(textToSpeechResult)">
+                Play
+              </button>
+              <button
+                (click)="app.download(textToSpeech.resultFileSrc(textToSpeechResult))">
+                Download
+              </button>
+            </div>
+
+          </div>
+        </ng-container>
+
+
+      </div>
+    </div>
+
+  </div>
+
+
   <div class="text-to-speech-input">
     <form (ngSubmit)="textToSpeech.makeFileAndPlay(textToSpeech.text, app.language)">
       <input type="text" [(ngModel)]="textToSpeech.text" name="textToSpeech" placeholder="Type a text...">
       <button [disabled]="!textToSpeech.text" type="submit">Send</button>
     </form>
-  </div>
-  <div class="text-to-speech-button">
+    <div class="text-to-speech-button">
+
+      <label *ngIf="textToSpeech.mode.alias === 'pyttsx3'">
+        <input type="checkbox" [(ngModel)]="textToSpeech.pyttsx3Female"/> Female
+      </label>
 
 
-    <select *ngIf="textToSpeech.mode.alias === 'gtts'" [(ngModel)]="app.language">
-      <option *ngFor="let language of app.languages" [ngValue]="language">{{language.name}}</option>
-    </select>
+      <select *ngIf="textToSpeech.mode.alias === 'gtts'" [(ngModel)]="app.language">
+        <option *ngFor="let language of app.languages" [ngValue]="language">{{language.name}}</option>
+      </select>
 
-    <select *ngIf="textToSpeech.mode.alias === 'polly' &&  textToSpeech.pollyEngines.length"
-            [(ngModel)]="textToSpeech.pollyEngine" (ngModelChange)="textToSpeech.filterPollyVoices(textToSpeech.pollyEngine)" >
-      <option *ngFor="let pollyEngine of textToSpeech.pollyEngines" [ngValue]="pollyEngine">{{pollyEngine}}</option>
-    </select>
+      <select *ngIf="textToSpeech.mode.alias === 'polly' &&  textToSpeech.pollyEngines.length"
+              [(ngModel)]="textToSpeech.pollyEngine"
+              (ngModelChange)="textToSpeech.filterPollyVoices(textToSpeech.pollyEngine)">
+        <option *ngFor="let pollyEngine of textToSpeech.pollyEngines" [ngValue]="pollyEngine">{{pollyEngine}}</option>
+      </select>
 
-    <select *ngIf="textToSpeech.mode.alias === 'polly' &&  textToSpeech.pollyEngineVoices.length"
-            [(ngModel)]="textToSpeech.pollyVoice">
-      <option *ngFor="let voice of textToSpeech.pollyEngineVoices" [ngValue]="voice">{{voice.Name}}</option>
-    </select>
+      <select *ngIf="textToSpeech.mode.alias === 'polly' &&  textToSpeech.pollyEngineVoices.length"
+              [(ngModel)]="textToSpeech.pollyVoice">
+        <option *ngFor="let voice of textToSpeech.pollyEngineVoices" [ngValue]="voice">{{voice.Name}}</option>
+      </select>
 
-    <select *ngIf="textToSpeech.mode.alias === 'eleven-labs' &&  textToSpeech.elevenLabsVoices.length"
-            [(ngModel)]="textToSpeech.elevenLabsVoice">
-      <option *ngFor="let voice of textToSpeech.elevenLabsVoices" [ngValue]="voice">{{voice.name}}</option>
-    </select>
+      <select *ngIf="textToSpeech.mode.alias === 'eleven-labs' &&  textToSpeech.elevenLabsVoices.length"
+              [(ngModel)]="textToSpeech.elevenLabsVoice">
+        <option *ngFor="let voice of textToSpeech.elevenLabsVoices" [ngValue]="voice">{{voice.name}}</option>
+      </select>
 
 
-    <span class="spacer"></span>
+      <span class="spacer"></span>
 
-    <div>
-      <select [(ngModel)]="textToSpeech.mode">
-        <option *ngFor="let mode of textToSpeech.modes" [ngValue]="mode">{{mode.name}}</option>
-      </select><br>
-      <i *ngIf="textToSpeech.mode.infoUrl"><a href="{{textToSpeech.mode.infoUrl}}"
-                                              target="_blank">{{textToSpeech.mode.infoUrl}}</a></i>
+      <div>
+        <select [(ngModel)]="textToSpeech.mode">
+          <option *ngFor="let mode of textToSpeech.modes" [ngValue]="mode">{{mode.name}}</option>
+        </select><br>
+        <i *ngIf="textToSpeech.mode.infoUrl"><a href="{{textToSpeech.mode.infoUrl}}"
+                                                target="_blank">{{textToSpeech.mode.infoUrl}}</a></i>
+
+
+      </div>
 
 
     </div>
 
-
   </div>
-
-  <div class="text-to-speech-results" *ngIf="textToSpeech.results && textToSpeech.results.length">
-    <ul>
-      <li *ngFor="let textToSpeechResult of textToSpeech.results">
-        <div>{{textToSpeechResult.text}}</div>
-        <div class="text-to-speech-button" *ngIf="textToSpeechResult.text">
-          <select *ngIf="textToSpeech.mode.alias === 'gtts'" [(ngModel)]="app.language"
-                  (ngModelChange)="textToSpeech.stop();">
-            <option *ngFor="let language of app.languages" [ngValue]="language">{{language.name}}</option>
-          </select>
-          <button
-            *ngIf="!textToSpeech.playing || textToSpeech.playing.text !== textToSpeechResult.text || (textToSpeech.audio.currentTime === 0 && textToSpeech.audio.paused)"
-            [disabled]="textToSpeech.isLoading(textToSpeechResult.text)"
-            (click)="textToSpeech.makeFileAndPlay(textToSpeechResult.text, app.language)">
-    <span *ngIf="!textToSpeech.isLoading(textToSpeechResult.text)">
-      Read
-    </span>
-            <span *ngIf="textToSpeech.isLoading(textToSpeechResult.text)">
-      Loading
-    </span>
-          </button>
-          <button
-            [disabled]="(textToSpeech.playing && textToSpeech.playing.text !== textToSpeechResult.text) || ( textToSpeech.audio.currentTime === 0)"
-            (click)="textToSpeech.replay()">
-            Replay
-          </button>
-          <button
-            *ngIf="textToSpeech.playing && textToSpeech.playing.text === textToSpeechResult.text && (textToSpeech.audio.currentTime !== 0 && textToSpeech.audio.paused)"
-            (click)="textToSpeech.play()">
-            Play
-          </button>
-          <button
-            *ngIf="textToSpeech.playing && textToSpeech.playing.text === textToSpeechResult.text && !textToSpeech.audio.paused"
-            (click)="textToSpeech.pause()">
-            Pause
-          </button>
-          <button
-            [disabled]="(textToSpeech.audio.paused && textToSpeech.audio.currentTime === 0)"
-            (click)="textToSpeech.stop()">
-            Stop
-          </button>
-          <span class="spacer"></span>
-          <label>
-            <select [(ngModel)]="textToSpeech.mode">
-              <option *ngFor="let mode of textToSpeech.modes" [ngValue]="mode">{{mode.name}}</option>
-            </select>
-            <i *ngIf="textToSpeech.mode.infoUrl"><a href="{{textToSpeech.mode.infoUrl}}"
-                                                    target="_blank">{{textToSpeech.mode.infoUrl}}</a></i>
-
-          </label>
-        </div>
-      </li>
-    </ul>
-
-  </div>
-
 </div>

@@ -1,4 +1,8 @@
-<div class="content speech-recognition" role="main">
+<div *ngIf="!app.token">
+  <app-login></app-login>
+</div>
+
+<div class="content speech-recognition" role="main" *ngIf="app.token">
 
   <h2>Speech Recognition</h2>
 

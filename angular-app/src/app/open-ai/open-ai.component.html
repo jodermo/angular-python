@@ -1,4 +1,11 @@
-<div class="content open-ai" role="main">
+
+
+<div *ngIf="!app.token">
+  <app-login></app-login>
+</div>
+
+
+<div class="content open-ai" role="main" *ngIf="app.token">
 
   <div class="open-ai-header" *ngIf="!fullscreenResults">
     <h1>OpenAI</h1>

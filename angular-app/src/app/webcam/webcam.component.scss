@@ -1,0 +1,30 @@
+
+.webcam {
+  position: relative;
+  width: 100%;
+  text-align: center;
+
+  .webcam-error {
+    color: red;
+  }
+
+  .videos {
+    position: relative;
+    width: 100%;
+    display: flex;
+
+    video {
+      flex: 1;
+    }
+  }
+
+  video {
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+    object-position: center center;
+    margin: 0 auto;
+  }
+
+
+}

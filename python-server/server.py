@@ -1,3 +1,5 @@
+# file: server.py
+
 from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
 from modules.ssl_manager import ssl_manager
@@ -7,21 +9,20 @@ from modules.server_logging import server_logging
 from modules.websocket import websocket
 from modules.text_to_speech import text_to_speech
 from modules.speech_recognition import speech_recognition
+from modules.webcam import webcam
+from modules.face_recognition import face_recognition
 from modules.open_ai import open_ai
 from modules.discord import discord
 from modules.eleven_labs import eleven_labs
 from modules.aws_polly import aws_polly
+from modules.user_auth import user_auth
 
 import os
 from dotenv import load_dotenv
-
 load_dotenv()
-
 mode = os.getenv("MODE")
 mode = mode if mode else 'dev'
-
 log = server_logging("server.log", mode)
-
 
 class Server:
     def __init__(self):
@@ -37,11 +38,14 @@ class Server:
         self.websocket = websocket(self.app)
         self.text_to_speech = text_to_speech()
         self.speech_recognition = speech_recognition()
+        self.webcam = webcam()
+        self.face_recognition = face_recognition()
         self.ssl_manager = ssl_manager()
         self.open_ai = open_ai()
         self.discord = discord()
         self.eleven_labs = eleven_labs()
         self.aws_polly = aws_polly()
+        self.user_auth = user_auth()
         log.info(max_content_length)
         self.setup_app()
 
@@ -51,10 +55,13 @@ class Server:
         CORS(self.app, origins=cors_allowed_origins if cors_allowed_origins else ['*'])
         self.app.config['MAX_CONTENT_LENGTH'] = self.max_content_length
 
+        self.app.before_request(self.authenticate_request)
         self.app.before_request(self.handle_chunking)
 
         self.app.add_url_rule('/', methods=['GET'], view_func=self.angular_build)
         self.app.add_url_rule('/<filename>', methods=['GET'], view_func=self.angular_build)
+
+        self.app.add_url_rule(self.apiRoute +'/auth', methods=['POST'], view_func=self.login)
 
         self.app.add_url_rule(self.apiRoute +'/data', methods=['GET'], view_func=self.get_data)
         self.app.add_url_rule(self.apiRoute +'/data', methods=['POST'], view_func=self.post_data)
@@ -97,8 +104,30 @@ class Server:
         self.app.add_url_rule(self.apiRoute +'/polly/text-to-speech', methods=['GET'], view_func=self.polly_get_text_to_speech)
         self.app.add_url_rule(self.apiRoute +'/polly/text-to-speech', methods=['POST'], view_func=self.polly_send_text_to_speech)
 
+
+        self.app.add_url_rule(self.apiRoute +'/webcam/video', methods=['GET'], view_func=self.get_webcam_video)
+        self.app.add_url_rule(self.apiRoute +'/webcam/image', methods=['POST'], view_func=self.send_webcam_image)
+
         self.app.errorhandler(Exception)(self.handle_error)
         log.info('setup_app')
+
+    def authenticate_request(self):
+        excluded_routes = [
+            '/',
+            '/<filename>',
+            self.apiRoute + '/auth',
+            '?filename=',
+            'socket.io'
+        ]
+        # Check if the current request matches any excluded route
+        for excluded_route in excluded_routes:
+            if excluded_route in request.path:
+                return None  # Bypass authentication for the excluded routes
+        # Perform the authentication logic for other routes
+        return self.user_auth.token_protect(request)
+
+    def login(self):
+        return self.user_auth.login(request)
 
     def angular_build(self, filename=None):
         log.exception('filename: ' + str(filename))
@@ -206,6 +235,12 @@ class Server:
 
     def polly_send_text_to_speech(self):
         return self.aws_polly.send_text_to_speech(request)
+
+    def send_webcam_image(self):
+        return self.webcam.send_image_request(request)
+
+    def get_webcam_video(self):
+        return self.webcam.get_video_request(request)
 
     def handle_error(self, e):
         log.exception(str(e))

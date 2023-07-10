@@ -8,6 +8,7 @@ import {WebsocketComponent} from "./websocket/websocket.component";
 import {TextToSpeechComponent} from "./text-to-speech/text-to-speech.component";
 import {OpenAiComponent} from "./open-ai/open-ai.component";
 import {SpeechRecognitionComponent} from "./speech-recognition/speech-recognition.component";
+import {WebcamComponent} from "./webcam/webcam.component";
 
 export const AppRoutes: Routes = [
   {
@@ -50,6 +51,12 @@ export const AppRoutes: Routes = [
     path: 'example-project', component: ExampleProjectComponent, data: {
       showInNavigation: true,
       title: 'Example Project'
+    }
+  },
+  {
+    path: 'webcam', component: WebcamComponent, data: {
+      showInNavigation: true,
+      title: 'Webcam'
     }
   },
   {

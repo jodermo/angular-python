@@ -1,4 +1,8 @@
-<div class="content websocket-wrapper" role="main">
+<div *ngIf="!app.token">
+  <app-login></app-login>
+</div>
+
+<div class="content websocket-wrapper" role="main" *ngIf="app.token">
   <div class="websocket">
 
     <div class="websocket-room-options">

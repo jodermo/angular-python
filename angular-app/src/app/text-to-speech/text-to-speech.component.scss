@@ -1,24 +1,86 @@
-.text-to-speech-button {
-  position: relative;
-  width: 100%;
-  display: flex;
-  background: #b3d9ff;
+.text-to-speech{
 
-  select {
-    width: auto;
-  }
-
-  label {
-    width: auto;
-  }
-}
-
-.spacer {
-  flex: 1;
-}
-
-.text-to-speech-input {
-  form {
+  .text-to-speech-results {
+    position: relative;
+    flex: 1;
+    background: #b3d9ff;
+    padding: .5rem;
     display: flex;
+    flex-direction: column;
+    overflow: hidden;
+
+    .text-to-speech-results-wrapper {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      overflow: hidden;
+      box-sizing: border-box;
+      border-radius: .5rem;
+      overflow: hidden;
+      box-shadow: 0 0 .25rem 0 rgba(0, 0, 0, 0.5) inset;
+    }
+
+    .text-to-speech-results-container{
+      position: relative;
+      width: 100%;
+      height: 100%;
+      overflow-x: hidden;
+      overflow-y: scroll;
+      padding: .5rem;
+
+    }
+  }
+
+  .text-to-speech-result {
+    position: relative;
+    width: 100%;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid white;
+    padding: 1rem 0;
+
+    .text-to-speech-result-container {
+      margin-bottom: .5rem;
+
+
+      .text-to-speech-text {
+        width: 100%;
+        background: white;
+        border-radius: .5rem;
+        box-shadow: 0 0 .25rem 0 rgba(0, 0, 0, 0.5) inset;
+        padding: 1rem;
+        font-weight: bold;
+        font-size: 1.1rem;
+        line-height: 1.3rem;
+        margin: .5rem 0;
+      }
+    }
+
+  }
+
+  .text-to-speech-button {
+    position: relative;
+    width: 100%;
+    display: flex;
+    background: #b3d9ff;
+
+    select {
+      width: auto;
+    }
+
+    label {
+      width: auto;
+    }
+  }
+
+  .spacer {
+    flex: 1;
+  }
+
+  .text-to-speech-input {
+    form {
+      display: flex;
+    }
   }
 }

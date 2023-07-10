@@ -1,3 +1,4 @@
+# file: modules/discord.py
 # https://platform.openai.com/docs/api-reference
 import os
 import openai

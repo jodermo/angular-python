@@ -1,3 +1,5 @@
+# file: modules/websocket.py
+
 import os
 from flask_socketio import SocketIO, join_room, leave_room, emit
 from flask import request

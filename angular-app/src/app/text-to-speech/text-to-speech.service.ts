@@ -14,6 +14,13 @@ export const TextToSpeechGoogleMode: TextToSpeechMode = {
   apiRoute: '/text-to-speech',
   infoUrl: 'https://pypi.org/project/gTTS/'
 };
+export const TextToSpeechPyttsx3Mode: TextToSpeechMode = {
+  alias: 'pyttsx3',
+  name: 'pyttsx3 (offline)',
+  apiRoute: '/text-to-speech',
+  infoUrl: 'https://github.com/nateshmbhat/pyttsx3'
+};
+
 export const TextToSpeechPollyMode: TextToSpeechMode = {
   alias: 'polly',
   name: 'Polly (AWS)',
@@ -29,10 +36,12 @@ export const TextToSpeechElevenLabsMode: TextToSpeechMode = {
 export const TextToSpeechModes: TextToSpeechMode[] = [
   TextToSpeechGoogleMode,
   TextToSpeechPollyMode,
-  TextToSpeechElevenLabsMode
+  TextToSpeechElevenLabsMode,
+  TextToSpeechPyttsx3Mode
 ];
 
 export interface TextToSpeechResponse {
+  id: number;
   text: string;
   filename: string;
   lang: string;
@@ -108,6 +117,11 @@ export class TextToSpeechService {
 
   private loading: any = {};
 
+  pyttsx3Rate = 125;
+  pyttsx3Volume = 1;
+  pyttsx3Female = false;
+
+
   constructor() {
     this.audio.oncanplay = () => {
       if (this.currentResult) {
@@ -126,6 +140,7 @@ export class TextToSpeechService {
 
   init(app = this.app) {
     this.app = app;
+    this.loadData();
     this.getPollyVoices();
     this.getElevenLabsVoices();
   }
@@ -134,6 +149,7 @@ export class TextToSpeechService {
     if (this.app) {
       this.app.API.get('text-to-speech', (results: any) => {
         this.results = results?.length ? results : this.results;
+        console.log('text-to-speech loadData', this.results);
       })
     }
   }
@@ -228,6 +244,10 @@ export class TextToSpeechService {
           text: parsedText,
           lang: language.iso,
           filename,
+          female: this.pyttsx3Female ? 1 : 0,
+          offline: this.isOfflineMode(mode) ? 1 : 0,
+          rate: this.pyttsx3Rate,
+          volume: this.pyttsx3Volume,
           stability: 1,
           similarity_boost: 1,
           engine: mode.alias === 'polly' ? this.pollyEngine : undefined,
@@ -322,14 +342,21 @@ export class TextToSpeechService {
     }
   }
 
+  isOfflineMode(mode = this.mode) {
+    return mode === TextToSpeechPyttsx3Mode;
+  }
+
   pause() {
     if (!this.audio.paused) {
       this.audio.pause();
     }
   }
 
-  play() {
+  play(textToSpeechResponse?: TextToSpeechResponse) {
 
+    if (textToSpeechResponse?.filename) {
+      this.audio.src = this.resultFileSrc(textToSpeechResponse);
+    }
     if (this.audio.src && this.audio.paused) {
       this.audio.play();
     }

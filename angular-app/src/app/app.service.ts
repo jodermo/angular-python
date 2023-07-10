@@ -3,6 +3,7 @@ import {ServerFile} from './file-manager/file-manager.service';
 import {TextToSpeechResponse} from "./text-to-speech/text-to-speech.service";
 import {environment} from "../environments/environment.prod";
 import {SpeechRecognitionResponse} from "./speech-recognition/speech-recognition.service";
+import {WebcamService} from "./webcam/webcam.service";
 
 // Define available header types
 export const HeaderTypes = ['JSON', 'form'];
@@ -46,7 +47,7 @@ export class AppService {
   languages: AppLanguage[] = AppLanguages;
   language: AppLanguageType = AppLanguages.length ? AppLanguages[0] : {name: 'English', iso: 'en', lang: 'en-US'};
   user = {
-    username: 'Anonymous_' + Date.now()
+    username: ''
   };
   // API configuration
   API = {
@@ -54,10 +55,10 @@ export class AppService {
     headers: {
       JSON: {
         'Content-Type': 'application/json' // JSON headers
-      },
+      } as any,
       form: {
         // 'Content-Type': 'application/x-www-form-urlencoded' // Form headers
-      }
+      } as any
     },
     headerTypes: HeaderTypes, // Available header types
     // GET request
@@ -128,7 +129,63 @@ export class AppService {
   uploadPath = '/upload';
   playedTextToSpeechResults: TextToSpeechResponse[] = [];
 
+
+  webcam?: WebcamService;
+  loggedIn: boolean = false;
+  token: string = '';
+  loginData = {
+    username: '',
+    password: ''
+  };
+
   constructor() {
+    const appUsername = localStorage.getItem('app-username');
+    if (appUsername?.length) {
+      this.user.username = appUsername;
+    } else if(this.user.username) {
+      localStorage.setItem('app-username', this.user.username);
+    }else{
+      this.user.username = 'Anonymous_' + Date.now();
+    }
+    const username = localStorage.getItem('auth-username');
+    const token = localStorage.getItem('auth-token');
+    this.token = token ? token : environment.tokenProtection ? '' : 'undefined';
+    this.loginData.username = username ? username : '';
+
+  }
+
+  login(): void {
+    // Make a request to your authentication endpoint with the provided credentials
+    if (this.loginData.username && this.loginData.password) {
+      this.post(this.API.url + '/auth', this.loginData, (response: any) => {
+        this.loggedIn = true;
+        this.token = response.token;
+        if (this.token) {
+          localStorage.setItem('auth-username', this.user.username);
+          localStorage.setItem('auth-token', this.token);
+          this.API.headers.JSON['Authorization'] = `Bearer ${this.token}`;
+          this.API.headers.form['Authorization'] = `Bearer ${this.token}`;
+        } else {
+          this.logout();
+        }
+      }, () => {
+        this.logout();
+      });
+    }
+
+
+  }
+
+  logout(): void {
+    // Perform any necessary cleanup or request to invalidate the token on the server
+    this.loggedIn = false;
+    this.token = '';
+    localStorage.removeItem('auth-username');
+    localStorage.removeItem('auth-token');
+
+    this.API.headers.JSON['Authorization'] = undefined;
+    this.API.headers.form['Authorization'] = undefined;
+    // Additional logic if needed
   }
 
   // Perform a GET request
@@ -227,9 +284,11 @@ export class AppService {
     headerType: HeaderType = 'JSON'
   ): Promise<any> {
     try {
+      const headers = (headerType === 'form' ? this.API.headers.form : this.API.headers.JSON);
+      console.log('headers', headers);
       const response = await fetch(url, {
         method: 'POST',
-        headers: headerType === 'form' ? this.API.headers.form : this.API.headers.JSON,
+        headers: headers,
         body: headerType === 'form' ? body : JSON.stringify(body)
       });
       if (response.ok) {

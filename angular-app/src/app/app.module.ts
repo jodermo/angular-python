@@ -26,14 +26,21 @@ import {TextToSpeechService} from "./text-to-speech/text-to-speech.service";
 import {TextToSpeechButtonComponent} from './text-to-speech/text-to-speech-button/text-to-speech-button.component';
 import {OpenAiComponent} from './open-ai/open-ai.component';
 import {OpenAiService} from "./open-ai/open-ai.service";
-import { SpeechRecognitionComponent } from './speech-recognition/speech-recognition.component';
+import {SpeechRecognitionComponent} from './speech-recognition/speech-recognition.component';
 import {SpeechRecognitionService} from "./speech-recognition/speech-recognition.service";
-import { SpeechRecognitionButtonComponent } from './speech-recognition/speech-recognition-button/speech-recognition-button.component';
-import { FilePreviewComponent } from './file-manager/file-preview/file-preview.component';
-import { FullscreenFileComponent } from './file-manager/fullscreen-file/fullscreen-file.component';
-import { ParsedMessageComponent } from './open-ai/parsed-message/parsed-message.component';
+import {
+  SpeechRecognitionButtonComponent
+} from './speech-recognition/speech-recognition-button/speech-recognition-button.component';
+import {FilePreviewComponent} from './file-manager/file-preview/file-preview.component';
+import {FullscreenFileComponent} from './file-manager/fullscreen-file/fullscreen-file.component';
+import {ParsedMessageComponent} from './open-ai/parsed-message/parsed-message.component';
 import {AppWidgetsModule} from "./app-widgets/app-widgets.module";
-import { ApiResultValueComponent } from './api-manager/api-result/api-result-value/api-result-value.component';
+import {ApiResultValueComponent} from './api-manager/api-result/api-result-value/api-result-value.component';
+import {WebcamComponent} from './webcam/webcam.component';
+import {WebcamService} from "./webcam/webcam.service";
+import {LoginComponent} from './login/login.component';
+import {ExampleProjectComponent} from "./example-project/example-project.component";
+
 @NgModule({
   declarations: [
     AppComponent,
@@ -56,7 +63,9 @@ import { ApiResultValueComponent } from './api-manager/api-result/api-result-val
     FilePreviewComponent,
     FullscreenFileComponent,
     ParsedMessageComponent,
-    ApiResultValueComponent
+    ApiResultValueComponent,
+    WebcamComponent,
+    LoginComponent,
   ],
   imports: [
     CommonModule,
@@ -64,8 +73,8 @@ import { ApiResultValueComponent } from './api-manager/api-result/api-result-val
     HttpClientModule,
     FormsModule,
     AppRoutingModule,
-    ExampleProjectModule,
-    AppWidgetsModule
+    AppWidgetsModule,
+    ExampleProjectModule
   ],
   providers: [
     AppService,
@@ -74,10 +83,12 @@ import { ApiResultValueComponent } from './api-manager/api-result/api-result-val
     WebsocketService,
     TextToSpeechService,
     SpeechRecognitionService,
-    OpenAiService
+    OpenAiService,
+    WebcamService
   ],
   exports: [
-    FileUploadComponent
+    FileUploadComponent,
+    LoginComponent
   ],
   bootstrap: [AppComponent]
 })
