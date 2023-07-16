@@ -122,8 +122,9 @@ class eleven_labs:
         file_path = self.play(text, model_id, voice_id, stability, similarity_boost, unique_filename) if play else self.save_to_file(text, model_id, voice_id, stability, similarity_boost, unique_filename)
         result = {'mode': 'eleven-labs', 'text': text, 'filename': unique_filename, 'file_path': file_path, 'voice_id': voice_id, 'stability': stability, 'similarity_boost': similarity_boost,  'play': play}
         dbEntry = self.add_response_to_database(result)
-        result['dbEntry'] = dbEntry
-        return jsonify(result)
+        result_copy = result.copy()  # Create a copy of the result dictionary
+        result_copy['dbEntry'] = dbEntry
+        return jsonify(result_copy)
 
     def get_text_to_speech(self, request):
         log.info('get_text_to_speech')

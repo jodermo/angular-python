@@ -1,0 +1,16 @@
+
+<div *ngIf="recognitionModel">
+  <span *ngIf="recognitionModel.id">{{recognitionModel.name}}</span>
+  <div *ngIf="recognitionModel.configuration.annotations.length">
+    <div>
+
+    </div>
+  </div>
+  <div>
+    <input *ngIf="!recognitionModel.id" [(ngModel)]="newAnnotationName">
+    <app-file-upload *ngIf="newAnnotationName" [filePath]="recognitionModel.path" (onUploadFile)="setFile($event)"></app-file-upload>
+
+  </div>
+
+
+</div>

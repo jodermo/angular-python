@@ -9,18 +9,21 @@ import {TextToSpeechService} from "../text-to-speech.service";
   styleUrls: ['./text-to-speech-button.component.scss']
 })
 export class TextToSpeechButtonComponent extends TextToSpeechComponent implements OnInit {
-  @Input() text?: string;
+
   @Input() autoplay = false;
   @Input() disabled = false;
+
+
 
   constructor(app: AppService, textToSpeech: TextToSpeechService) {
     super(app, textToSpeech);
   }
 
-  ngOnInit() {
-
-    if (this.autoplay && this.text) {
+  override ngOnInit() {
+    if (this.autoplay && this.text && !this.ready) {
       this.textToSpeech.makeFileAndPlay(this.text, this.app.language, this.textToSpeech.filename, true);
     }
+    super.ngOnInit();
+
   }
 }

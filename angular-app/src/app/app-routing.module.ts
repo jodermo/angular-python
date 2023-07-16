@@ -9,6 +9,7 @@ import {TextToSpeechComponent} from "./text-to-speech/text-to-speech.component";
 import {OpenAiComponent} from "./open-ai/open-ai.component";
 import {SpeechRecognitionComponent} from "./speech-recognition/speech-recognition.component";
 import {WebcamComponent} from "./webcam/webcam.component";
+import {MoBotComponent} from "./mo-bot/mo-bot.component";
 
 export const AppRoutes: Routes = [
   {
@@ -48,15 +49,21 @@ export const AppRoutes: Routes = [
     }
   },
   {
-    path: 'example-project', component: ExampleProjectComponent, data: {
+    path: 'face-recognition', component: WebcamComponent, data: {
       showInNavigation: true,
-      title: 'Example Project'
+      title: 'Face Recognition'
     }
   },
   {
-    path: 'webcam', component: WebcamComponent, data: {
+    path: 'mo-bot', component: MoBotComponent, data: {
       showInNavigation: true,
-      title: 'Webcam'
+      title: 'MoBot'
+    }
+  },
+  {
+    path: 'example-project', component: ExampleProjectComponent, data: {
+      showInNavigation: true,
+      title: 'Example Project'
     }
   },
   {

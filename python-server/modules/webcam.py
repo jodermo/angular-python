@@ -1,3 +1,5 @@
+# file: modules/webcam.py
+
 import os
 import cv2
 import numpy as np
@@ -23,8 +25,9 @@ class webcam:
 
         video_file = os.path.join(self.uploadRoot, self.uploadDirectory, file_path, file_name)
         timestamp = datetime.now().strftime("%Y%m%d%H%M%S")  # Generate timestamp
-        image_name = f"{timestamp}_{fps}.jpg"  # Append timestamp to image name
+        image_name = f"{timestamp}_{int(fps)}.jpg"  # Append timestamp to image name
         image_path = os.path.join(self.uploadRoot, self.uploadDirectory, file_path, file_name + '_images', image_name)
+        image_path = image_path.replace('.mp4', '')
         # Create the directory if it doesn't exist
         os.makedirs(os.path.dirname(video_file), exist_ok=True)
         os.makedirs(os.path.dirname(image_path), exist_ok=True)
@@ -52,7 +55,6 @@ class webcam:
 
             fourcc = cv2.VideoWriter_fourcc(*'mp4v')
             output_video = cv2.VideoWriter(video_file, fourcc, fps, (frame_width, frame_height))
-
             for frame_file in frame_files:
                 frame = cv2.imread(os.path.join(image_directory, frame_file))
                 if frame is None:
@@ -73,11 +75,15 @@ class webcam:
 
         video_file = os.path.join(self.uploadRoot, self.uploadDirectory, file_path, file_name)
         timestamp = datetime.now().strftime("%Y%m%d%H%M%S")  # Generate timestamp
-        image_name = f"{timestamp}_{fps}.jpg"  # Append timestamp to image name
+        image_name = f"{timestamp}_{int(fps)}.jpg"  # Append timestamp to image name
         image_path = os.path.join(self.uploadRoot, self.uploadDirectory, file_path, file_name + '_images', image_name)
+        image_path = image_path.replace('.webm', '')
+
+
         # Create the directory if it doesn't exist
         os.makedirs(os.path.dirname(video_file), exist_ok=True)
         os.makedirs(os.path.dirname(image_path), exist_ok=True)
+
 
         with open(image_path, 'wb') as f:
             f.write(image.read())
@@ -98,10 +104,8 @@ class webcam:
                 raise Exception("Failed to read the first frame")
 
             frame_height, frame_width, _ = first_frame.shape
-
             fourcc = cv2.VideoWriter_fourcc(*'VP90')  # Use VP8 codec for WebM
             output_video = cv2.VideoWriter(video_file, fourcc, fps, (frame_width, frame_height))
-
             for frame_file in frame_files:
                 frame = cv2.imread(os.path.join(image_directory, frame_file))
                 if frame is None:
@@ -122,7 +126,7 @@ class webcam:
             image = request.files['file']
             fps = request.form.get('fps', 30)
             file_path = request.form.get('path', 'video-streams')
-            file_name = request.form.get('filename', 'webcam.webm')
+            file_name = request.form.get('filename', 'webcam_webm')
             video_file = self.store_image_webm(image, file_path, file_name, float(fps))
             if video_file is None:
                 return jsonify({'error': 'Failed to store image'}), 500
@@ -136,7 +140,7 @@ class webcam:
 
     def get_video_request(self, request):
         file_path = request.args.get('path', 'video-streams')
-        file_name = request.args.get('filename', 'webcam.webm')
+        file_name = request.args.get('filename', 'webcam_webm')
         video_file = os.path.join(self.uploadRoot, self.uploadDirectory, file_path, file_name)
 
         if not os.path.isfile(video_file):
@@ -152,3 +156,4 @@ class webcam:
         except Exception as e:
             log.error('Error sending video file: ' + str(e))
             return jsonify({'error': 'An error occurred while sending the video file'}), 500
+

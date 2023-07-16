@@ -76,6 +76,9 @@
                     </div>
                     <div class="open-ai-choice-actions">
                       <app-text-to-speech-button [text]="choice.message.content"
+                                                 [tableName]="'open-ai'"
+                                                 [id]="openAiResult.dbEntry?.id || openAiResult.id"
+                                                 [textToSpeechResult]="app.textToSpeechResults"
                                                  [autoplay]="openAi.readResults && i === 0 && openAiResult.dbEntry"></app-text-to-speech-button>
                     </div>
                   </div>
@@ -106,6 +109,9 @@
                 {{openAiResult.response.error.message}}
               </p>
               <app-text-to-speech-button [text]="openAiResult.response.error.message"
+                                         [tableName]="'open-ai'"
+                                         [id]="openAiResult.dbEntry?.id || openAiResult.id"
+                                         [textToSpeechResult]="app.textToSpeechResults"
                                          [autoplay]="openAi.readResults && true && openAiResult.dbEntry"></app-text-to-speech-button>
             </div>
           </div>

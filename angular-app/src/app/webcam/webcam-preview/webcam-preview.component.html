@@ -1,0 +1,46 @@
+<div class="webcam-preview webcam-off" *ngIf="!webcam.started">
+  <div class="webcam-controls">
+    <button (click)="webcam.start()">Webcam On</button>
+  </div>
+</div>
+<div class="webcam-preview webcam-on" *ngIf="webcam.started">
+  <div class="webcam-container">
+    <div class="webcam-output">
+      <webcam
+        [trigger]="webcam.triggerObservable"
+        (imageCapture)="webcam.handleImage($event)"
+      ></webcam>
+      <div class="webcam-marker-overlay" *ngIf="webcam.recognition && webcam.recognitionResult">
+        <app-webcam-marker *ngFor="let recognitionResult of webcam.recognitionResult" [recognitionResult]="recognitionResult"></app-webcam-marker>
+      </div>
+    </div>
+  </div>
+
+  <div class="webcam-overlay" *ngIf="webcam.loading">
+    <p class="webcam-info">
+      Loading webcam...
+    </p>
+  </div>
+  <div class="webcam-overlay" *ngIf="!webcam.loading && webcam.errorMessage">
+    <div class="webcam-error" >
+      {{webcam.errorMessage}}
+    </div>
+  </div>
+  <div class="webcam-overlay">
+    <div class="webcam-controls">
+
+      <button *ngIf="!webcam.recording" (click)="webcam.startRecord()">Start Record</button>
+      <button *ngIf="webcam.recording"  (click)="webcam.stopRecord()">Stop Record</button>
+      <button  *ngIf="!webcam.recognition" (click)="webcam.startRecognition()">Start Recognition</button>
+      <button  *ngIf="webcam.recognition" (click)="webcam.stopRecognition()">Stop Recognition</button>
+      <button  (click)="webcam.captureImage()">Trigger Recognition</button>
+      <button (click)="webcam.stop()">Webcam Off</button>
+      <div class="webcam-record-fps">
+        <label for="recordFps">FPS</label>
+        <input id="recordFps" name="recordFps" [(ngModel)]="webcam.fps" type="number" [min]="webcam.minFps"
+               [max]="webcam.maxFps" step=".1">
+      </div>
+    </div>
+
+  </div>
+</div>

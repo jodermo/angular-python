@@ -1,0 +1,11 @@
+<div *ngIf="recognitionResult" class="webcam-marker" [ngStyle]="{
+  top: recognitionResult.top + 'px',
+  left: recognitionResult.left+ 'px',
+  width: recognitionResult.width+ 'px',
+  height: recognitionResult.height+ 'px',
+  transition: 'all .25s ease'
+}">
+  <p *ngIf="recognitionResult.text">
+    {{recognitionResult.text}}
+  </p>
+</div>

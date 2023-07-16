@@ -74,8 +74,9 @@ class aws_polly:
             return jsonify({'error': 'Failed to generate audio'})
         result = {'mode': 'polly', 'text': text, 'engine': engine, 'voice_id': voice_id,'filename': unique_filename, 'file_path': file_path}
         dbEntry = self.add_response_to_database(result)
-        result['dbEntry'] = dbEntry
-        return jsonify(result)
+        result_copy = result.copy()  # Create a copy of the result dictionary
+        result_copy['dbEntry'] = dbEntry
+        return jsonify(result_copy)
 
     def get_text_to_speech(self, request):
         filename = request.args.get('filename') if request.args.get('filename') else 'text.mp3'

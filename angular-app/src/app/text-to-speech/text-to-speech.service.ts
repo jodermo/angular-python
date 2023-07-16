@@ -43,10 +43,14 @@ export const TextToSpeechModes: TextToSpeechMode[] = [
 export interface TextToSpeechResponse {
   id: number;
   text: string;
+  mode: string;
   filename: string;
   lang: string;
   play: boolean;
   time: number;
+  tableName?: string;
+  parentId?: number;
+
 }
 
 export interface PollyVoice {
@@ -146,10 +150,14 @@ export class TextToSpeechService {
   }
 
   loadData() {
-    if (this.app) {
+    if (this.app && this.app.loadTextToSpeechResults) {
+      this.app.loadTextToSpeechResults = false;
       this.app.API.get('text-to-speech', (results: any) => {
         this.results = results?.length ? results : this.results;
-      })
+        if(this.app){
+          this.app.textToSpeechResults = this.results;
+        }
+      });
     }
   }
 
@@ -201,6 +209,9 @@ export class TextToSpeechService {
     this.textResults[language.iso][text] = result;
     this.results.push(result);
     this.results.sort((a, b) => a.time + b.time);
+    if(this.app){
+      this.app.textToSpeechResults = this.results;
+    }
     this.loading[text] = ready;
   }
 
@@ -232,14 +243,21 @@ export class TextToSpeechService {
     }
   }
 
-  makeFileAndPlay(text = this.text, language = this.language, filename = this.filename, fromAutoplay = false, mode = this.mode) {
+  makeFileAndSave(text = this.text, language = this.language, tableName?: string, id?: number, filename = this.filename) {
+    this.makeFileAndPlay(text, language, filename, false, this.mode, {
+      tableName: tableName,
+      parentId: id
+    });
+  }
+
+  makeFileAndPlay(text = this.text, language = this.language, filename = this.filename, fromAutoplay = false, mode = this.mode, additionalData?: any) {
     if (text && text.length && !this.loading[text]) {
       const parsedText = text ? text.replace(/```/g, '') : '';
       if (this.textResults[language.iso] && this.textResults[language.iso][text]) {
         this.playResult(this.textResults[language.iso][text], fromAutoplay);
       } else {
         this.loading[text] = true;
-        this.app?.post(this.app?.API.url + mode.apiRoute, {
+        const body: any = {
           text: parsedText,
           lang: language.iso,
           filename,
@@ -251,7 +269,11 @@ export class TextToSpeechService {
           similarity_boost: 1,
           engine: mode.alias === 'polly' ? this.pollyEngine : undefined,
           voice_id: mode.alias === 'polly' ? this.pollyVoice?.Id : mode.alias === 'eleven-labs' ? this.elevenLabsVoice?.voice_id : undefined
-        }, (result?: TextToSpeechResponse) => {
+        };
+        if (additionalData) {
+          Object.assign(body, additionalData);
+        }
+        this.app?.post(this.app?.API.url + mode.apiRoute, body, (result?: TextToSpeechResponse) => {
           if (result?.text) {
             this.text = undefined;
             this.addResult(result, text, language, false);
@@ -391,6 +413,15 @@ export class TextToSpeechService {
         }
       }
     }
+
+  }
+
+  tableData(tableName: string, id: number) {
+    return this.results.filter((textToSpeechResult: TextToSpeechResponse) => textToSpeechResult.tableName === tableName && textToSpeechResult.parentId === id);
+  }
+
+  textData(text: string) {
+    return this.results.filter((textToSpeechResult: TextToSpeechResponse) => textToSpeechResult.text === text);
 
   }
 }

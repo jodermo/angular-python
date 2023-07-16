@@ -1,0 +1,13 @@
+<div>
+  <ul>
+    <li *ngFor="let recognitionModel of webcam.recognitionModels">
+      <app-webcam-recognition-model [recognitionModel]="recognitionModel"></app-webcam-recognition-model>
+    </li>
+    <li *ngIf="webcam.recognitionModel">
+      <app-webcam-recognition-model [recognitionModel]="webcam.recognitionModel"></app-webcam-recognition-model>
+    </li>
+    <li *ngIf="!webcam.recognitionModel">
+      <button  (click)="webcam.newRecognitionModel()">New Model</button>
+    </li>
+  </ul>
+</div>

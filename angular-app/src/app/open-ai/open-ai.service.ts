@@ -52,6 +52,7 @@ export interface OpenAiResponseData {
 
 
 export interface OpenAiResponse {
+  id?: number;
   messages?: OpenAiChatMessage[];
   model?: string;
   prompt?: string;
@@ -75,7 +76,7 @@ export const OpenAiCompletionMode: OpenAiMode = {name: 'Send Completion', alias:
 export const OpenAiImageMode: OpenAiMode = {name: 'Image Generation', alias: 'image'};
 export const OpenAiFileMode: OpenAiMode = {name: 'File', alias: 'file'};
 export const OpenAiCompletionModels = ['text-davinci-003', 'text-davinci-002', 'text-curie-001', 'text-babbage-001', 'text-ada-001'];
-export const OpenAiChatModels = ['gpt-3.5-turbo','gpt-4', 'gpt-4-0613', 'gpt-4-32k', 'gpt-4-32k-0613', 'gpt-3.5-turbo-0613', 'gpt-3.5-turbo-16k', 'gpt-3.5-turbo-16k-0613'];
+export const OpenAiChatModels = ['gpt-3.5-turbo', 'gpt-4', 'gpt-4-0613', 'gpt-4-32k', 'gpt-4-32k-0613', 'gpt-3.5-turbo-0613', 'gpt-3.5-turbo-16k', 'gpt-3.5-turbo-16k-0613'];
 
 export const OpenAiModes: OpenAiMode[] = [
   OpenAiMChatMode,
@@ -170,6 +171,7 @@ export class OpenAiService {
   newMessage = new OpenAiChatMessage();
   readResults = true;
   newFunction: OpenAiChatFunction = new OpenAiChatFunction();
+  private resultCallbacks: ((result: OpenAiResponse)=>void)[] = [];
 
 
   init(app = this.app) {
@@ -177,6 +179,7 @@ export class OpenAiService {
     this.initNewMessage();
     this.listModels();
     this.loadData();
+    this.resultCallbacks = [];
 
   }
 
@@ -185,7 +188,7 @@ export class OpenAiService {
       this.app.API.get('open-ai-response', (results: any) => {
         this.results = results?.length ? results : this.results;
         this.sortResult();
-      })
+      });
     }
   }
 
@@ -264,6 +267,7 @@ export class OpenAiService {
     this.app?.post(this.app?.API.url + '/open-ai/chat', requestBody, (result: OpenAiResponse) => {
       result.time = Date.now();
       this.results.push(result);
+      this.onGetResult(result)
       this.sortResult();
       this.messages = [];
       this.sending = false;
@@ -351,7 +355,8 @@ export class OpenAiService {
       );
     }
   }
-   escapeHtml(html: string): string {
+
+  escapeHtml(html: string): string {
     return html.replace(/</g, '&lt;').replace(/>/g, '&gt;');
   }
 
@@ -399,6 +404,13 @@ export class OpenAiService {
   }
 
 
+  onResult(callback : (result: OpenAiResponse)=>void) {
+    this.resultCallbacks.push(callback);
+  }
 
-
+  private onGetResult(result: OpenAiResponse) {
+    for(const callback of this.resultCallbacks){
+      callback(result);
+    }
+  }
 }

@@ -27,6 +27,7 @@ export class WebsocketService {
 
 
   constructor() {
+    console.log('WebsocketService', environment.websocketUrl);
     this.socket = io(environment.websocketUrl);
   }
 
@@ -86,6 +87,7 @@ export class WebsocketService {
   receiveMessage(): Observable<any> {
     return new Observable((observer) => {
       this.socket.on('message', (data: any) => {
+        console.log('receiveMessage', data);
         observer.next(data);
       });
     });
@@ -94,5 +96,19 @@ export class WebsocketService {
   parseDate(dateString: string) {
     const date = new Date(dateString);
     return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+  }
+
+
+  emit(ev: string, args: any) {
+    return this.socket.emit(ev, args);
+  }
+
+  on(ev: string, listener: (data: any) => void) {
+    console.log('on', ev, this);
+    return this.socket.on(ev, (data: any) => {
+      console.log('on', ev, data);
+      listener(data);
+      return data;
+    });
   }
 }

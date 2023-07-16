@@ -46,6 +46,7 @@ class websocket:
             self.add_response_to_database(message)
             emit('message', message, room=data['roomName'], broadcast=True)
 
+
         @self.socketio.on('join_room')
         def handle_join_room(data):
             log.info('handle_join_room:')
@@ -54,3 +55,6 @@ class websocket:
             join_room(roomName)
             if roomName not in self.rooms:
                 self.rooms[roomName] = set()
+
+    def send_message(self, event, data):
+        emit(event, data)

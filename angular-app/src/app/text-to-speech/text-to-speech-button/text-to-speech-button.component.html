@@ -1,4 +1,7 @@
 <div class="text-to-speech-button" *ngIf="text">
+
+
+
   <select *ngIf="textToSpeech.mode.alias === 'gtts' || textToSpeech.mode.alias === 'polly'" [(ngModel)]="app.language" [disabled]="disabled"  (ngModelChange)="textToSpeech.filterPollyVoices(textToSpeech.pollyEngine);">
     <option *ngFor="let language of app.languages" [ngValue]="language">{{language.name}}</option>
   </select>
@@ -17,7 +20,7 @@
   <button
     *ngIf="!textToSpeech.playing || textToSpeech.playing.text !== text || (textToSpeech.audio.currentTime === 0 && textToSpeech.audio.paused)"
     [disabled]="disabled || textToSpeech.isLoading(text)"
-    (click)="textToSpeech.makeFileAndPlay(text, app.language)">
+    (click)="textToSpeech.makeFileAndSave(text, app.language, tableName, id)">
     <span *ngIf="!textToSpeech.isLoading(text)">
       Read
     </span>
@@ -59,3 +62,22 @@
 
   </div>
 </div>
+<ul class="text-to-speech-results" *ngIf="data">
+  <li *ngFor="let entry of data">
+    <div>
+      <b>{{entry.mode}}</b>
+      <span><i>[{{entry.lang}}]</i></span>
+
+      <button
+        [disabled]="loading"
+        (click)="textToSpeech.play(entry)">
+        Play
+      </button>
+      <button
+        [disabled]="loading"
+        (click)="textToSpeech.download(entry.text)">
+        Download
+      </button>
+    </div>
+  </li>
+</ul>

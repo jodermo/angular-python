@@ -12,6 +12,7 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives.serialization import Encoding
 from cryptography.hazmat.primitives import hashes  # Add this import
 
+
 mode = os.getenv("MODE")
 mode = mode if mode else 'dev'
 log = server_logging("file_upload.log", mode)
@@ -24,10 +25,8 @@ class ssl_manager:
         self.domain = os.getenv("SERVER_DOMAIN") if os.getenv("SERVER_DOMAIN") else ''
         self.private_key_path = os.getenv("SSL_PRIVATE_KEY_PATH") if os.getenv("SSL_PRIVATE_KEY_PATH") else 'ssl/private_key.pem'
         self.certificate_path = os.getenv("SSL_CERTIFICATE_PATH") if os.getenv("SSL_CERTIFICATE_PATH") else 'ssl/certificate.pem'
+        log.info('__init__ ssl_manager')
 
-    import os
-
-    # Rest of the code...
 
     def generate_ssl_certificate(self):
         private_key = rsa.generate_private_key(

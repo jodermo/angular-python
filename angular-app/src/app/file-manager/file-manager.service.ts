@@ -34,13 +34,15 @@ export class FileManagerService {
   fullscreenFile?: ServerFile;
 
   private initialized = false;
+  private uploadCallbacks: ((file: any) => void)[] = [];
+
   constructor() {
   }
 
 
   init(app = this.app) {
     this.app = app;
-    if(this.app && !this.initialized){
+    if (this.app && !this.initialized) {
       this.initialized = true;
       this.selectedFile = undefined;
       this.loadUploadedFiles();
@@ -73,15 +75,25 @@ export class FileManagerService {
     this.error = undefined;
     const uploadFile = this.selectedFile;
     try {
-      this.app ? await this.app.uploadFile(uploadFile, uploadPath) : undefined;
+      this.app ? await this.app.uploadFile(uploadFile, uploadPath, (result: any)=>{
+
+        for (const callback of this.uploadCallbacks) {
+          callback(result);
+        }
+      }) : undefined;
       this.uploadedFiles.push(uploadFile);
       this.uploaded = uploadFile;
+
       this.init();
     } catch (error) {
       console.error('File upload failed', error);
       this.error = error;
       this.uploaded = undefined;
     }
+  }
+
+  onUploadFile(callback: (file: any) => void) {
+    this.uploadCallbacks.push(callback);
   }
 
   getFileSize(fileSize: number): string {

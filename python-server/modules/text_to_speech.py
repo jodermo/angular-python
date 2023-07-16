@@ -99,6 +99,9 @@ class text_to_speech:
         female = int(request_data.get('female', 0))
         filename = request.args.get('filename', 'text.mp3')
 
+        parentId = int(request_data.get('parentId', 0))
+        tableName = request_data.get('tableName', False)
+
         timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
         unique_filename = f"{timestamp}_{filename}"
         log.info(unique_filename)
@@ -112,9 +115,15 @@ class text_to_speech:
             )
         )
         result = {'mode': 'pyttsx3' if offline else 'gtts', 'text': text, 'filename': unique_filename, 'lang': lang, 'play': play}
+        if parentId:
+            result['parentId'] = parentId
+        if tableName:
+            result['tableName'] = tableName
+
         dbEntry = self.add_response_to_database(result)
-        result['dbEntry'] = dbEntry
-        return jsonify(result)
+        result_copy = result.copy()  # Create a copy of the result dictionary
+        result_copy['dbEntry'] = dbEntry
+        return jsonify(result_copy)
 
     def get_text_to_speech(self, request):
         filename = request.args.get('filename') if request.args.get('filename') else 'text.mp3'

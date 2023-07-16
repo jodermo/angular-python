@@ -3,7 +3,7 @@ import {ServerFile} from './file-manager/file-manager.service';
 import {TextToSpeechResponse} from "./text-to-speech/text-to-speech.service";
 import {environment} from "../environments/environment.prod";
 import {SpeechRecognitionResponse} from "./speech-recognition/speech-recognition.service";
-import {WebcamService} from "./webcam/webcam.service";
+import {WebcamRecognitionModel, WebcamService} from "./webcam/webcam.service";
 
 // Define available header types
 export const HeaderTypes = ['JSON', 'form'];
@@ -138,6 +138,9 @@ export class AppService {
     password: ''
   };
   tokenProtection = false;
+  textToSpeechResults?: TextToSpeechResponse[];
+  loadTextToSpeechResults = true;
+  recognitionModels: WebcamRecognitionModel[] = [];
 
   constructor() {
     const appUsername = localStorage.getItem('app-username');

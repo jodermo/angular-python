@@ -39,7 +39,13 @@ import {ApiResultValueComponent} from './api-manager/api-result/api-result-value
 import {WebcamComponent} from './webcam/webcam.component';
 import {WebcamService} from "./webcam/webcam.service";
 import {LoginComponent} from './login/login.component';
-import {ExampleProjectComponent} from "./example-project/example-project.component";
+import { MoBotComponent } from './mo-bot/mo-bot.component';
+import {WebcamModule} from "ngx-webcam";
+import { WebcamPreviewComponent } from './webcam/webcam-preview/webcam-preview.component';
+import { WebcamMarkerComponent } from './webcam/webcam-preview/webcam-marker/webcam-marker.component';
+import { WebcamRecordComponent } from './webcam/webcam-record/webcam-record.component';
+import { WebcamRecognitionModelsComponent } from './webcam/webcam-recognition-models/webcam-recognition-models.component';
+import { WebcamRecognitionModelComponent } from './webcam/webcam-recognition-model/webcam-recognition-model.component';
 
 @NgModule({
   declarations: [
@@ -66,6 +72,12 @@ import {ExampleProjectComponent} from "./example-project/example-project.compone
     ApiResultValueComponent,
     WebcamComponent,
     LoginComponent,
+    MoBotComponent,
+    WebcamPreviewComponent,
+    WebcamMarkerComponent,
+    WebcamRecordComponent,
+    WebcamRecognitionModelsComponent,
+    WebcamRecognitionModelComponent,
   ],
   imports: [
     CommonModule,
@@ -74,7 +86,8 @@ import {ExampleProjectComponent} from "./example-project/example-project.compone
     FormsModule,
     AppRoutingModule,
     AppWidgetsModule,
-    ExampleProjectModule
+    ExampleProjectModule,
+    WebcamModule,
   ],
   providers: [
     AppService,

@@ -1,7 +1,17 @@
 # file: modules/speech_recognition.py
 
+import wave
 import os
+import tempfile
+import io
+import uuid
+import time
+import soundfile as sf
+import numpy as np
+from pydub import AudioSegment
+
 from flask import jsonify
+from flask_socketio import SocketIO, emit
 from datetime import datetime
 from modules.server_logging import server_logging
 import speech_recognition as sr
@@ -14,9 +24,115 @@ log = server_logging("speech_recognition.log", mode)
 
 
 class speech_recognition:
-    def __init__(self):
+    def __init__(self, websocket):
+        self.websocket = websocket
         self.uploadRoot = os.getenv("FILE_UPLOAD_ROOT") if os.getenv("FILE_UPLOAD_ROOT") else 'www/'
         self.uploadDirectory = os.getenv("FILE_UPLOAD_DIRECTORY") if os.getenv("FILE_UPLOAD_DIRECTORY") else 'uploads/'
+        self.register_events()
+
+    def convert_to_wav(self, input_file, output_file):
+        audio = AudioSegment.from_file(input_file)
+        audio.export(output_file, format='wav')
+
+    def generate_unique_filename(self):
+        timestamp = int(time.time())
+        unique_id = str(uuid.uuid4().hex)
+        filename = f"audio_{timestamp}_{unique_id}.wav"
+        return filename
+
+    def register_events(self):
+         @self.websocket.socketio.on('audio')
+         def process_audio(data):
+             # Extract the audio data from the request
+             audio_data = data.get('audio')
+             language = data.get('language', 'en-US')
+             words = data.get('words', [])
+             sentence = data.get('sentence', '')
+             # Generate a unique filename
+             filename = self.generate_unique_filename()
+
+             # Save the audio data to a temporary file
+             with tempfile.NamedTemporaryFile(suffix='.mp3', delete=False) as temp_file:
+                 temp_filepath = temp_file.name
+                 temp_file.write(audio_data)
+
+             try:
+                 # Convert the audio file to WAV format
+                 wav_filepath = os.path.join(tempfile.gettempdir(), f"{filename}.wav")
+                 self.convert_to_wav(temp_filepath, wav_filepath)
+
+                 # Perform speech recognition on the converted WAV file
+                 recognizer = sr.Recognizer()
+                 with sr.AudioFile(wav_filepath) as source:
+                     audio = recognizer.record(source)
+                     text = recognizer.recognize_google(audio, language=language)
+
+
+                 # Check if the recognized text contains any of the words
+                 words_detected = [word for word in words if word.lower() in text.lower()]
+
+                 # Check if the recognized text matches the sentence
+                 sentence_detected = text.lower() == sentence.lower()
+                 # Use the recognized text
+                 print('Recognized text:', text)
+                 # Remove the temporary files
+                 os.remove(temp_filepath)
+                 os.remove(wav_filepath)
+                 if words_detected:
+                    self.websocket.send_message('speech-recognition', {
+                        'words': words_detected,
+                        'language': language,
+                        'text': text,
+                        'event': 'words_detected',
+                        'roomName': 'speech-recognition',
+                        'audio_data': audio_data
+                    })
+                 if sentence_detected:
+                    self.websocket.send_message('speech-recognition', {
+                        'sentence': sentence_detected,
+                        'language': language,
+                        'text': text,
+                        'event': 'sentence_detected',
+                        'roomName': 'speech-recognition',
+                        'audio_data': audio_data
+                    })
+                 if not sentence_detected and not words_detected:
+                    self.websocket.send_message('speech-recognition', {
+                        'language': language,
+                        'text': text,
+                        'event': 'nothing_detected',
+                        'roomName': 'speech-recognition',
+                        'audio_data': audio_data
+                    })
+             except sr.UnknownValueError as e:
+                 # Handle speech recognition errors
+                 error = {
+                     'message': 'Speech Recognition could not understand audio',
+                 }
+                 self.websocket.send_message('speech-recognition', {
+                     'error': error,
+                     'event': 'error',
+                     'roomName': 'speech-recognition',
+                     'language': language
+                 })
+                 print(error)
+             except sr.RequestError as e:
+                 error = {
+                     'message': 'Could not request results from Speech Recognition service:' + str(e)
+                 }
+                 self.websocket.send_message('speech-recognition', {
+                     'error': error,
+                     'event': 'error',
+                     'roomName': 'speech-recognition',
+                     'language': language,
+                     'sample_rate': sample_rate,
+                     'sample_rate': sample_width
+                 })
+                 print(error)
+
+
+
+
 
     def create_directory(self, directory_path):
         log.info('create_directory')
@@ -32,7 +148,6 @@ class speech_recognition:
         audio.export(output_path, format='wav')
         log.info('success')
 
-
     def wma_to_wav(self, input_file, output_path):
         log.info('wma_to_wav')
         log.info(input_file)
@@ -41,6 +156,7 @@ class speech_recognition:
         log.info('success')
 
     def recognize_file(self, filename, path, language="en-US"):
+        filename = filename.split("?")[0]
         log.info('recognize_file')
         log.info(filename)
         directory_path = os.path.join(self.uploadRoot, self.uploadDirectory, path)
@@ -56,9 +172,8 @@ class speech_recognition:
             file_extension = file_extension.lower()
 
             if file_extension not in ['.wav', '.wma', '.mp3']:
-                return jsonify({'success': 0, 'error': 'Invalid file format', 'filename': filename, 'path': file_path, 'language': language, 'directory': directory_path})
-
-
+                # return jsonify({'success': 0, 'error': 'Invalid file format', 'filename': filename, 'path': file_path, 'language': language, 'directory': directory_path})
+                log.info(file_extension)
 
             # Convert non-WAV files to WAV format
             if file_extension == '.mp3':

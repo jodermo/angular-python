@@ -1,0 +1,145 @@
+<div class="mo-bot">
+
+
+  <div class="bot-controls">
+    <select [(ngModel)]="app.language">
+      <option *ngFor="let language of app.languages" [ngValue]="language">{{language.name}}</option>
+    </select>
+    <div>
+      <button *ngIf="!bot.started" (click)="startBot()">Start Bot</button>
+      <button *ngIf="bot.started" (click)="bot.stop();">Stop Bot</button>
+    </div>
+
+    <div *ngIf="speechRecognition.recordAudio.src">
+      <button *ngIf="!webcam.started" (click)="speechRecognition.playRecord()">Play Record</button>
+    </div>
+    <app-speech-recognition-button *ngIf="bot.started" [disabled]="openAi.sending"
+                                   (onResult)="onSpeechRecognitionResult($event, true); loadResults();"></app-speech-recognition-button>
+  </div>
+
+
+  <div class="bot-container" [ngClass]="{'hidden': (!bot.started)}">
+
+
+    <table class="full-table">
+      <tbody>
+
+      <tr>
+        <td>
+          <b>Camera</b>
+        </td>
+        <td colspan="2">
+          <app-webcam-preview ></app-webcam-preview>
+        </td>
+      </tr>
+
+
+      <tr>
+        <td>
+          <b>SpeechRecognition</b>
+          <div>
+            <span *ngIf="speechRecognition.recognitionText">
+                    Text: <i>"{{speechRecognition.recognitionText}}"</i><br>
+            </span>
+            <b *ngIf="speechRecognition.recognitionError">
+              Error: {{speechRecognition.recognitionError}}
+            </b>
+          </div>
+        </td>
+        <td>
+          <div *ngIf="!speechRecognition.detectedWords.length && !speechRecognition.detectedSentences.length">
+            <b>Waiting for commands...</b>
+          </div>
+          <div *ngIf="speechRecognition.detectedWords.length">
+            <b>Detected Words:</b>
+            <li *ngFor="let word of speechRecognition.detectedWords">
+              {{word}}
+            </li>
+          </div>
+          <div *ngIf="speechRecognition.detectedSentences.length">
+            <b>Detected Sentences:</b>
+            <li *ngFor="let sentence of speechRecognition.detectedSentences">
+              {{sentence}}
+            </li>
+          </div>
+        </td>
+        <td>
+          <p>{{speechRecognition.completeRecognitionText}}</p>
+        </td>
+        <td>
+          <div class="open-ai-results-container">
+            <div class="open-ai-results-content">
+              <div class="open-ai-result" *ngIf="openAiResult">
+                <div class="open-ai-question-prompt" *ngIf="openAiResult.prompt">
+                  <b>Prompt: </b><span><i>"{{openAiResult.prompt}}"</i></span>
+                </div>
+                <div class="open-ai-question-messages" *ngIf="openAiResult.messages">
+                  <div *ngFor="let message of openAiResult.messages">
+                    <b>{{message.role}} prompt: </b>
+                    <p><i>{{message.content}}"</i></p>
+                  </div>
+                </div>
+
+                <div class="open-ai-result-answers" *ngIf="openAiResult.response">
+                  <div class="open-ai-choices" *ngIf="openAiResult.response.choices">
+                    <div class="open-ai-choice" *ngFor="let choice of openAiResult.response.choices; let i = index">
+                      <div *ngIf="choice.message">
+                        <div class="open-ai-choice-title">
+                          <b>{{choice.message.role}} result: </b>
+                        </div>
+                        <div class="open-ai-choice-content">
+                          <app-parsed-message [parsedTexts]="openAi.parseMessageText(choice)"></app-parsed-message>
+                          <app-copy-to-clipboard *ngIf="choice.message" [text]="choice.message.content"></app-copy-to-clipboard>
+                        </div>
+                        <div class="open-ai-choice-actions">
+                          <app-text-to-speech-button [text]="choice.message.content"
+                                                     [tableName]="'open-ai'"
+                                                     [id]="openAiResult.dbEntry?.id || openAiResult.id"
+                                                     [textToSpeechResult]="app.textToSpeechResults"
+                                                     [autoplay]="openAi.readResults && i === 0 && openAiResult.dbEntry"></app-text-to-speech-button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="open-ai-data"
+                       *ngIf="openAiResult.response.data && !(openAiResult.files && openAiResult.files.length)">
+                    <div class="open-ai-data-entry" *ngFor="let data of openAiResult.response.data; let i = index">
+                      <div class="image-preview" *ngIf="data.url">
+                        <img [src]="data.url">
+                      </div>
+                      <a [href]="data.url" target="_blank">Open Image</a>
+                    </div>
+                  </div>
+                  <div class="open-ai-data" *ngIf="(openAiResult.files && openAiResult.files.length)">
+                    <div class="open-ai-data-entry" *ngFor="let serverFile of openAiResult.files; let i = index">
+                      <div class="image-preview" *ngIf="serverFile.imageResult">
+                        <img [src]="app.fileSrc(serverFile.imageResult.filename, serverFile.imageResult.path)"
+                             alt="{{serverFile.imageResult.filename}}" class="file-preview"/>
+                      </div>
+                      <a [href]="app.fileSrc(serverFile.imageResult.filename, serverFile.imageResult.path)" target="_blank">Download
+                        Image</a>
+                    </div>
+                  </div>
+                </div>
+                <div *ngIf="openAiResult.response && openAiResult.response.error">
+                  <p *ngIf="openAiResult.response.error.message">
+                    {{openAiResult.response.error.message}}
+                  </p>
+                  <app-text-to-speech-button [text]="openAiResult.response.error.message"
+                                             [tableName]="'open-ai'"
+                                             [id]="openAiResult.dbEntry?.id || openAiResult.id"
+                                             [textToSpeechResult]="app.textToSpeechResults"
+                                             [autoplay]="openAi.readResults && true && openAiResult.dbEntry"></app-text-to-speech-button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </td>
+      </tr>
+
+      </tbody>
+    </table>
+
+  </div>
+
+</div>

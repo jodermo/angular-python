@@ -10,7 +10,7 @@ from modules.websocket import websocket
 from modules.text_to_speech import text_to_speech
 from modules.speech_recognition import speech_recognition
 from modules.webcam import webcam
-from modules.face_recognition import face_recognition
+from modules.image_recognition import image_recognition
 from modules.open_ai import open_ai
 from modules.discord import discord
 from modules.eleven_labs import eleven_labs
@@ -28,26 +28,41 @@ class Server:
     def __init__(self):
         log.info('__init__')
         self.app = Flask(__name__)
+        log.info(__name__)
         max_content_length = 1 * 1024 * 1024 * 1024
         self.max_content_length = int(os.getenv("MAX_CONTENT_LENGTH", str(max_content_length)))
         self.host = os.getenv("SERVER_HOST", "0.0.0.0")
         self.port = int(os.getenv("SERVER_PORT", 80))
         self.apiRoute = os.getenv("API_ROUTE", "/api")
         self.api = postgres_api()
+        log.info('postgres_api')
         self.file_server = file_server()
+        log.info('file_server')
         self.websocket = websocket(self.app)
+        log.info('websocket')
         self.text_to_speech = text_to_speech()
-        self.speech_recognition = speech_recognition()
+        log.info('websocket')
+        self.speech_recognition = speech_recognition(self.websocket)
+        log.info('speech_recognition')
         self.webcam = webcam()
-        self.face_recognition = face_recognition()
+        log.info('webcam')
+        self.image_recognition = image_recognition()
+        log.info('face_recognition')
         self.ssl_manager = ssl_manager()
+        log.info('ssl_manager')
         self.open_ai = open_ai()
+        log.info('open_ai')
         self.discord = discord()
+        log.info('discord')
         self.eleven_labs = eleven_labs()
+        log.info('eleven_labs')
         self.aws_polly = aws_polly()
+        log.info('aws_polly')
         self.user_auth = user_auth()
+        log.info('user_auth')
         log.info(max_content_length)
         self.setup_app()
+
 
     def setup_app(self):
         cors_allowed_origins = os.getenv('ALLOWED_ORIGINS', '*').split(',')
@@ -59,6 +74,8 @@ class Server:
 
         self.app.add_url_rule('/', methods=['GET'], view_func=self.angular_build)
         self.app.add_url_rule('/<filename>', methods=['GET'], view_func=self.angular_build)
+
+
 
         self.app.add_url_rule(self.apiRoute +'/auth', methods=['POST'], view_func=self.login)
 
@@ -105,9 +122,13 @@ class Server:
 
         self.app.add_url_rule(self.apiRoute +'/webcam/video', methods=['GET'], view_func=self.get_webcam_video)
         self.app.add_url_rule(self.apiRoute +'/webcam/image', methods=['POST'], view_func=self.send_webcam_image)
+        self.app.add_url_rule(self.apiRoute +'/image-recognition/<filename>', methods=['GET'], view_func=self.image_recognition_image)
+        self.app.add_url_rule(self.apiRoute +'/image-recognition/stream/', methods=['POST'], view_func=self.image_recognition_stream)
+        self.app.add_url_rule(self.apiRoute +'/image-recognition/model/', methods=['POST'], view_func=self.image_recognition_model)
 
         self.app.errorhandler(Exception)(self.handle_error)
         log.info('setup_app')
+
 
     def authenticate_request(self):
         excluded_routes = [
@@ -124,6 +145,7 @@ class Server:
         # Perform the authentication logic for other routes
         return self.user_auth.token_protect(request)
 
+
     def login(self):
         return self.user_auth.login(request)
 
@@ -133,6 +155,21 @@ class Server:
             return send_file('../angular-app/' + str(filename))
         else:
             return send_file('../angular-app/index.html')
+
+    def image_recognition_model(self):
+        return self.image_recognition.create_model_request(request)
+
+    def image_recognition_stream(self):
+        return self.image_recognition.recognise_from_webcam_stream(request)
+
+    def image_recognition_image(self, filename=None):
+        log.exception('face_recognition_image: ' + str(filename))
+        if "." in str(filename):
+            return send_file('www/uploads/webcam-recording/webcam_images_faces/' + str(filename))
+        else:
+            return 'Not Found', 404
+
+
 
     def discord_acknowledgement(self):
         return self.discord.send_acknowledgement_request(request)

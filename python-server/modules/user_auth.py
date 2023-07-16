@@ -1,3 +1,5 @@
+# file: modules/user_auth.py
+
 import os
 import jwt
 from dotenv import load_dotenv

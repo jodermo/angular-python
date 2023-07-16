@@ -26,12 +26,13 @@ class open_ai:
         self.file_server = file_server()
         self.api_key = os.getenv("OPENAI_API_KEY") if os.getenv("OPENAI_API_KEY") else 0
         self.organisation_id = os.getenv("OPENAI_ORGANISATION_ID") if os.getenv("OPENAI_ORGANISATION_ID") else 0
+        log.info('__init__ open_ai')
         if self.api_key:
             if self.organisation_id:
                 openai.organization = self.organisation_id
             openai.api_key = self.api_key
-            openai.Model.list()
-            log.info('open_ai')
+            # openai.Model.list()
+            log.info('api_key')
             log.info(self.api_key)
 
     def list_models(self):
@@ -102,10 +103,9 @@ class open_ai:
             data = response.json()
             result = {'success': 0 if 'error' in data else 1, 'prompt': prompt, 'response': data, 'time': datetime.timestamp(datetime.now())}
             dbEntry = self.add_response_to_database(result)
-            result['dbEntry'] = dbEntry
-            # log.info(data)
-            log.info('success' if 'error' in data else 'error')
-            return jsonify(result)
+            result_copy = result.copy()  # Create a copy of the result dictionary
+            result_copy['dbEntry'] = dbEntry
+            return jsonify(result_copy)
         else:
             log.info('No API key')
             return jsonify({'success': 0, 'prompt': prompt, 'model': model, 'response': {'error': {'code': 'No API key', 'message': 'Set your API key to OPENAI_API_KEY=KEY in .env file'}}})
@@ -142,15 +142,14 @@ class open_ai:
             response = requests.post(url, headers=headers, json=payload)
             data = response.json()
 
-
-            result = {'success': (0 if 'error' in data else 1),'model': model, 'messages': messages, 'temperature': temperature, 'response': data, 'time': datetime.timestamp(datetime.now())}
+            result = {'success': (0 if 'error' in data else 1), 'model': model, 'messages': messages, 'temperature': temperature, 'response': data, 'time': datetime.timestamp(datetime.now())}
             dbEntry = self.add_response_to_database(result)
-            result['dbEntry'] = dbEntry
-            log.info('success' if 'error' in data else 'error')
-            return jsonify(result)
+            result_copy = result.copy()  # Create a copy of the result dictionary
+            result_copy['dbEntry'] = dbEntry
+            return jsonify(result_copy)
         else:
             log.info('No API key')
-            return jsonify({'success': 0, 'messages': messages, 'response': {'error': {'code': 'No API key', 'message': 'Set your API key to OPENAI_API_KEY=KEY in .env file'}}})
+            return {'success': 0, 'messages': messages, 'response': {'error': {'code': 'No API key', 'message': 'Set your API key to OPENAI_API_KEY=KEY in .env file'}}}
 
 
     def create_chat_completion_request(self, request):
@@ -251,9 +250,9 @@ class open_ai:
                     }
                 result['files'].append(fileResult)
             dbEntry = self.add_response_to_database(result)
-            result['dbEntry'] = dbEntry
-            log.info('success' if 'error' in data else 'error')
-            return jsonify(result)
+            result_copy = result.copy()  # Create a copy of the result dictionary
+            result_copy['dbEntry'] = dbEntry
+            return jsonify(result_copy)
 
 
     def generate_image_request(self, request):
@@ -359,9 +358,9 @@ class open_ai:
             data = response.json()
             result = {'success': 0 if 'error' in data else 1, 'response': data, 'time': datetime.timestamp(datetime.now())}
             dbEntry = self.add_response_to_database(result)
-            result['dbEntry'] = dbEntry
-            log.info('success' if 'error' not in data else 'error')
-            return jsonify(result)
+            result_copy = result.copy()  # Create a copy of the result dictionary
+            result_copy['dbEntry'] = dbEntry
+            return jsonify(result_copy)
         else:
             log.info('No API key')
             return jsonify({'success': 0, 'response': {'error': {'code': 'No API key', 'message': 'Set your API key to OPENAI_API_KEY=KEY in .env file'}}})
@@ -398,9 +397,10 @@ class open_ai:
                 'time': datetime.timestamp(datetime.now())
             }
             dbEntry = self.add_response_to_database(result)
-            result['dbEntry'] = dbEntry
-            log.info('success' if 'error' not in data else 'error')
-            return jsonify(result)
+            dbEntry = self.add_response_to_database(result)
+            result_copy = result.copy()  # Create a copy of the result dictionary
+            result_copy['dbEntry'] = dbEntry
+            return jsonify(result_copy)
         else:
             log.info('No API key')
             return jsonify({
@@ -445,9 +445,9 @@ class open_ai:
                 'time': datetime.timestamp(datetime.now())
             }
             dbEntry = self.add_response_to_database(result)
-            result['dbEntry'] = dbEntry
-            log.info('success' if 'error' not in data else 'error')
-            return jsonify(result)
+            result_copy = result.copy()  # Create a copy of the result dictionary
+            result_copy['dbEntry'] = dbEntry
+            return jsonify(result_copy)
         else:
             log.info('No API key')
             return jsonify({
@@ -496,9 +496,9 @@ class open_ai:
                 'time': datetime.timestamp(datetime.now())
             }
             dbEntry = self.add_response_to_database(result)
-            result['dbEntry'] = dbEntry
-            log.info('success' if 'error' not in data else 'error')
-            return jsonify(result)
+            result_copy = result.copy()  # Create a copy of the result dictionary
+            result_copy['dbEntry'] = dbEntry
+            return jsonify(result_copy)
         else:
             log.info('No API key')
             return jsonify({

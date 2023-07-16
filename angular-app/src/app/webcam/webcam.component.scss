@@ -10,10 +10,7 @@
   position: relative;
   width: 100%;
   text-align: center;
-
-  .webcam-error {
-    color: red;
-  }
+min-height: 16rem;
 
   .videos {
     position: relative;
@@ -43,3 +40,4 @@ video {
     z-index: -100;
   }
 }
+

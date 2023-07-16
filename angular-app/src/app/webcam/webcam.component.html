@@ -1,25 +1,9 @@
-<div *ngIf="!app.token">
+<div *ngIf="showLogin && !app.token">
   <app-login></app-login>
 </div>
 
-<div class="content webcam-page" role="main" [ngClass]="{'hidden': (!webcam.started)}">
-  <div class="webcam">
-    <button *ngIf="app.token && !webcam.started" (click)="startWebcam()">Start</button>
-    <button *ngIf="app.token && webcam.started" (click)="stopWebcam()">Stop</button>
-
-    <div class="videos">
-      <video #video autoplay [ngClass]="{'hidden': (!webcam.started)}"></video>
-      <video  *ngIf="app.token" #outputVideo controls [ngClass]="{'hidden': (webcam.started)}" >
-        <source [src]="webcam.videoSrc()" type="video/webm">
-      </video>
-
-    </div>
-    <div class="webcam-status" *ngIf="webcam.loading">
-      Loading webcam...
-    </div>
-
-    <div class="webcam-error" *ngIf="!webcam.loading && webcam.errorMessage">
-      {{webcam.errorMessage}}
-    </div>
-  </div>
+<div class="content webcam-page" role="main" [ngClass]="{'hidden': (showLogin && !webcam.started)}">
+  <app-webcam-preview ></app-webcam-preview>
+  <app-webcam-record *ngIf="!webcam.started"></app-webcam-record>
+  <app-webcam-recognition-models></app-webcam-recognition-models>
 </div>

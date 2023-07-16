@@ -1,22 +1,24 @@
 import {Component, EventEmitter, HostListener, Output} from '@angular/core';
-import {AppComponent} from '../app.component';
 import {AppService} from '../app.service';
 import {SpeechRecognitionResponse, SpeechRecognitionService} from './speech-recognition.service';
+import {WebsocketComponent} from "../websocket/websocket.component";
+import {WebsocketService} from "../websocket/websocket.service";
+import {TextToSpeechService} from "../text-to-speech/text-to-speech.service";
 
 @Component({
   selector: 'app-speech-recognition',
   templateUrl: './speech-recognition.component.html',
   styleUrls: ['./speech-recognition.component.scss']
 })
-export class SpeechRecognitionComponent extends AppComponent {
+export class SpeechRecognitionComponent extends WebsocketComponent {
 
 
 
   @Output() onResult = new EventEmitter<SpeechRecognitionResponse | undefined>();
 
-  constructor(app: AppService, public speechRecognition: SpeechRecognitionService) {
-    super(app);
-    speechRecognition.init(app);
+  constructor(app: AppService, websocket: WebsocketService, textToSpeech: TextToSpeechService, public speechRecognition: SpeechRecognitionService) {
+    super(app, websocket, textToSpeech);
+    speechRecognition.init(app, websocket);
     speechRecognition.onResult((result?: SpeechRecognitionResponse)=>{
       this.onGetResult(result)
     });

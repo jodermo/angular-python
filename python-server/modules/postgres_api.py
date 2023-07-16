@@ -274,18 +274,8 @@ class postgres_api:
             return jsonify({'error': str(e)})
 
 
+
     def add_or_update_api_entry(self, table_name, entry):
-        """
-        Adds or updates an entry in the specified table.
-
-        Args:
-            table_name: The name of the table to insert or update the entry.
-            entry: A dictionary representing the entry.
-
-        Returns:
-            A dictionary with a success message if the entry is created or updated successfully,
-            or an error message if an error occurs.
-        """
         try:
             conn = self.connect_to_postgres()
             cur = conn.cursor()
@@ -307,14 +297,16 @@ class postgres_api:
                 cur.execute(update_query, (json.dumps(entry), entry['id']))
             else:
                 # Insert new entry
-                insert_query = sql.SQL("INSERT INTO {} (data) VALUES (%s)").format(sql.Identifier(table_name))
+                insert_query = sql.SQL("INSERT INTO {} (data) VALUES (%s) RETURNING id").format(sql.Identifier(table_name))
                 cur.execute(insert_query, (json.dumps(entry),))
+                entry_id = cur.fetchone()[0]
+                entry['id'] = entry_id
 
             conn.commit()
 
             cur.close()
             conn.close()
 
-            return {'message': 'Entry created or updated successfully'}
+            return entry
         except psycopg2.Error as e:
             return {'error': str(e)}
