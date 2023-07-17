@@ -1,0 +1,40 @@
+<div class="mo-bot-display layout-{{layout}}"
+     [ngClass]="{
+        'loading': (bot.speechText && textToSpeech.isLoading(bot.speechText)) || this.speechRecognition.loading || this.speechRecognition.uploading,
+        'error': speechRecognition.recognitionError,
+        'answer': speechRecognition.recognitionText,
+        'listening': !speechRecognition.recognitionError,
+        'speaking': textToSpeech.audio && !textToSpeech.audio.paused,
+        'recording': speechRecognition.recording
+    }"
+>
+  <ng-container *ngIf="layout === 'HAL-9000'">
+    <div class="hal-9000-wrapper">
+      <div class="hal-9000-display">
+        <div class="hal-9000-display-background"></div>
+        <div class="hal-9000-display-content">
+          <div class="hal-9000-display-content-color" *ngIf="textToSpeech.audioAnalyzer" [ngStyle]="{
+            backgroundColor: textToSpeech.audioAnalyzer.frequencyColor()
+          }">
+            <app-audio-analyzer [audioAnalyzer]="textToSpeech.audioAnalyzer"></app-audio-analyzer>
+          </div>
+          <div class="hal-9000-display-content-container">
+
+            <div class="text-output" *ngIf="bot.speechText">
+                <b><i>{{bot.speechText}}</i></b>
+              </div>
+            <div class="text-loading-info" *ngIf="textToSpeech.isLoading(bot.speechText)">
+              <small>Loading</small>
+            </div>
+            <div class="speech-recognition" (click)="toggleSpeechRecognition()">
+
+            </div>
+          </div>
+
+        </div>
+        <div class="hal-9000-display-glass"></div>
+        <div class="hal-9000-light-points"></div>
+      </div>
+    </div>
+  </ng-container>
+</div>

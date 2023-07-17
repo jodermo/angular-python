@@ -6,7 +6,7 @@
 
 
   <div class="bot-controls">
-    <div >
+    <div>
       <h1>MoBot v0.0.1</h1>
 
     </div>
@@ -26,22 +26,23 @@
       </div>
 
       <button *ngIf="bot.started" (click)="bot.stop();">Stop Bot</button>
-
+      <button *ngIf="bot.started" (click)="extended = !extended">
+        <span *ngIf="!extended">Extended Layout</span>
+        <span *ngIf="extended">Default Layout</span>
+      </button>
 
     </div>
 
-    <div *ngIf="bot.started" class="bot-container">
+    <div *ngIf="bot.started" class="bot-container" [ngClass]="{'hidden': (!extended)}">
       <app-webcam-preview #webcamElement></app-webcam-preview>
-      <app-speech-recognition-info></app-speech-recognition-info>
+      <app-speech-recognition-info *ngIf="extended"></app-speech-recognition-info>
 
     </div>
 
     <div class="bot-output" [ngClass]="{'hidden': (!bot.started)}">
-      <div *ngIf="bot.started && textToSpeech.audioAnalyzer">
-        <app-audio-analyzer [audioAnalyzer]="textToSpeech.audioAnalyzer"></app-audio-analyzer>
-      </div>
+      <app-mo-bot-display *ngIf="!extended"></app-mo-bot-display>
       <div>
-        <div class="bot-output-text" *ngIf="bot.speechText">
+        <div class="bot-output-text" *ngIf="bot.speechText && extended">
 
           <b [ngClass]="{'text-loading': (textToSpeech.isLoading(bot.speechText))}">
             <i>
@@ -55,7 +56,7 @@
         <app-text-to-speech-button *ngIf="bot.speechText" [text]="bot.speechText"
                                    [layout]="'custom'"
                                    [autoplay]="true"></app-text-to-speech-button>
-        <app-speech-recognition-button *ngIf="bot.started" [disabled]="openAi.sending"
+        <app-speech-recognition-button  [ngClass]="{'hidden': (!extended)}"
                                        [showLanguageSelection]="false"
                                        [showLastRecord]="false"
                                        (onResult)="onSpeechRecognitionResult($event, true); loadResults();"></app-speech-recognition-button>

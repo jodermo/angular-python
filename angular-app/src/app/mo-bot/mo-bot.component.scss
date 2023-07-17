@@ -21,7 +21,7 @@ $text-color-highlight: $text-color;
   color: $text-color-highlight;
 }
 
-body{
+body {
   .mo-bot {
     @extend .background-color;
     position: relative;
@@ -30,9 +30,10 @@ body{
     display: flex;
     justify-content: center;
 
-    button{
+    button {
       @extend .background-color-secondary;
-      &:hover{
+
+      &:hover {
         @extend .background-color-highlight;
       }
     }
@@ -145,6 +146,12 @@ body{
       }
     }
 
+    .mo-bot-display {
+      .audio-analyzer {
+        height: 100% !important;
+      }
+    }
+
     .audio-analyzer {
       position: relative;
       width: 100%;
@@ -158,17 +165,19 @@ body{
         display: flex;
 
         .audio-analyzer-frequency {
+
           position: relative;
           height: 100%;
           flex: 1;
-          @extend .background-color-secondary;
+
 
           .audio-analyzer-frequency-fill {
+            background: rgba(255, 255, 255, .5);
             position: absolute;
-            bottom:0;
+            bottom: 0;
             left: 0;
             width: 100%;
-            @extend .background-color-highlight;
+
           }
         }
       }
@@ -258,7 +267,6 @@ body{
     }
 
 
-
     .speech-recognition-info {
       @extend .background-color-secondary;
       position: relative;
@@ -269,9 +277,10 @@ body{
       flex-direction: column;
       justify-content: center;
 
-      &>*{
+      & > * {
         margin-bottom: 1rem;
-        &>*{
+
+        & > * {
           margin-bottom: 1rem;
         }
       }

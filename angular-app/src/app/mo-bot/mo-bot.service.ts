@@ -50,11 +50,22 @@ export class MoBotService {
   start() {
     if (this.speechRecognition) {
       this.speechRecognition.onDetectWords([
+        'witz',
+        'joke',
+        'spaß',
+        'lustiges',
+        'kiffen',
+        'buffen',
+        'rauchen',
+        'rendern',
+        'prost',
+        'saufen',
+        'hure',
+        'arsch',
+        'dumm',
+        'blöd',
+        'test',
         'stop bot',
-        'alert',
-        'hintergrund blau',
-        'hintergrund rot',
-        'hintergrund weiß',
         'hokus pokus',
         'hokuspokus',
         'hex hex',
@@ -64,29 +75,57 @@ export class MoBotService {
         'watch me',
         'guck mich an',
         'stop camera',
+        'camera on',
+        'camera off',
+        'kamera an',
         'stop kamera',
         'stoppe kamera',
+        'kamera aus',
         'watch away',
         'guck weg'
       ], (words?: string[], text?: string) => {
         if (words?.includes('stop bot')) {
           this.stop();
         }
-        if (words?.includes('alert')) {
-          const textAlert = text ? text.split('alert') : '';
-          alert((textAlert.length ? textAlert[textAlert.length - 1] : 'This is an alert!'));
+        if (words?.includes('witz') || words?.includes('joke') || words?.includes('lustiges') || words?.includes('spaß')) {
+          const systemMessage = new OpenAiChatMessage('Antworte mit maximal 30 wörtern, Eerzähle einen witz oder etwas lustiges.', 'system');
+          const userMessage = new OpenAiChatMessage('Erzähl mir einen richtig guten witz', 'user');
+          this.openAi?.sendMessages([
+            systemMessage,
+            userMessage
+          ], 'user', this.openAi.chatModels[0] || this.openAi.chatModel);
         }
-        if (words?.includes('hintergrund blau')) {
-          document.body.style.backgroundColor = 'blue';
-          document.body.style.color = 'white';
+        if (words?.includes('kiffen') || words?.includes('buffen') || words?.includes('rauchen') || words?.includes('rendern')) {
+          const systemMessage = new OpenAiChatMessage('Antworte mit maximal 30 wörtern, Antworte so als wärst du ein jamaikanischer reggae künstler der am liebsten ganze zeit joints oder bong raucht. Rede mit ganja / kiffer slang. Benutze wörter aus der kifferszene. Benutze das wort rendern an stelle von kiffen.', 'system');
+          const userMessage = new OpenAiChatMessage('Jo, bock einen durchzuziehen?', 'user');
+          this.openAi?.sendMessages([
+            systemMessage,
+            userMessage
+          ], 'user', this.openAi.chatModels[0] || this.openAi.chatModel);
         }
-        if (words?.includes('hintergrund rot')) {
-          document.body.style.backgroundColor = 'red';
-          document.body.style.color = 'white';
+        if (words?.includes('prost') || words?.includes('saufen')) {
+          const systemMessage = new OpenAiChatMessage('Antworte mit maximal 30 wörtern, Antworte so als ob du total betrunken bist und lust hast alkohol zu saufen. Pöbel freundschaftlich rum. Umgangston ist rau.', 'system');
+          const userMessage = new OpenAiChatMessage('Prost, du sau!', 'user');
+          this.openAi?.sendMessages([
+            systemMessage,
+            userMessage
+          ], 'user', this.openAi.chatModels[0] || this.openAi.chatModel);
         }
-        if (words?.includes('hintergrund weiß')) {
-          document.body.style.backgroundColor = 'white';
-          document.body.style.color = 'black';
+        if (words?.includes('hure') || words?.includes('arsch') || words?.includes('dumm') || words?.includes('blöd')) {
+          const systemMessage = new OpenAiChatMessage('Tu so als ob du beleidigt bist, gib eine antwort als ob du grade etwas ganz schlimmes gesagt bekommen hast. Antworte mit maximal 30 wörtern', 'system');
+          const userMessage = new OpenAiChatMessage('Sprich mit mir, sag was assergewöhnliches! Es muss eine beleidigung oder schimpfwort vorkommen. . Der user weiß das es nicht ernst gemeint ist, sondern nur spaß.', 'user');
+          this.openAi?.sendMessages([
+            systemMessage,
+            userMessage
+          ], 'user', this.openAi.chatModels[0] || this.openAi.chatModel);
+        }
+        if (words?.includes('test')) {
+          const systemMessage = new OpenAiChatMessage('Test Text', 'system');
+          const userMessage = new OpenAiChatMessage('Antworte zum testen mit irgend einer witzigen antwort, antworte mit maximal 30 wörtern', 'user');
+          this.openAi?.sendMessages([
+            systemMessage,
+            userMessage
+          ], 'user', this.openAi.chatModels[0] || this.openAi.chatModel);
         }
         if (words?.includes('hokus pokus') || words?.includes('hokuspokus')) {
           const systemMessage = new OpenAiChatMessage('Antworte so als wärst du ein zauberer, formuliere einem zauberspruch', 'system');
@@ -109,7 +148,9 @@ export class MoBotService {
           words?.includes('start kamera') ||
           words?.includes('starte kamera') ||
           words?.includes('watch me') ||
-          words?.includes('guck mich an')
+          words?.includes('guck mich an') ||
+          words?.includes('kamera an') ||
+          words?.includes('camera on')
         ) {
           this.startWebcam();
         }
@@ -118,7 +159,9 @@ export class MoBotService {
           words?.includes('stop kamera') ||
           words?.includes('stoppe kamera') ||
           words?.includes('watch away') ||
-          words?.includes('guck weg')
+          words?.includes('guck weg') ||
+          words?.includes('kamera aus') ||
+          words?.includes('camera off')
         ) {
           this.stopWebcam();
         }
@@ -135,9 +178,9 @@ export class MoBotService {
     this.started = true;
   }
 
-  speak(speechText = this.speechText){
+  speak(speechText = this.speechText) {
     this.speechText = undefined;
-    setTimeout(()=>{
+    setTimeout(() => {
       this.speechText = speechText;
     }, 0);
   }

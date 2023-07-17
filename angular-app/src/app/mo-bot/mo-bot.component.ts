@@ -20,6 +20,7 @@ export class MoBotComponent extends OpenAiComponent implements AfterViewInit{
 
 
   openAiResult?: OpenAiResponse;
+  extended = false;
   constructor(
     app: AppService,
     openAi: OpenAiService,

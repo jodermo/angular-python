@@ -49,6 +49,7 @@ import { WebcamRecognitionModelComponent } from './webcam/webcam-recognition-mod
 import { SpeechRecognitionInfoComponent } from './speech-recognition/speech-recognition-info/speech-recognition-info.component';
 import { AppGeneratorComponent } from './app-generator/app-generator.component';
 import { AudioAnalyzerComponent } from './audio-analyzer/audio-analyzer.component';
+import { MoBotDisplayComponent } from './mo-bot/mo-bot-display/mo-bot-display.component';
 
 @NgModule({
   declarations: [
@@ -84,6 +85,7 @@ import { AudioAnalyzerComponent } from './audio-analyzer/audio-analyzer.componen
     SpeechRecognitionInfoComponent,
     AppGeneratorComponent,
     AudioAnalyzerComponent,
+    MoBotDisplayComponent,
   ],
   imports: [
     CommonModule,
