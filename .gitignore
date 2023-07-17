@@ -43,6 +43,7 @@ angular-app/yarn-error.log
 .history/*
 
 # Miscellaneous
+/angular-app/.angular/*
 /angular-app/.angular/cache
 angular-app/.sass-cache/
 /angular-app/connect.lock
