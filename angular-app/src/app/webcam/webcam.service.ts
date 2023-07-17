@@ -110,7 +110,6 @@ export class WebcamService {
   }
 
   start(videoElement = this.video, outputVideoElement = this.outputVideo) {
-    console.log('start', videoElement, this.video, outputVideoElement, this.outputVideo);
     this.video = videoElement || this.video;
     this.outputVideo = outputVideoElement || this.outputVideo;
     this.loading = true;
@@ -118,7 +117,6 @@ export class WebcamService {
       video: true
     };
     this.errorMessage = undefined;
-    console.log('start', this.video, this.outputVideo);
     navigator.mediaDevices.getUserMedia(constraints).then(
       (stream: MediaStream) => {
 
@@ -129,7 +127,6 @@ export class WebcamService {
         this.started = true;
         this.updateVideo = true;
         this.videoUpdate();
-        console.log('start stream', stream, this.video);
       },
       (error: any) => {
         console.log('start error', error);
@@ -174,14 +171,12 @@ export class WebcamService {
   }
 
   handleImage(webcamImage: WebcamImage) {
-    console.log('captureImage', this.app);
+
     if (this.app) {
       // Convert the captured image to base64 format
       const imageData = webcamImage.imageAsBase64;
       // Send the image data to the Python backend
       this.app.post(this.app.API.url + '/image-recognition/stream/', {image: imageData}, (response: WebcamRecognitionResult[]) => {
-
-        console.log('Face recognition results:', response);
         this.recognitionResults.push(response);
         this.recognitionResult = response;
         for (const callback of this.onRecogniseImageCallbacks) {
@@ -195,7 +190,6 @@ export class WebcamService {
   }
 
   captureImage() {
-    console.log('captureImage');
     this.triggerObservable.next();
   }
 
@@ -230,9 +224,7 @@ export class WebcamService {
   }
 
   captureImageAndSendToServer(videoElement: HTMLVideoElement) {
-    console.log('captureImageAndSendToServer', this.recording);
     if (this.recording) {
-
       const canvas = document.createElement('canvas');
       canvas.width = videoElement.videoWidth;
       canvas.height = videoElement.videoHeight;
@@ -244,11 +236,9 @@ export class WebcamService {
         }
       }, 'image/jpeg', 0.5);
     }
-
   }
 
   sendToServer(file: Blob, filename = this.fileName, path = this.filePath) {
-    console.log('sendToServer', this.recording);
     if (this.app && this.recording) {
       const formData = new FormData();
       formData.append('file', file, filename);
@@ -256,12 +246,9 @@ export class WebcamService {
       formData.append('path', path);
       formData.append('fps', this.fps + '');
       this.app.post(this.app.API.url + '/webcam/image', formData, (result: any) => {
-        console.log('sendToServer', result);
         if (result?.ace_image_path) {
-
           this.faceImageAvailable = false;
           this.lastFaceImage = result.ace_image_path;
-          console.log('!Reload image', this.lastFaceImage);
           this.faceImages.push(result.ace_image_path);
           setTimeout(() => {
             this.faceImageAvailable = true;
@@ -328,7 +315,6 @@ export class WebcamService {
     xmax: number,
     ymax: number,
   }, recognitionModel = this.recognitionModel) {
-    console.log('setRecognitionModel', file, recognitionModel);
     if (this.app && recognitionModel) {
       this.app.post(this.app.API.url + '/image-recognition/model/', {
         name: name,
@@ -340,7 +326,6 @@ export class WebcamService {
         ymax: box.ymax,
       }, (result: WebcamRecognitionModel) => {
         recognitionModel = result;
-        console.log('setRecognitionModel result', file, result);
       });
 
     }

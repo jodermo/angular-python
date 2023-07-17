@@ -14,16 +14,26 @@ export class TextToSpeechButtonComponent extends TextToSpeechComponent implement
   @Input() disabled = false;
 
 
-
   constructor(app: AppService, textToSpeech: TextToSpeechService) {
     super(app, textToSpeech);
   }
 
   override ngOnInit() {
+    console.log('ngOnInit', this.autoplay , this.text,this.ready);
     if (this.autoplay && this.text && !this.ready) {
-      this.textToSpeech.makeFileAndPlay(this.text, this.app.language, this.textToSpeech.filename, true);
+      const lastResults = this.textToSpeech.textData(this.text);
+      if (lastResults.length) {
+        console.log('lastResults', this.autoplay , lastResults);
+        this.textToSpeech.playResult(lastResults[0]);
+      }else{
+        console.log('makeFileAndPlay', this.autoplay , this.text , this.ready);
+        this.textToSpeech.makeFileAndPlay(this.text, this.app.language, this.textToSpeech.filename, true);
+      }
     }
     super.ngOnInit();
+
+
+
 
   }
 }

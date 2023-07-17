@@ -15,9 +15,10 @@ import {WebcamComponent} from "../webcam/webcam.component";
   styleUrls: ['./mo-bot.component.scss']
 })
 export class MoBotComponent extends OpenAiComponent implements AfterViewInit{
-  @ViewChild('audioElement', {static: false}) audioElement?: ElementRef<HTMLElement>;
   @ViewChild('webcamElement', {static: false}) webcamElement?: ElementRef<WebcamComponent>;
-  @ViewChild('video', { static: true }) videoElement?: ElementRef;
+
+
+
   openAiResult?: OpenAiResponse;
   constructor(
     app: AppService,
@@ -32,14 +33,23 @@ export class MoBotComponent extends OpenAiComponent implements AfterViewInit{
     this.bot.init(app, openAi, this.textToSpeech, webcam, websocket, speechRecognition);
     this.openAi.onResult((result: OpenAiResponse)=>{
       this.loadResults();
-      console.log('onResult', result);
+      if(result.response.choices?.length){
+        let openAiResponseText = '';
+        for(const choice of result.response.choices){
+          if(openAiResponseText.length){
+            openAiResponseText += ' \n';
+          }
+          openAiResponseText += choice.message.content;
+        }
+        this.bot.speak(openAiResponseText);
+      }
     });
   }
 
   override ngAfterViewInit() {
     super.ngAfterViewInit();
     this.loadResults();
-
+    this.bot.webcamElement = this.webcamElement;
   }
 
 

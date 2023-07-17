@@ -44,10 +44,14 @@ class speech_recognition:
          @self.websocket.socketio.on('audio')
          def process_audio(data):
              # Extract the audio data from the request
+             recognition_index = int(data.get('recognitionIndex', 0))
              audio_data = data.get('audio')
              language = data.get('language', 'en-US')
              words = data.get('words', [])
              sentence = data.get('sentence', '')
+             sample_rate = data.get('sample_rate', 16000)
+             sample_width = data.get('sample_width', 1)
+             channels = data.get('channels', 1)
              # Generate a unique filename
              filename = self.generate_unique_filename()
 
@@ -85,7 +89,8 @@ class speech_recognition:
                         'text': text,
                         'event': 'words_detected',
                         'roomName': 'speech-recognition',
-                        'audio_data': audio_data
+                        'audio_data': audio_data,
+                        'recognitionIndex': recognition_index
                     })
                  if sentence_detected:
                     self.websocket.send_message('speech-recognition', {
@@ -94,7 +99,8 @@ class speech_recognition:
                         'text': text,
                         'event': 'sentence_detected',
                         'roomName': 'speech-recognition',
-                        'audio_data': audio_data
+                        'audio_data': audio_data,
+                        'recognitionIndex': recognition_index
                     })
                  if not sentence_detected and not words_detected:
                     self.websocket.send_message('speech-recognition', {
@@ -102,7 +108,8 @@ class speech_recognition:
                         'text': text,
                         'event': 'nothing_detected',
                         'roomName': 'speech-recognition',
-                        'audio_data': audio_data
+                        'audio_data': audio_data,
+                        'recognitionIndex': recognition_index
                     })
              except sr.UnknownValueError as e:
                  # Handle speech recognition errors
@@ -113,7 +120,8 @@ class speech_recognition:
                      'error': error,
                      'event': 'error',
                      'roomName': 'speech-recognition',
-                     'language': language
+                     'language': language,
+                     'recognitionIndex': recognition_index
                  })
                  print(error)
              except sr.RequestError as e:
@@ -126,7 +134,8 @@ class speech_recognition:
                      'roomName': 'speech-recognition',
                      'language': language,
                      'sample_rate': sample_rate,
-                     'sample_rate': sample_width
+                     'sample_rate': sample_width,
+                     'recognitionIndex': recognition_index
                  })
                  print(error)
 

@@ -71,7 +71,7 @@ export interface OpenAiResponse {
 export const OpenAiModeAliases = ['chat', 'image', 'completion'];
 export type OpenAiModeAlias = typeof OpenAiModeAliases[number];
 export type OpenAiMode = { name: string, alias: OpenAiModeAlias };
-export const OpenAiMChatMode: OpenAiMode = {name: 'GPT Chat', alias: 'chat'};
+export const OpenAiChatMode: OpenAiMode = {name: 'GPT Chat', alias: 'chat'};
 export const OpenAiCompletionMode: OpenAiMode = {name: 'Send Completion', alias: 'completion'};
 export const OpenAiImageMode: OpenAiMode = {name: 'Image Generation', alias: 'image'};
 export const OpenAiFileMode: OpenAiMode = {name: 'File', alias: 'file'};
@@ -79,7 +79,7 @@ export const OpenAiCompletionModels = ['text-davinci-003', 'text-davinci-002', '
 export const OpenAiChatModels = ['gpt-3.5-turbo', 'gpt-4', 'gpt-4-0613', 'gpt-4-32k', 'gpt-4-32k-0613', 'gpt-3.5-turbo-0613', 'gpt-3.5-turbo-16k', 'gpt-3.5-turbo-16k-0613'];
 
 export const OpenAiModes: OpenAiMode[] = [
-  OpenAiMChatMode,
+  OpenAiChatMode,
   OpenAiCompletionMode,
   OpenAiImageMode,
   OpenAiFileMode
@@ -344,7 +344,6 @@ export class OpenAiService {
             this.allModels = result.response.data as OpenAiCompletionModel[];
             this.completionModels = this.allModels.filter(model => OpenAiCompletionModels.find(modelName => model.id === modelName));
             this.chatModels = this.allModels.filter(model => OpenAiChatModels.find(modelName => model.id === modelName));
-            ;
             this.completionModel = this.completionModels.length ? this.completionModels[0] : undefined;
             this.chatModel = this.chatModels.length ? this.chatModels[0] : undefined;
           }

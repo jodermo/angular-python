@@ -1,16 +1,71 @@
-.full-table{
+.full-table {
   table-layout: fixed;
   width: 100%;
   height: 100%;
 }
 
-.bot-container{
-  &.hidden{
+
+.bot-output-text {
+  background: #1976d2;
+  color: white;
+}
+
+.bot-container {
+  position: relative;
+  display: flex;
+
+  & > * {
+    flex: 1;
+  }
+
+  &.hidden {
     position: absolute;
     width: 0;
     height: 0;
     z-index: -10;
     opacity: 0;
     overflow: hidden;
+  }
+}
+
+.mo-bot {
+  position: relative;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+
+  .bot-controls {
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+
+    select {
+      width: auto;
+      text-align: center;
+
+      * {
+        text-align: center;
+      }
+    }
+
+    .bot-main-controls {
+
+      display: flex;
+      justify-content: center;
+
+      & > * {
+        flex: 1;
+      }
+
+    }
+  }
+
+  & > div {
+    position: relative;
+    flex: 1;
+
+    &.hidden {
+      position: absolute;
+    }
   }
 }

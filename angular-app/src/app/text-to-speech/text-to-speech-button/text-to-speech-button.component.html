@@ -1,12 +1,13 @@
 <div class="text-to-speech-button" *ngIf="text">
 
 
-
-  <select *ngIf="textToSpeech.mode.alias === 'gtts' || textToSpeech.mode.alias === 'polly'" [(ngModel)]="app.language" [disabled]="disabled"  (ngModelChange)="textToSpeech.filterPollyVoices(textToSpeech.pollyEngine);">
+  <select *ngIf="textToSpeech.mode.alias === 'gtts' || textToSpeech.mode.alias === 'polly'" [(ngModel)]="app.language"
+          [disabled]="disabled" (ngModelChange)="textToSpeech.filterPollyVoices(textToSpeech.pollyEngine);">
     <option *ngFor="let language of app.languages" [ngValue]="language">{{language.name}}</option>
   </select>
   <select *ngIf="textToSpeech.mode.alias === 'polly' &&  textToSpeech.pollyEngines.length"
-          [(ngModel)]="textToSpeech.pollyEngine" (ngModelChange)="textToSpeech.filterPollyVoices(textToSpeech.pollyEngine)" >
+          [(ngModel)]="textToSpeech.pollyEngine"
+          (ngModelChange)="textToSpeech.filterPollyVoices(textToSpeech.pollyEngine)">
     <option *ngFor="let pollyEngine of textToSpeech.pollyEngines" [ngValue]="pollyEngine">{{pollyEngine}}</option>
   </select>
 
@@ -14,7 +15,8 @@
           [(ngModel)]="textToSpeech.pollyVoice">
     <option *ngFor="let voice of textToSpeech.pollyEngineVoices" [ngValue]="voice">{{voice.Name}}</option>
   </select>
-  <select *ngIf="textToSpeech.mode.alias === 'eleven-labs'" [(ngModel)]="textToSpeech.elevenLabsVoice" [disabled]="disabled"  (ngModelChange)="textToSpeech.stop();">
+  <select *ngIf="textToSpeech.mode.alias === 'eleven-labs'" [(ngModel)]="textToSpeech.elevenLabsVoice"
+          [disabled]="disabled" (ngModelChange)="textToSpeech.stop();">
     <option *ngFor="let voice of textToSpeech.elevenLabsVoices" [ngValue]="voice">{{voice.name}}</option>
   </select>
   <button
@@ -67,7 +69,7 @@
     <div>
       <b>{{entry.mode}}</b>
       <span><i>[{{entry.lang}}]</i></span>
-
+      <span class="spacer"></span>
       <button
         [disabled]="loading"
         (click)="textToSpeech.play(entry)">

@@ -251,6 +251,7 @@ export class TextToSpeechService {
   }
 
   makeFileAndPlay(text = this.text, language = this.language, filename = this.filename, fromAutoplay = false, mode = this.mode, additionalData?: any) {
+
     if (text && text.length && !this.loading[text]) {
       const parsedText = text ? text.replace(/```/g, '') : '';
       if (this.textResults[language.iso] && this.textResults[language.iso][text]) {
@@ -420,8 +421,10 @@ export class TextToSpeechService {
     return this.results.filter((textToSpeechResult: TextToSpeechResponse) => textToSpeechResult.tableName === tableName && textToSpeechResult.parentId === id);
   }
 
-  textData(text: string) {
-    return this.results.filter((textToSpeechResult: TextToSpeechResponse) => textToSpeechResult.text === text);
-
+  textData(text: string, language = this.language) {
+    if(this.app){
+      language = this.app.language;
+    }
+    return this.results.filter((textToSpeechResult: TextToSpeechResponse) => textToSpeechResult.text === text && textToSpeechResult.lang === language.iso);
   }
 }

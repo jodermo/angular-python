@@ -1,4 +1,4 @@
-.text-to-speech{
+.text-to-speech {
 
   .text-to-speech-results {
     position: relative;
@@ -8,6 +8,17 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
+
+    li {
+      div {
+        display: flex;
+        padding: 0 1rem;
+
+        .spacer {
+          flex: 1;
+        }
+      }
+    }
 
     .text-to-speech-results-wrapper {
       position: absolute;
@@ -22,7 +33,7 @@
       box-shadow: 0 0 .25rem 0 rgba(0, 0, 0, 0.5) inset;
     }
 
-    .text-to-speech-results-container{
+    .text-to-speech-results-container {
       position: relative;
       width: 100%;
       height: 100%;

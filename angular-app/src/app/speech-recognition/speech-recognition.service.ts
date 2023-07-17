@@ -71,9 +71,22 @@ export class SpeechRecognitionService {
   private detectSentenceCallbacks: any = {};
 
   recognitionTimeout: any;
-  recognitionInterval = 2500;
+  recognitionInterval = 250;
+  recognitionMinByteLength = 10000;
+  maxRecognitionChunks = 20;
+  onRecognitionIgnoreFor = 5000;
+  ignoreCommands: string[] = [];
+
+  sampleRate = 16000;
+  numberOfChannels = 1;
+  sampleWidth = 1;
+  useDefaultValues = false;
+
+  recognitionIndex = 0;
+  recognizedIndex = 0;
+
   recognitionChunks: any[] = [];
-  maxRecognitionChunks = 4;
+
   detectedWords: string[] = [];
   detectedSentences: string[] = [];
   recognitionText?: string;
@@ -112,7 +125,6 @@ export class SpeechRecognitionService {
       this.websocket.on('speech-recognition', (data: any) => {
         this.checkDetectWords(data);
       });
-      console.log('initWebsocket', this.websocket);
     }
   }
 
@@ -123,7 +135,6 @@ export class SpeechRecognitionService {
     onError?: (error?: any) => void
   ) {
     const language = (this.app && this.app.language ? this.app.language.lang : this.language ? this.language.lang : 'en-US');
-    console.log('language', language);
     this.loading = true;
     this.app?.get(
       this.app?.API.url + '/speech-recognition?path=' + directory + '&language=' + language + '&filename=' + filename + '',
@@ -191,19 +202,14 @@ export class SpeechRecognitionService {
 
     this.recognitionChunks = [];
     if (!this.recognition) {
-      console.log('startRecognition', this.websocket);
+
       navigator.mediaDevices
         .getUserMedia({audio: true})
         .then((stream) => {
-
-          console.log('startRecognition stream', stream);
-
           this.mediaRecorder = new MediaRecorder(stream);
           this.mediaRecorder.addEventListener('dataavailable', (e) => {
             this.chunks.push(e.data);
             this.recognitionChunks.push(e.data);
-            console.log('this.websocket', this.websocket);
-
           });
           this.mediaRecorder.start();
           this.recognition = true;
@@ -218,7 +224,7 @@ export class SpeechRecognitionService {
 
   async checkRecognitionChunks(language = this.language) {
     const lang = (this.app && this.app.language ? this.app.language.lang : this.language ? this.language.lang : 'en-US');
-    console.log('language', lang);
+
     if (this.recognitionTimeout) {
       clearTimeout(this.recognitionTimeout);
     }
@@ -234,32 +240,46 @@ export class SpeechRecognitionService {
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         const reader = new FileReader();
 
+        const sendAudio = (audioData: any, sampleRate: number, numberOfChannels: number, sampleWidth: number) => {
+          const data = {
+            audio: audioData,
+            words: this.detectWords,
+            sentence: this.detectSentence,
+            language: lang,
+            sample_rate: sampleRate,
+            channels: numberOfChannels,
+            sample_width: sampleWidth,
+            recognitionIndex: this.recognitionIndex
+          };
+          // Send the data to the server over WebSocket
+
+          if (this.websocket && audioData.byteLength > this.recognitionMinByteLength) {
+            this.websocket.emit('audio', data);
+            this.recognitionIndex++;
+          }
+        };
+
         if (isSupportedAudioFormat(audioFile)) {
           fetchAudioData(audioFile)
-            .then((audioData) => {
+            .then((audioData: any) => {
               reader.onload = () => {
                 const arrayBuffer = reader.result as ArrayBuffer;
-                audioCtx.decodeAudioData(arrayBuffer)
-                  .then((audioBuffer: AudioBuffer) => {
-                    const data = {
-                      audio: audioData,
-                      words: this.detectWords,
-                      sentence: this.detectSentence,
-                      language: lang,
-                      sample_rate: audioBuffer.sampleRate,
-                      channels: audioBuffer.numberOfChannels,
-                      sample_width: 2,
-                    };
-                    // Send the data to the server over WebSocket
-                    console.log('checkRecognitionChunks', this.recognitionChunks.length, data, audioBuffer);
-                    if (this.websocket) {
-                      this.websocket.emit('audio', data);
-                    }
-                    // Receive WebSocket events from the server
-                  })
-                  .catch((error: any) => {
-                    console.error('Error with decoding audio data', error);
-                  });
+                if(!this.useDefaultValues){
+                  try {
+                    audioCtx.decodeAudioData(arrayBuffer, (audioBuffer: AudioBuffer) => {
+                      sendAudio(audioData, audioBuffer.sampleRate, audioBuffer.numberOfChannels, audioBuffer.numberOfChannels);
+                    }, (error: any) => {
+                      this.useDefaultValues = true;
+                      this.checkRecognitionChunks(language);
+                    });
+                  } catch (error) {
+                    this.useDefaultValues = true;
+                  }
+                }
+                if(this.useDefaultValues){
+                  sendAudio(audioData, this.sampleRate, this.numberOfChannels, this.sampleWidth);
+                }
+
               };
               reader.readAsArrayBuffer(audioFile);
             })
@@ -357,8 +377,6 @@ export class SpeechRecognitionService {
 
       }
     }
-    console.log('stopRecording', this);
-
   }
 
   loadAudio(reload = true) {
@@ -495,69 +513,82 @@ export class SpeechRecognitionService {
   }
 
   private checkDetectWords(data: any) {
-    console.log('checkDetectWords', data);
-
-    if (data.audio_data) {
-      const audioData = data.audio_data;
-      const audioBlob = new Blob([audioData], {type: 'audio/wav'});
-      const audioUrl = URL.createObjectURL(audioBlob);
-      this.recordAudio.src = audioUrl;
-    }
-
-    this.recognitionError = data.error ? data.error.message : undefined;
-    if (!this.recognitionError) {
-      this.recognitionText = data.text ? data.text : undefined;
 
 
-      if (this.recognitionText) {
-        const newText = this.recognitionText.toLowerCase();
-        const urls = this.checkAndParseURLs(this.recognitionText);
-        for (const url of urls) {
-          this.openUrl(url);
-        }
-        // Check if the new text is a continuation of the previous recognition
-        const isContinuation = newText.startsWith(this.lastRecognitionText.toLowerCase());
+    const recognitionIndex = data.recognitionIndex || 0;
 
-        // Update the last recognition text
-        this.lastRecognitionText = newText;
+    if (recognitionIndex >= this.recognizedIndex) {
 
-        // Append the new text to the complete recognition text
-        if (!isContinuation) {
-          this.completeRecognitionText += ' ' + newText;
+      if (data.audio_data) {
+        const audioData = data.audio_data;
+        const audioBlob = new Blob([audioData], {type: 'audio/wav'});
+        const audioUrl = URL.createObjectURL(audioBlob);
+        this.recordAudio.src = audioUrl;
+      }
+
+      this.recognitionError = data.error ? data.error.message : undefined;
+      if (!this.recognitionError) {
+        this.recognitionText = data.text ? data.text : undefined;
+
+
+        if (this.recognitionText) {
+          const newText = this.recognitionText.toLowerCase();
+          const urls = this.checkAndParseURLs(this.recognitionText);
+          for (const url of urls) {
+            this.openUrl(url);
+          }
+          // Check if the new text is a continuation of the previous recognition
+          const isContinuation = newText.startsWith(this.lastRecognitionText.toLowerCase());
+
+          // Update the last recognition text
+          this.lastRecognitionText = newText;
+
+          // Append the new text to the complete recognition text
+          if (!isContinuation) {
+            this.completeRecognitionText += ' ' + newText;
+          }
         }
       }
 
-    }
+      if (data.words) {
 
-    if (data.words) {
-      this.chunks = [];
-      this.recognitionChunks = [];
-      for (const word of data.words) {
-        this.detectedWords.push(word);
-        if (this.detectWordCallbacks[word]) {
-          for (const callback of this.detectWordCallbacks[word]) {
-            callback(data.words, data.text);
+        this.recognizedIndex = recognitionIndex;
+        this.chunks = [];
+        this.recognitionChunks = [];
+        for (const word of data.words) {
+
+          if (this.detectWordCallbacks[word] && !this.ignoreCommands.find(ignoreWord => ignoreWord === word)) {
+            this.detectedWords.push(word);
+            this.ignoreCommands.push(word);
+            for (const callback of this.detectWordCallbacks[word]) {
+              callback(data.words, data.text);
+            }
+            setTimeout(() => {
+              this.ignoreCommands = this.ignoreCommands.filter(ignoreWord => ignoreWord !== word);
+            }, this.onRecognitionIgnoreFor)
+          }
+        }
+      }
+      if (data.sentence) {
+        this.recognizedIndex = recognitionIndex;
+        this.chunks = [];
+        this.recognitionChunks = [];
+        this.detectedSentences.push(data.sentence);
+        if (this.detectSentenceCallbacks[data.sentence]) {
+          for (const callback of this.detectSentenceCallbacks[data.sentence]) {
+            callback(data.sentence, data.text);
           }
         }
       }
     }
-    if (data.sentence) {
-      this.detectedSentences.push(data.sentence);
-      if (this.detectSentenceCallbacks[data.sentence]) {
-        for (const callback of this.detectSentenceCallbacks[data.sentence]) {
-          callback(data.sentence, data.text);
-        }
-      }
-    }
+
 
   }
 
   private openUrl(url: string) {
-    console.log('openUrl', url, !this.urlsOpened[url]);
     if (!this.urlsOpened[url]) {
       this.urlsOpened[url] = true;
       window.open(url, '_blank');
-      console.log('openUrl', url, '_blank');
     }
 
   }

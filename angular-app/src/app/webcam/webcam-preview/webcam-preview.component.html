@@ -1,6 +1,6 @@
 <div class="webcam-preview webcam-off" *ngIf="!webcam.started">
   <div class="webcam-controls">
-    <button (click)="webcam.start()">Webcam On</button>
+    <button (click)="start()">Webcam On</button>
   </div>
 </div>
 <div class="webcam-preview webcam-on" *ngIf="webcam.started">
@@ -8,7 +8,7 @@
     <div class="webcam-output">
       <webcam
         [trigger]="webcam.triggerObservable"
-        (imageCapture)="webcam.handleImage($event)"
+        (imageCapture)="handleImage($event)"
       ></webcam>
       <div class="webcam-marker-overlay" *ngIf="webcam.recognition && webcam.recognitionResult">
         <app-webcam-marker *ngFor="let recognitionResult of webcam.recognitionResult" [recognitionResult]="recognitionResult"></app-webcam-marker>
@@ -29,12 +29,12 @@
   <div class="webcam-overlay">
     <div class="webcam-controls">
 
-      <button *ngIf="!webcam.recording" (click)="webcam.startRecord()">Start Record</button>
-      <button *ngIf="webcam.recording"  (click)="webcam.stopRecord()">Stop Record</button>
-      <button  *ngIf="!webcam.recognition" (click)="webcam.startRecognition()">Start Recognition</button>
-      <button  *ngIf="webcam.recognition" (click)="webcam.stopRecognition()">Stop Recognition</button>
-      <button  (click)="webcam.captureImage()">Trigger Recognition</button>
-      <button (click)="webcam.stop()">Webcam Off</button>
+      <button *ngIf="!webcam.recording" (click)="startRecord()">Start Record</button>
+      <button *ngIf="webcam.recording"  (click)="stopRecord()">Stop Record</button>
+      <button  *ngIf="!webcam.recognition" (click)="startRecognition()">Start Recognition</button>
+      <button  *ngIf="webcam.recognition" (click)="stopRecognition()">Stop Recognition</button>
+      <button  (click)="captureImage()">Trigger Recognition</button>
+      <button (click)="stop()">Webcam Off</button>
       <div class="webcam-record-fps">
         <label for="recordFps">FPS</label>
         <input id="recordFps" name="recordFps" [(ngModel)]="webcam.fps" type="number" [min]="webcam.minFps"

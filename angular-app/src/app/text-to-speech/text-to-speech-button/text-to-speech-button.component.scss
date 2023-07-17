@@ -16,3 +16,49 @@
 .spacer {
   flex: 1;
 }
+.text-to-speech-results {
+  position: relative;
+  flex: 1;
+  background: #b3d9ff;
+  padding: .5rem;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+
+  li {
+    div {
+      display: flex;
+
+
+      .spacer {
+        flex: 1;
+        b{
+          padding: 0 1rem;
+        }
+      }
+    }
+  }
+
+  .text-to-speech-results-wrapper {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    overflow: hidden;
+    box-sizing: border-box;
+    border-radius: .5rem;
+    overflow: hidden;
+    box-shadow: 0 0 .25rem 0 rgba(0, 0, 0, 0.5) inset;
+  }
+
+  .text-to-speech-results-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow-x: hidden;
+    overflow-y: scroll;
+    padding: .5rem;
+
+  }
+}
