@@ -1,5 +1,29 @@
+
+
+
+
 .speech-recognition-info {
+  position: relative;
+  width: 100%;
+  min-height: 100%;
   background: #1976d2;
   color: white;
   padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  &>*{
+    margin-bottom: 1rem;
+    &>*{
+      margin-bottom: 1rem;
+    }
+  }
+}
+
+
+ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
 }

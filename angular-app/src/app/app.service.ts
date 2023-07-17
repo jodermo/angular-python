@@ -146,9 +146,9 @@ export class AppService {
     const appUsername = localStorage.getItem('app-username');
     if (appUsername?.length) {
       this.user.username = appUsername;
-    } else if(this.user.username) {
+    } else if (this.user.username) {
       localStorage.setItem('app-username', this.user.username);
-    }else{
+    } else {
       this.user.username = 'Anonymous_' + Date.now();
     }
     const username = localStorage.getItem('auth-username');
@@ -157,6 +157,16 @@ export class AppService {
     this.token = token ? token : this.tokenProtection ? '' : 'undefined';
     this.loginData.username = username ? username : '';
 
+  }
+
+  isLocalhost(serveMode = false) {
+    const hostname = window.location.hostname;
+    const port = window.location.port;
+    if (hostname === "localhost" && (!serveMode || port === "4200")) {
+      return true;
+    } else {
+      return false;
+    }
   }
 
   login(): void {
@@ -453,6 +463,11 @@ export class AppService {
       onError,
       'form'
     );
+  }
+
+  buildServerApp(onSuccess?: (result?: any) => void,
+                 onError?: (error?: any) => void) {
+    return this.post(this.API.url + '/build', {}, onSuccess, onError);
   }
 
   getFiles(

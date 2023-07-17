@@ -47,6 +47,8 @@ import { WebcamRecordComponent } from './webcam/webcam-record/webcam-record.comp
 import { WebcamRecognitionModelsComponent } from './webcam/webcam-recognition-models/webcam-recognition-models.component';
 import { WebcamRecognitionModelComponent } from './webcam/webcam-recognition-model/webcam-recognition-model.component';
 import { SpeechRecognitionInfoComponent } from './speech-recognition/speech-recognition-info/speech-recognition-info.component';
+import { AppGeneratorComponent } from './app-generator/app-generator.component';
+import { AudioAnalyzerComponent } from './audio-analyzer/audio-analyzer.component';
 
 @NgModule({
   declarations: [
@@ -80,6 +82,8 @@ import { SpeechRecognitionInfoComponent } from './speech-recognition/speech-reco
     WebcamRecognitionModelsComponent,
     WebcamRecognitionModelComponent,
     SpeechRecognitionInfoComponent,
+    AppGeneratorComponent,
+    AudioAnalyzerComponent,
   ],
   imports: [
     CommonModule,

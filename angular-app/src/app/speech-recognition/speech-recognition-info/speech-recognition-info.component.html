@@ -1,5 +1,9 @@
 <div class="speech-recognition-info">
   <div class="speech-recognition-output">
+    <div class="speech-recognition-audio" *ngIf="speechRecognition.recordAudio.src">
+      <b>Audio Record:</b>
+      <button (click)="speechRecognition.playRecord()">Play Record</button>
+    </div>
     <div class="speech-recognition-text">
       <span *ngIf="!speechRecognition.recognitionText">
         Speak something
@@ -20,9 +24,11 @@
   <div class="speech-recognition-detected">
     <div *ngIf="speechRecognition.detectedWords.length" class="speech-recognition-detected-words">
       <b>Detected commands:</b>
-      <li *ngFor="let word of speechRecognition.detectedWords">
-        {{word}}
-      </li>
+      <ul>
+        <li *ngFor="let word of speechRecognition.detectedWords">
+          {{word}}
+        </li>
+      </ul>
       <button (click)="speechRecognition.detectedWords = []">
         Clear
       </button>
@@ -38,22 +44,21 @@
     </div>
   </div>
   <div class="speech-recognition-whole-text">
-    <b>All detected words:</b>
-    <p><small><i>
+    <div>
+      <b>All detected words:</b>
+      <p><small><i>
       <span *ngIf="!speechRecognition.completeRecognitionText">
         No words detected
       </span>
-      <span *ngIf="speechRecognition.completeRecognitionText">
+        <span *ngIf="speechRecognition.completeRecognitionText">
       {{speechRecognition.completeRecognitionText}}
       </span>
-    </i></small></p>
+      </i></small></p>
 
-    <button *ngIf="speechRecognition.completeRecognitionText" (click)="speechRecognition.completeRecognitionText = ''">
-      Clear
-    </button>
+      <button *ngIf="speechRecognition.completeRecognitionText" (click)="speechRecognition.completeRecognitionText = ''">
+        Clear
+      </button>
+    </div>
   </div>
-  <div *ngIf="speechRecognition.recordAudio.src">
-    <b>Audio Record:</b>
-    <button (click)="speechRecognition.playRecord()">Play Record</button>
-  </div>
+
 </div>

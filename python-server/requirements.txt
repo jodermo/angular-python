@@ -21,3 +21,4 @@ imageai==3.0.3
 soundfile==0.12.1
 tensorflow==2.13.0
 torch==2.0.1
+pyinstaller==5.13.0

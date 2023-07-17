@@ -1,5 +1,3 @@
-
-
 <div *ngIf="!app.token">
   <app-login></app-login>
 </div>
@@ -72,7 +70,8 @@
                     </div>
                     <div class="open-ai-choice-content">
                       <app-parsed-message [parsedTexts]="openAi.parseMessageText(choice)"></app-parsed-message>
-                      <app-copy-to-clipboard *ngIf="choice.message" [text]="choice.message.content"></app-copy-to-clipboard>
+                      <app-copy-to-clipboard *ngIf="choice.message"
+                                             [text]="choice.message.content"></app-copy-to-clipboard>
                     </div>
                     <div class="open-ai-choice-actions">
                       <app-text-to-speech-button [text]="choice.message.content"
@@ -279,7 +278,6 @@
 
 
     </div>
-
 
 
   </div>

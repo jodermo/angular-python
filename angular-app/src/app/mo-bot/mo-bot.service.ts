@@ -89,16 +89,16 @@ export class MoBotService {
           document.body.style.color = 'black';
         }
         if (words?.includes('hokus pokus') || words?.includes('hokuspokus')) {
-          const systemMessage = new OpenAiChatMessage('Antworte so als wäre alles verzaubert', 'system');
-          const userMessage = new OpenAiChatMessage('Lass dir etwas einfallen zum Thema zaubern', 'user');
+          const systemMessage = new OpenAiChatMessage('Antworte so als wärst du ein zauberer, formuliere einem zauberspruch', 'system');
+          const userMessage = new OpenAiChatMessage('verzauber den fragesteller, maximal 30 wörter', 'user');
           this.openAi?.sendMessages([
             systemMessage,
             userMessage
           ], 'user', this.openAi.chatModels[0] || this.openAi.chatModel);
         }
         if (words?.includes('hex hex')) {
-          const systemMessage = new OpenAiChatMessage('Antworte so als wäre alles verhäxt', 'system');
-          const userMessage = new OpenAiChatMessage('Lass dir etwas einfallen zum Thema hexen', 'user');
+          const systemMessage = new OpenAiChatMessage('Antworte so als wärst du eine hexe, formuliere einem zauberspruch', 'system');
+          const userMessage = new OpenAiChatMessage('verhexe den fragesteller, maximal 30 wörter', 'user');
           this.openAi?.sendMessages([
             systemMessage,
             userMessage
@@ -124,7 +124,12 @@ export class MoBotService {
         }
       });
       this.speechRecognition.startRecognition();
-      this.speak('Hello! I am MoBot');
+
+      const welcomeText = this.app?.language && this.app.language.iso === 'de' ? '' +
+        'Hallo, bitte sprich mit mir!' :
+        'Hello, please speak to me!';
+
+      this.speak(welcomeText);
 
     }
     this.started = true;

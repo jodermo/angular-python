@@ -1,5 +1,6 @@
 import {Injectable} from '@angular/core';
 import {AppLanguage, AppLanguages, AppLanguageType, AppService} from "../app.service";
+import {AudioAnalyzer} from "../audio-analyzer/AudioAnalyzer";
 
 export interface TextToSpeechMode {
   alias: string;
@@ -102,6 +103,7 @@ export class TextToSpeechService {
   filename = 'text.mp3';
 
   audio = new Audio();
+
   played = false;
   playing?: TextToSpeechResponse;
 
@@ -126,6 +128,10 @@ export class TextToSpeechService {
   pyttsx3Female = false;
 
 
+  audioContext = new AudioContext();
+  // audioAnalyzer = undefined;
+  audioAnalyzer?: AudioAnalyzer;
+
   constructor() {
     this.audio.oncanplay = () => {
       if (this.currentResult) {
@@ -140,6 +146,8 @@ export class TextToSpeechService {
       this.audio.currentTime = 0;
       this.pause();
     };
+
+
   }
 
   init(app = this.app) {
@@ -147,6 +155,9 @@ export class TextToSpeechService {
     this.loadData();
     this.getPollyVoices();
     this.getElevenLabsVoices();
+    if (!this.app?.isLocalhost()) {
+      this.audioAnalyzer = new AudioAnalyzer(this.audio, this.audioContext, true)
+    }
   }
 
   loadData() {
@@ -154,7 +165,7 @@ export class TextToSpeechService {
       this.app.loadTextToSpeechResults = false;
       this.app.API.get('text-to-speech', (results: any) => {
         this.results = results?.length ? results : this.results;
-        if(this.app){
+        if (this.app) {
           this.app.textToSpeechResults = this.results;
         }
       });
@@ -209,7 +220,7 @@ export class TextToSpeechService {
     this.textResults[language.iso][text] = result;
     this.results.push(result);
     this.results.sort((a, b) => a.time + b.time);
-    if(this.app){
+    if (this.app) {
       this.app.textToSpeechResults = this.results;
     }
     this.loading[text] = ready;
@@ -382,6 +393,8 @@ export class TextToSpeechService {
     if (this.audio.src && this.audio.paused) {
       this.audio.play();
     }
+
+
   }
 
   replay() {
@@ -422,7 +435,7 @@ export class TextToSpeechService {
   }
 
   textData(text: string, language = this.language) {
-    if(this.app){
+    if (this.app) {
       language = this.app.language;
     }
     return this.results.filter((textToSpeechResult: TextToSpeechResponse) => textToSpeechResult.text === text && textToSpeechResult.lang === language.iso);

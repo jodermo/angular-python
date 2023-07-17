@@ -35,10 +35,13 @@ class ssl_manager:
             backend=default_backend()
         )
 
+
         public_key = private_key.public_key()
 
+        domain = self.domain + ',localhost:4200,localhost'  # Add localhost:4200 to the domain
+
         subject = x509.Name([
-            x509.NameAttribute(x509.oid.NameOID.COMMON_NAME, self.domain)
+            x509.NameAttribute(x509.oid.NameOID.COMMON_NAME, domain)
         ])
 
         certificate = x509.CertificateBuilder().subject_name(

@@ -11,6 +11,8 @@ export class SpeechRecognitionButtonComponent extends SpeechRecognitionComponent
   @Input() readResult = false;
   @Input() showResults = true;
   @Input() disabled = false;
+  @Input() showLastRecord = true;
+  @Input() showLanguageSelection = true;
 
   ngOnInit() {
   }

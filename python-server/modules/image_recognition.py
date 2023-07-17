@@ -28,6 +28,7 @@ class image_recognition:
         self.detector = ObjectDetection()
         self.uploadRoot = 'app/' + os.getenv("FILE_UPLOAD_ROOT") if os.getenv("FILE_UPLOAD_ROOT") else 'www/'
         self.uploadDirectory = os.getenv("FILE_UPLOAD_DIRECTORY") if os.getenv("FILE_UPLOAD_DIRECTORY") else 'uploads/'
+        self.recognitionAnnotationsDirectory = os.getenv("RECOGNITION_ANNOTATIONS_DIRECTORY") if os.getenv("RECOGNITION_ANNOTATIONS_DIRECTORY") else 'recognition-annotations/'
 
     def add_model_to_database(self, result):
         return self.postgres_api.add_or_update_api_entry('image-recognition-model', result)
@@ -57,9 +58,9 @@ class image_recognition:
         xmax = int(request_data.get('xmax', 0))
         ymax = int(request_data.get('ymax', 0))
 
-        file_path = '/' + self.uploadRoot + self.uploadDirectory + directory_path + '/' + filename
+        file_path = '/' + self.uploadRoot + self.recognitionAnnotationsDirectory + directory_path + '/' + filename
 
-        model_path = self.create_model(file_path, directory_path, model_name, xmin, ymin, xmax, ymax)
+        model_path = self.create_model(file_path, self.uploadRoot + self.recognitionAnnotationsDirectory  + directory_path, model_name, xmin, ymin, xmax, ymax)
 
         model = model or {
             'image': file_path,

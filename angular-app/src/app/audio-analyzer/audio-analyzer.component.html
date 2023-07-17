@@ -1,0 +1,7 @@
+<div class="audio-analyzer">
+  <div class="audio-analyzer-frequencies" *ngIf="frequencyData">
+    <div *ngFor="let value of frequencyData" class="audio-analyzer-frequency">
+      <div class="audio-analyzer-frequency-fill" [ngStyle]="{height: (value / maxLevel * 100) + '%'}"></div>
+    </div>
+  </div>
+</div>

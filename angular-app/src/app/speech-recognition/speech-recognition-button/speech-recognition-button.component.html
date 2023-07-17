@@ -1,6 +1,6 @@
 <div class="speech-recognition-button">
   <div class="speech-recognition-actions">
-    <div>
+    <div *ngIf="showLanguageSelection">
       <select [(ngModel)]="app.language" [disabled]="disabled" >
         <option *ngFor="let language of app.languages" [ngValue]="language">{{language.name}}</option>
       </select>
@@ -21,7 +21,7 @@
             (click)="speechRecognition.stopRecording()">
       Stop Recording
     </button>
-    <button
+    <button *ngIf="showLastRecord"
       [disabled]="speechRecognition.recording || !speechRecognition.audioFile || !speechRecognition.audioReady"
       (click)="speechRecognition.playAudio()">Play last recorded text
     </button>

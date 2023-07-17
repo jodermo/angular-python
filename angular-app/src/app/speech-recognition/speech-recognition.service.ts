@@ -234,7 +234,6 @@ export class SpeechRecognitionService {
         const fileType = 'wav';
         const audioBlob = new Blob(this.recognitionChunks, {type: 'audio/' + fileType});
         const audioFile = new File([audioBlob], 'speech_recognition.' + fileType, {type: 'audio/' + fileType});
-        const audio = new Audio(URL.createObjectURL(audioFile));
 
         // @ts-ignore
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -274,6 +273,7 @@ export class SpeechRecognitionService {
                     });
                   } catch (error) {
                     this.useDefaultValues = true;
+                    console.warn('You can ignore this error:', error);
                   }
                 }
                 if(this.useDefaultValues){

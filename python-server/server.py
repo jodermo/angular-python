@@ -16,6 +16,7 @@ from modules.discord import discord
 from modules.eleven_labs import eleven_labs
 from modules.aws_polly import aws_polly
 from modules.user_auth import user_auth
+from modules.build_server import build_server
 
 import os
 from dotenv import load_dotenv
@@ -44,6 +45,8 @@ class Server:
         log.info('websocket')
         self.speech_recognition = speech_recognition(self.websocket)
         log.info('speech_recognition')
+        self.build_server = build_server(self.websocket)
+        log.info('build_server')
         self.webcam = webcam()
         log.info('webcam')
         self.image_recognition = image_recognition()
@@ -60,8 +63,10 @@ class Server:
         log.info('aws_polly')
         self.user_auth = user_auth()
         log.info('user_auth')
+
         log.info(max_content_length)
         self.setup_app()
+
 
 
     def setup_app(self):
@@ -75,7 +80,7 @@ class Server:
         self.app.add_url_rule('/', methods=['GET'], view_func=self.angular_build)
         self.app.add_url_rule('/<filename>', methods=['GET'], view_func=self.angular_build)
 
-
+        self.app.add_url_rule(self.apiRoute +'/build', methods=['POST'], view_func=self.build)
 
         self.app.add_url_rule(self.apiRoute +'/auth', methods=['POST'], view_func=self.login)
 
@@ -129,6 +134,9 @@ class Server:
         self.app.errorhandler(Exception)(self.handle_error)
         log.info('setup_app')
 
+    def build(self):
+        self.build_server.run()
+        return jsonify({'message': 'building server' })
 
     def authenticate_request(self):
         excluded_routes = [
@@ -298,6 +306,7 @@ class Server:
         else:
             log.exception('SSL inactive')
             server.app.run(host=self.host, port=self.port)
+
 
 if __name__ == '__main__':
     server = Server()

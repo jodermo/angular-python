@@ -10,6 +10,7 @@ import {OpenAiComponent} from "./open-ai/open-ai.component";
 import {SpeechRecognitionComponent} from "./speech-recognition/speech-recognition.component";
 import {WebcamComponent} from "./webcam/webcam.component";
 import {MoBotComponent} from "./mo-bot/mo-bot.component";
+import {AppGeneratorComponent} from "./app-generator/app-generator.component";
 
 export const AppRoutes: Routes = [
   {
@@ -52,6 +53,12 @@ export const AppRoutes: Routes = [
     path: 'face-recognition', component: WebcamComponent, data: {
       showInNavigation: true,
       title: 'Face Recognition'
+    }
+  },
+  {
+    path: 'app-generator', component: AppGeneratorComponent, data: {
+      showInNavigation: true,
+      title: 'App Generator'
     }
   },
   {

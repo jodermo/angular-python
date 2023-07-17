@@ -1,0 +1,36 @@
+<div class="app-generator">
+  <button *ngIf="!generator.isBuilding" (click)="generator.buildApp()">Build server</button>
+  <div *ngIf="generator.isBuilding">Is building server...</div>
+  <table>
+    <thead>
+    <tr>
+      <th>
+
+      </th>
+      <th>
+
+      </th>
+    </tr>
+    </thead>
+    <tbody *ngIf="generator.errorMessages.length" class="error-messages">
+    <tr *ngFor="let errorMessage of generator.errorMessages">
+      <td>
+        {{errorMessage.time}}
+      </td>
+      <td>
+        {{errorMessage.message}}
+      </td>
+    </tr>
+    </tbody>
+    <tbody *ngIf="generator.updateMessages.length" class="update-messages">
+    <tr *ngFor="let updateMessage of generator.updateMessages">
+      <td>
+        {{updateMessage.time}}
+      </td>
+      <td>
+        {{updateMessage.message}}
+      </td>
+    </tr>
+    </tbody>
+  </table>
+</div>

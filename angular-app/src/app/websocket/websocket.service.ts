@@ -53,6 +53,15 @@ export class WebsocketService {
         this.chatMessages[data.roomName].push(data);
       }
     });
+    this.logMessage().subscribe((data: any) => {
+      console.log('server-log', data);
+    });
+    this.errorMessage().subscribe((data: any) => {
+      console.log('server-error', data);
+    });
+    this.warningMassage().subscribe((data: any) => {
+      console.log('server-warning', data);
+    });
   }
 
   joinRoom(roomName = this.roomName): void {
@@ -83,14 +92,50 @@ export class WebsocketService {
     }
   }
 
-  receiveMessage(): Observable<any> {
+  appMessage(): Observable<any> {
     return new Observable((observer) => {
-      this.socket.on('message', (data: any) => {
+      this.socket.on('app', (data: any) => {
+        console.log('appMessage', data);
         observer.next(data);
       });
     });
   }
 
+  receiveMessage(): Observable<any> {
+    return new Observable((observer) => {
+      this.socket.on('message', (data: any) => {
+        console.log('receiveMessage', data);
+        observer.next(data);
+      });
+    });
+  }
+
+  logMessage(): Observable<any> {
+    return new Observable((observer) => {
+      this.socket.on('log', (data: any) => {
+        console.log('logMessage', data);
+        observer.next(data);
+      });
+    });
+  }
+
+  errorMessage(): Observable<any> {
+    return new Observable((observer) => {
+      this.socket.on('error', (data: any) => {
+        console.log('errorMessage', data);
+        observer.next(data);
+      });
+    });
+  }
+
+  warningMassage(): Observable<any> {
+    return new Observable((observer) => {
+      this.socket.on('warning', (data: any) => {
+        console.log('warningMassage', data);
+        observer.next(data);
+      });
+    });
+  }
   parseDate(dateString: string) {
     const date = new Date(dateString);
     return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();

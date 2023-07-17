@@ -1,4 +1,4 @@
-<div class="text-to-speech-button" *ngIf="text">
+<div class="text-to-speech-button" *ngIf="text && layout === 'default'">
 
 
   <select *ngIf="textToSpeech.mode.alias === 'gtts' || textToSpeech.mode.alias === 'polly'" [(ngModel)]="app.language"
@@ -64,7 +64,7 @@
 
   </div>
 </div>
-<ul class="text-to-speech-results" *ngIf="data">
+<ul class="text-to-speech-results" *ngIf="data && layout === 'default'">
   <li *ngFor="let entry of data">
     <div>
       <b>{{entry.mode}}</b>
