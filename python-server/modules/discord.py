@@ -10,7 +10,7 @@ from modules.server_logging import server_logging
 
 mode = os.getenv("MODE")
 mode = mode if mode else 'dev'
-log = server_logging("open_ai.log", mode)
+log = server_logging("discord.log", mode)
 
 class discord:
     def __init__(self):

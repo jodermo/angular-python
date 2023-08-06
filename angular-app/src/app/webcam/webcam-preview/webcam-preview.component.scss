@@ -5,6 +5,13 @@
   height: auto;
   background: #1976d2;
 
+  .hidden{
+    position: absolute;
+    pointer-events: none;
+    opacity: 0;
+    z-index: -100;
+  }
+
   &.webcam-off {
     width: auto;
   }
@@ -14,13 +21,7 @@
     width: 100%;
     height: auto;
 
-    .webcam-output {
-      position: relative;
-      display: inline-block;
-      width: auto;
-      height: auto;
-      margin: 0 auto;
-    }
+
   }
 
   .webcam-controls {
@@ -48,7 +49,26 @@
     }
   }
 }
+webcam {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: inline-block;
 
+  .webcam-wrapper {
+    position: relative;
+    width: 100%;
+    height: 100%;
+
+    video {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      object-position: center center;
+    }
+  }
+}
 
 .webcam-overlay {
   position: absolute;
@@ -71,12 +91,6 @@
     font-size: 3rem;
   }
 
-  .webcam-error {
-    background: rgba(255, 255, 255, .75);
-    color: red;
-    padding: 1rem;
-    margin-top: 1rem;
-  }
 
 
 }

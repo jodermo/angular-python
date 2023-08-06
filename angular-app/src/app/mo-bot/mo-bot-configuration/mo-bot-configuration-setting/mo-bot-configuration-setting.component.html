@@ -1,0 +1,60 @@
+<div class="mo-bot-configuration-setting" *ngIf="setting">
+  <div class="mo-bot-configuration-defaults">
+    <div class="mo-bot-form-field">
+      <label>Alias <small><i>({{app.text('Unique setting name')}})</i></small></label>
+      <input placeholder="{{app.text('alias')}}" [(ngModel)]="setting.alias"/>
+    </div>
+    <div class="mo-bot-form-field">
+      <label>Maximal number of words in the answer</label>
+      <input type="number" [min]="1" [(ngModel)]="setting.maxAnswerWords"/>
+    </div>
+    <div class="mo-bot-configuration-setting-words"*ngIf="setting.words">
+      <div  class="mo-bot-configuration-setting-word" *ngFor="let word of setting.words">
+        <div class="mo-bot-form-field" >
+          <b>"{{word}}"</b>
+          <button (click)="speechRecognition.removeWord(setting, word)">Delete</button>
+        </div>
+      </div>
+
+    </div>
+    <div  class="mo-bot-configuration-setting-word">
+      <div class="mo-bot-form-field">
+        <label>New word <small><i>({{app.text('for speech recognition')}})</i></small></label>
+        <input #newWord/>
+        <button [disabled]="!newWord.value" (click)="speechRecognition.newWord(setting, newWord.value); newWord.value = '';">Add</button>
+      </div>
+    </div>
+  </div>
+  <div class="mo-bot-configuration-task">
+    <b>AI Task</b>
+
+    <ul *ngIf="setting.task">
+      <li>
+        <div class="mo-bot-form-field">
+          <label>{{app.text('System')}} <small><i>({{app.text('how should the system react?')}})</i></small></label>
+          <textarea [(ngModel)]="setting.task.system"></textarea>
+        </div>
+
+      </li>
+      <li>
+        <div class="mo-bot-form-field">
+          <label>{{app.text('User')}} <small><i>({{app.text('question')}})</i></small></label>
+          <textarea [(ngModel)]="setting.task.user"></textarea>
+        </div>
+
+      </li>
+      <li>
+        <label for="addAnswerToAssistant" class="checkbox-container">
+          <input id="addAnswerToAssistant" name="addAnswerToAssistant" type="checkbox" [(ngModel)]="setting.task.addAnswerToAssistant"/>
+          {{app.text('Add answer to assistant')}} <small><i>({{app.text('remember the course of the conversation')}})</i></small>
+        </label>
+      </li>
+
+    </ul>
+
+    <div *ngIf="!setting.task">
+      <button (click)="speechRecognition.newTask(setting)">Add Task</button>
+    </div>
+  </div>
+
+</div>

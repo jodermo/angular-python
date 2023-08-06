@@ -1,14 +1,30 @@
 <div class="mo-bot-display layout-{{layout}}"
      [ngClass]="{
-        'loading': (bot.speechText && textToSpeech.isLoading(bot.speechText)) || this.speechRecognition.loading || this.speechRecognition.uploading,
+        'loading': ((bot.speechText && textToSpeech.isLoading(bot.speechText)) || this.speechRecognition.loading || this.speechRecognition.uploading || openAi.sending),
         'error': speechRecognition.recognitionError,
         'answer': speechRecognition.recognitionText,
         'listening': !speechRecognition.recognitionError,
         'speaking': textToSpeech.audio && !textToSpeech.audio.paused,
-        'recording': speechRecognition.recording
+        'recording': speechRecognition.recording,
+        'recognition': webcam.recognising()
     }"
 >
   <ng-container *ngIf="layout === 'HAL-9000'">
+    <div class="hal-9000-controls">
+      <div class="hal-9000-camera-button" (click)="toggleCamera()" [ngClass]="{active: (webcam.started)}">
+        <div class="button-wrapper">
+          <div class="button-content">
+            <span *ngIf="!webcam.started">Cam</span>
+            <span *ngIf="webcam.started">Cam</span>
+          </div>
+        </div>
+      </div>
+      <button (click)="bot.listen()">Listen</button>
+      <div *ngIf="!webcam.loading && webcam.errorMessage">
+        <app-webcam-error></app-webcam-error>
+      </div>
+    </div>
+
     <div class="hal-9000-wrapper">
       <div class="hal-9000-display">
         <div class="hal-9000-display-background"></div>
@@ -18,13 +34,38 @@
           }">
             <app-audio-analyzer [audioAnalyzer]="textToSpeech.audioAnalyzer"></app-audio-analyzer>
           </div>
+          <div *ngIf="webcam.started && webcam.fishEyeImageSrc" class="hal-9000-display-capture">
+            <img  [src]="webcam.fishEyeImageSrc">
+          </div>
+          <div class="hal-9000-display-eyes"
+               *ngIf="webcam.started && webcam.recognition && webcam.staticRecognitionResults;">
+
+            <app-webcam-marker class="hal-9000-display-eye"
+                               *ngFor="let recognitionResult of webcam.staticRecognitionResults; let i = index"
+                               [index]="i"
+                               [recognitionResult]="recognitionResult"
+                               [invertX]="true"
+            ></app-webcam-marker>
+          </div>
           <div class="hal-9000-display-content-container">
 
-            <div class="text-output" *ngIf="bot.speechText">
-                <b><i>{{bot.speechText}}</i></b>
-              </div>
-            <div class="text-loading-info" *ngIf="textToSpeech.isLoading(bot.speechText)">
-              <small>Loading</small>
+
+            <div class="text-output" *ngIf="!((bot.speechText && textToSpeech.isLoading(bot.speechText)) || this.speechRecognition.loading || this.speechRecognition.uploading || openAi.sending)">
+              <b *ngIf="bot.currentListenSecond">
+                {{bot.currentListenSecond}}
+              </b>
+              <b *ngIf="!bot.currentListenSecond && !textToSpeech.audio.paused">
+                <div class="speaking-symbol"></div>
+              </b>
+              <b *ngIf="!bot.currentListenSecond && textToSpeech.audio.paused && !speechRecognition.recognitionError">
+                ...
+              </b>
+              <b *ngIf="!bot.currentListenSecond && textToSpeech.audio.paused && speechRecognition.recognitionError">
+                ?
+              </b>
+            </div>
+            <div class=" text-output text-loading-info" *ngIf="((bot.speechText && textToSpeech.isLoading(bot.speechText)) || this.speechRecognition.loading || this.speechRecognition.uploading || openAi.sending)">
+              <b>{{app.text('wait')}}</b>
             </div>
             <div class="speech-recognition" (click)="toggleSpeechRecognition()">
 
@@ -32,9 +73,18 @@
           </div>
 
         </div>
+
         <div class="hal-9000-display-glass"></div>
         <div class="hal-9000-light-points"></div>
       </div>
     </div>
+    <div class="hal-9000-info">
+      <i *ngIf="bot.currentListenSecond">{{app.text('Tap the window again to listen longer')}}</i>
+      <i *ngIf="!speechRecognition.recording && !bot.currentListenSecond">{{app.text('Tap the window to record an instruction')}}</i>
+      <i *ngIf="speechRecognition.recording && !bot.currentListenSecond">{{app.text('Tap the window again to stop recording')}}</i>
+    </div>
+    <h2 class="hal-9000-output-text" *ngIf="bot.speechText">
+      {{bot.speechText}}
+    </h2>
   </ng-container>
 </div>

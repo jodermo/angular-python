@@ -5,12 +5,11 @@ export class AudioAnalyzer {
   private frequencyData?: Uint8Array;
   private volumeData?: Uint8Array;
   private updateCallback?: (frequencyData: Uint8Array, volumeData: Uint8Array) => void;
-  private audioSource?: MediaElementAudioSourceNode;
 
-  constructor(private audio: HTMLAudioElement, private audioContext = new AudioContext(), private enableAudioOutput: boolean = true) {
 
+  constructor(private audioSource: MediaElementAudioSourceNode, private audioContext = new AudioContext(), private enableAudioOutput: boolean = true) {
     try {
-      this.audioSource = this.audioContext.createMediaElementSource(this.audio);
+
       this.analyser = this.audioContext.createAnalyser();
       this.bufferLength = this.analyser.frequencyBinCount;
       this.dataArray = new Uint8Array(this.bufferLength);
@@ -21,12 +20,10 @@ export class AudioAnalyzer {
         this.audioSource.connect(this.audioContext.destination); // The audio source should also be connected to the audio context's destination
       }
       this.updateAudioData();
+
     } catch (e) {
-      console.log('AudioAnalyzer error', e);
-
+      console.error('AudioAnalyzer error', e)
     }
-
-
     return this;
   }
 
@@ -45,9 +42,9 @@ export class AudioAnalyzer {
   mapIntensityToColor(intensity: number) {
     // Define the color range based on intensity
     const colorRange = [
-      { intensity: 0, color: { r: 0, g: 0, b: 0 } },        // Black (low intensity)
-      { intensity: 0.5, color: { r: 255, g: 0, b: 0 } },    // Red (medium intensity)
-      { intensity: 1, color: { r: 255, g: 255, b: 0 } },    // Yellow (high intensity)
+      {intensity: 0, color: {r: 0, g: 0, b: 0}},        // Black (low intensity)
+      {intensity: 0.5, color: {r: 255, g: 0, b: 0}},    // Red (medium intensity)
+      {intensity: 1, color: {r: 255, g: 255, b: 0}},    // Yellow (high intensity)
     ];
 
     // Find the color in the range that matches the intensity
@@ -61,14 +58,14 @@ export class AudioAnalyzer {
     }
 
     // Return black as the default color if no match is found
-    return { r: 0, g: 0, b: 0 };
+    return {r: 0, g: 0, b: 0};
   }
 
   interpolateColor(color1: { r: number, g: number, b: number }, color2: { r: number, g: number, b: number }, t: number) {
     const r = Math.round(color1.r + (color2.r - color1.r) * t);
     const g = Math.round(color1.g + (color2.g - color1.g) * t);
     const b = Math.round(color1.b + (color2.b - color1.b) * t);
-    return { r, g, b };
+    return {r, g, b};
   }
 
   onUpdate(callback: (frequencyData: Uint8Array, volumeData: Uint8Array) => void) {
@@ -103,8 +100,5 @@ export class AudioAnalyzer {
 
   destroy() {
     this.analyser?.disconnect();
-    this.audio.pause();
-    this.audio.src = '';
-    this.audioContext.close();
   }
 }

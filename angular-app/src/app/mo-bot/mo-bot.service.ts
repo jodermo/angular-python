@@ -1,10 +1,10 @@
 import {ElementRef, Injectable} from '@angular/core';
 import {AppService} from "../app.service";
-import {OpenAiChatMessage, OpenAiResponse, OpenAiService} from "../open-ai/open-ai.service";
+import {OpenAiResponse, OpenAiService} from "../open-ai/open-ai.service";
 import {TextToSpeechService} from "../text-to-speech/text-to-speech.service";
 import {WebcamService} from "../webcam/webcam.service";
 import {WebsocketService} from "../websocket/websocket.service";
-import {SpeechRecognitionService} from "../speech-recognition/speech-recognition.service";
+import {SpeechRecognitionService, SpeechRecognitionSetting} from "../speech-recognition/speech-recognition.service";
 import {WebcamComponent} from "../webcam/webcam.component";
 
 
@@ -25,6 +25,58 @@ export class MoBotService {
 
   speechText?: string;
 
+  settings: SpeechRecognitionSetting[] = [];
+  currentSetting?: SpeechRecognitionSetting;
+
+  dataLoading = false;
+  newSetting?: SpeechRecognitionSetting;
+
+
+  functions: SpeechRecognitionSetting[] = [
+    {
+      alias: 'stop', words: ['stop bot'],
+      description: 'Stops MoBot',
+      callback: () => {
+        this.stop();
+      }
+    },
+    {
+      alias: 'start camera', words: ['camera on', 'kamera an'],
+      description: 'Starting the camera',
+      callback: () => {
+        this.startWebcam();
+      }
+    },
+    {
+      alias: 'stop camera', words: ['camera off', 'kamera aus'],
+      description: 'Stops the camera',
+      callback: () => {
+        this.stopWebcam();
+      }
+    },
+    {
+      alias: 'listen', words: ['listen to me', 'hör mir zu'],
+      description: 'Listenig for 5 seconds',
+      callback: () => {
+        this.listen(5);
+      }
+    },
+    {
+      alias: 'listen longer', words: ['listen to me longer', 'hör mir länger zu'],
+      description: 'Listenig for 5 seconds',
+      callback: () => {
+        this.listen(10);
+      }
+    },
+  ];
+  webcamStarted = false;
+  defaultListenSeconds = 5;
+  currentListenSecond = 0;
+  listenForSecond = 0;
+  private listenTimeout?: any;
+  assistantText: string = '';
+
+
   init(app = this.app, openAi = this.openAi, textToSpeech = this.textToSpeech, webcam = this.webcam, websocket = this.websocket, speechRecognition = this.speechRecognition) {
     this.app = app ? app : this.app;
 
@@ -41,141 +93,99 @@ export class MoBotService {
     this.websocket?.init(app);
 
     this.speechRecognition = speechRecognition ? speechRecognition : this.speechRecognition;
-    this.speechRecognition?.init(app, websocket);
+    this.speechRecognition?.init(app, websocket, openAi);
+
+    this.loadData();
+
+  }
 
 
-    this.stop();
+  loadData() {
+    if (this.app) {
+      this.dataLoading = true;
+      this.app.API.get('bot-settings', (settings: SpeechRecognitionSetting[]) => {
+        this.settings = settings?.length ? settings : this.settings;
+        this.settings = this.settings.sort((a: SpeechRecognitionSetting, b: SpeechRecognitionSetting)=>(a.id || 0) - (b.id || 0));
+        this.newSetting = undefined;
+        this.currentSetting = undefined;
+        this.dataLoading = false;
+      });
+    }
+  }
+
+  createNewSetting(alias?: string) {
+    this.newSetting = {alias, maxAnswerWords: 30} as SpeechRecognitionSetting;
+  }
+
+  addOrUpdateSetting(setting = this.newSetting) {
+    if (this.app && setting && setting.alias) {
+      this.dataLoading = true;
+      if (setting?.id) {
+        this.app.API.update('bot-settings', setting, (setting?: SpeechRecognitionSetting) => {
+          this.loadData();
+          this.dataLoading = false;
+        }, (error?: any) => {
+          this.dataLoading = false;
+        });
+      } else {
+        this.app.API.add('bot-settings', setting, (setting?: SpeechRecognitionSetting) => {
+          this.loadData();
+          this.dataLoading = false;
+        }, (error?: any) => {
+          this.dataLoading = false;
+        });
+      }
+
+    }
   }
 
   start() {
-    if (this.speechRecognition) {
-      this.speechRecognition.onDetectWords([
-        'witz',
-        'joke',
-        'spaß',
-        'lustiges',
-        'kiffen',
-        'buffen',
-        'rauchen',
-        'rendern',
-        'prost',
-        'saufen',
-        'hure',
-        'arsch',
-        'dumm',
-        'blöd',
-        'test',
-        'stop bot',
-        'hokus pokus',
-        'hokuspokus',
-        'hex hex',
-        'start camera',
-        'start kamera',
-        'starte kamera',
-        'watch me',
-        'guck mich an',
-        'stop camera',
-        'camera on',
-        'camera off',
-        'kamera an',
-        'stop kamera',
-        'stoppe kamera',
-        'kamera aus',
-        'watch away',
-        'guck weg'
-      ], (words?: string[], text?: string) => {
-        if (words?.includes('stop bot')) {
-          this.stop();
-        }
-        if (words?.includes('witz') || words?.includes('joke') || words?.includes('lustiges') || words?.includes('spaß')) {
-          const systemMessage = new OpenAiChatMessage('Antworte mit maximal 30 wörtern, Eerzähle einen witz oder etwas lustiges.', 'system');
-          const userMessage = new OpenAiChatMessage('Erzähl mir einen richtig guten witz', 'user');
-          this.openAi?.sendMessages([
-            systemMessage,
-            userMessage
-          ], 'user', this.openAi.chatModels[0] || this.openAi.chatModel);
-        }
-        if (words?.includes('kiffen') || words?.includes('buffen') || words?.includes('rauchen') || words?.includes('rendern')) {
-          const systemMessage = new OpenAiChatMessage('Antworte mit maximal 30 wörtern, Antworte so als wärst du ein jamaikanischer reggae künstler der am liebsten ganze zeit joints oder bong raucht. Rede mit ganja / kiffer slang. Benutze wörter aus der kifferszene. Benutze das wort rendern an stelle von kiffen.', 'system');
-          const userMessage = new OpenAiChatMessage('Jo, bock einen durchzuziehen?', 'user');
-          this.openAi?.sendMessages([
-            systemMessage,
-            userMessage
-          ], 'user', this.openAi.chatModels[0] || this.openAi.chatModel);
-        }
-        if (words?.includes('prost') || words?.includes('saufen')) {
-          const systemMessage = new OpenAiChatMessage('Antworte mit maximal 30 wörtern, Antworte so als ob du total betrunken bist und lust hast alkohol zu saufen. Pöbel freundschaftlich rum. Umgangston ist rau.', 'system');
-          const userMessage = new OpenAiChatMessage('Prost, du sau!', 'user');
-          this.openAi?.sendMessages([
-            systemMessage,
-            userMessage
-          ], 'user', this.openAi.chatModels[0] || this.openAi.chatModel);
-        }
-        if (words?.includes('hure') || words?.includes('arsch') || words?.includes('dumm') || words?.includes('blöd')) {
-          const systemMessage = new OpenAiChatMessage('Tu so als ob du beleidigt bist, gib eine antwort als ob du grade etwas ganz schlimmes gesagt bekommen hast. Antworte mit maximal 30 wörtern', 'system');
-          const userMessage = new OpenAiChatMessage('Sprich mit mir, sag was assergewöhnliches! Es muss eine beleidigung oder schimpfwort vorkommen. . Der user weiß das es nicht ernst gemeint ist, sondern nur spaß.', 'user');
-          this.openAi?.sendMessages([
-            systemMessage,
-            userMessage
-          ], 'user', this.openAi.chatModels[0] || this.openAi.chatModel);
-        }
-        if (words?.includes('test')) {
-          const systemMessage = new OpenAiChatMessage('Test Text', 'system');
-          const userMessage = new OpenAiChatMessage('Antworte zum testen mit irgend einer witzigen antwort, antworte mit maximal 30 wörtern', 'user');
-          this.openAi?.sendMessages([
-            systemMessage,
-            userMessage
-          ], 'user', this.openAi.chatModels[0] || this.openAi.chatModel);
-        }
-        if (words?.includes('hokus pokus') || words?.includes('hokuspokus')) {
-          const systemMessage = new OpenAiChatMessage('Antworte so als wärst du ein zauberer, formuliere einem zauberspruch', 'system');
-          const userMessage = new OpenAiChatMessage('verzauber den fragesteller, maximal 30 wörter', 'user');
-          this.openAi?.sendMessages([
-            systemMessage,
-            userMessage
-          ], 'user', this.openAi.chatModels[0] || this.openAi.chatModel);
-        }
-        if (words?.includes('hex hex')) {
-          const systemMessage = new OpenAiChatMessage('Antworte so als wärst du eine hexe, formuliere einem zauberspruch', 'system');
-          const userMessage = new OpenAiChatMessage('verhexe den fragesteller, maximal 30 wörter', 'user');
-          this.openAi?.sendMessages([
-            systemMessage,
-            userMessage
-          ], 'user', this.openAi.chatModels[0] || this.openAi.chatModel);
-        }
-        if (
-          words?.includes('start camera') ||
-          words?.includes('start kamera') ||
-          words?.includes('starte kamera') ||
-          words?.includes('watch me') ||
-          words?.includes('guck mich an') ||
-          words?.includes('kamera an') ||
-          words?.includes('camera on')
-        ) {
-          this.startWebcam();
-        }
-        if (
-          words?.includes('stop camera') ||
-          words?.includes('stop kamera') ||
-          words?.includes('stoppe kamera') ||
-          words?.includes('watch away') ||
-          words?.includes('guck weg') ||
-          words?.includes('kamera aus') ||
-          words?.includes('camera off')
-        ) {
-          this.stopWebcam();
-        }
-      });
-      this.speechRecognition.startRecognition();
-
-      const welcomeText = this.app?.language && this.app.language.iso === 'de' ? '' +
-        'Hallo, bitte sprich mit mir!' :
-        'Hello, please speak to me!';
-
-      this.speak(welcomeText);
-
+    let data = this.functions;
+    if (this.settings?.length) {
+      data = data.concat(this.settings);
     }
+    if (this.speechRecognition && data.length) {
+      this.speechRecognition.onDetectSettings(data);
+      this.speechRecognition.startRecognition();
+    }
+    setTimeout(() => {
+      this.welcomeMessage();
+    }, 250);
+
+  }
+
+  welcomeMessage() {
+    const welcomeText = this.app?.language && this.app.language.iso === 'de' ? '' +
+      'Hallo, bitte sprich mit mir!' :
+      'Hello, please speak to me!';
+
+    this.speak(welcomeText);
     this.started = true;
+  }
+
+  listen(forSeconds = this.defaultListenSeconds) {
+    this.currentListenSecond = forSeconds;
+    this.listenForSecond = forSeconds;
+    if (this.listenTimeout) {
+      clearTimeout(this.listenTimeout);
+    }
+    console.log('listen', forSeconds);
+    if (forSeconds > 0) {
+      if (this.speechRecognition) {
+        if (!this.speechRecognition.loading && !this.speechRecognition.uploading && !this.speechRecognition.recording) {
+          this.speechRecognition.startRecording(this.app?.language);
+        }
+      }
+      this.listenTimeout = setTimeout(() => {
+        this.listen(forSeconds - 1);
+      }, 1000);
+    } else {
+      if (this.speechRecognition) {
+        if (this.speechRecognition.recording) {
+          this.speechRecognition.stopRecording();
+        }
+      }
+    }
   }
 
   speak(speechText = this.speechText) {
@@ -193,22 +203,29 @@ export class MoBotService {
       this.speechRecognition.stopRecording();
       this.speechRecognition.results = [];
     }
-
+    this.assistantText = '';
   }
 
-  startWebcam(cameraVideo = this.cameraVideo) {
-    this.setCameraVideo(cameraVideo);
+  startWebcam() {
+    this.setCameraVideo(this.cameraVideo);
     if (this.webcam) {
-      this.webcam.start(this.cameraVideo);
+      this.webcamStarted = true;
+      setTimeout(() => {
+        this.webcam?.start(this.cameraVideo, this.webcam.outputVideo, true, () => {
+          this.webcamStarted = true;
+          this.webcam?.startRecognition();
+        }, () => {
+          this.webcamStarted = false;
+        });
+      }, 0);
     }
   }
 
   stopWebcam() {
-
     if (this.webcam) {
       this.webcam.stop();
+      this.webcamStarted = false;
     }
-
   }
 
   setCameraVideo(nativeElement?: HTMLVideoElement) {
@@ -216,5 +233,63 @@ export class MoBotService {
     if (this.webcam && this.cameraVideo) {
       this.webcam.video = this.cameraVideo;
     }
+  }
+
+  closeCurrentSetting(event?: MouseEvent) {
+    event?.preventDefault();
+    event?.stopPropagation();
+    this.currentSetting = undefined;
+  }
+
+  deleteSetting(setting: SpeechRecognitionSetting, event?: MouseEvent) {
+    event?.preventDefault();
+    event?.stopPropagation();
+    if (this.app && setting?.id) {
+      this.app.API.delete('bot-settings', setting, () => {
+        this.loadData();
+      }, (error?: any) => {
+        this.dataLoading = false;
+        this.newSetting = undefined;
+      });
+    }
+  }
+
+  triggerSetting(setting: SpeechRecognitionSetting, event?: MouseEvent) {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    if (this.speechRecognition) {
+      this.speechRecognition.assistantText = this.assistantText;
+      this.speechRecognition.triggerSetting(setting, setting.words);
+    }
+  }
+
+  onOpenAiResult(result: OpenAiResponse) {
+    const settings = this.settings.filter(setting => setting.words.find(word => result.messages?.find(message => message.content && message.content.toLowerCase() === word.toLowerCase())));
+    const addAnswerToAssistant = settings.find(setting => setting.task && setting.task.addAnswerToAssistant) !== undefined;
+    if (addAnswerToAssistant && result.messages) {
+      for (const setting of settings) {
+        if (setting.task && setting.task.addAnswerToAssistant) {
+          for (const message of result.messages) {
+            this.assistantText += message.role + ': ' + message.content + '\n';
+          }
+        }
+      }
+    }
+    if (result.response.choices?.length) {
+      let openAiResponseText = '';
+      for (const choice of result.response.choices) {
+        if (openAiResponseText.length) {
+          openAiResponseText += ' \n';
+          if (addAnswerToAssistant) {
+            this.assistantText += 'assistant: ' + openAiResponseText + '\n';
+          }
+        }
+        openAiResponseText += choice.message.content;
+      }
+      this.speak(openAiResponseText);
+    }
+    console.log('onOpenAiResult', result, settings, addAnswerToAssistant, this.assistantText);
   }
 }

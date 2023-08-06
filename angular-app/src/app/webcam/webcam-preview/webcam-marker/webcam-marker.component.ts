@@ -1,5 +1,5 @@
 import {Component, Input, OnInit} from '@angular/core';
-import {WebcamRecognitionResult} from "../../webcam.service";
+import {WebcamRecognitionResult, WebcamService} from "../../webcam.service";
 
 @Component({
   selector: 'app-webcam-marker',
@@ -8,8 +8,10 @@ import {WebcamRecognitionResult} from "../../webcam.service";
 })
 export class WebcamMarkerComponent implements OnInit {
   @Input() recognitionResult?: WebcamRecognitionResult;
-
-  constructor() { }
+  @Input() invertX = false;
+  @Input() invertY = false;
+  @Input() index  = 0;
+  constructor(public webcam: WebcamService) { }
 
   ngOnInit(): void {
   }

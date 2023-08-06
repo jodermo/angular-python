@@ -1,33 +1,155 @@
+$color-light: #9a9a9a;
+$color-grey-light: #858585;
+$color-grey-medium: #525252;
+$color-grey-dark: #2d2d2d;
+$color-dark: #000000;
+$gradient_primary: linear-gradient(0deg, $color-light 0%, $color-grey-medium 40%, $color-grey-light 60%, $color-light 100%);
+$gradient_secondary: linear-gradient(0deg, $color-dark 0%, $color-grey-medium 40%, $color-grey-dark 60%, $color-dark 100%);
+
+$hal-9000-size: 340px;
+$hal-9000-button-size: 4rem;
+
 .mo-bot-display {
   position: relative;
   width: 100%;
-  padding-top: 50px;
 
 
   display: flex;
   justify-content: center;
   align-items: center;
 
+  .hal-9000-info {
+    margin: 1rem auto;
+  }
+
+  .hal-9000-controls {
+    position: relative;
+    width: $hal-9000-size;
+  }
+
+  .hal-9000-camera-button {
+    position: relative;
+    width: $hal-9000-button-size;
+    height: $hal-9000-button-size;
+    background: $gradient_primary;
+    border: 2px solid #000;
+    border-radius: 50%;
+    text-align: center;
+    padding: 1rem;
+    float: right;
+    cursor: pointer;
+    overflow: hidden;
+    transition: all .25s ease;
+    box-shadow: 0 0px 10px rgba(0, 0, 0, .5);
+
+    * {
+      transition: all .25s ease;
+    }
+
+    .button-wrapper {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 90%;
+      height: 90%;
+      background: $gradient_secondary;
+      border-radius: 50%;
+      overflow: hidden;
+      box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.3);
+
+      .button-content {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 90%;
+        height: 90%;
+        background: #000000;
+        border-radius: 50%;
+        overflow: hidden;
+        box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.3);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        font-weight: bold;
+      }
+    }
+
+    &:hover {
+      background: $gradient_secondary;
+
+      .button-wrapper {
+        background: $gradient_primary;
+
+        .button-content {
+          background: #222222;
+        }
+      }
+    }
+
+    &.active {
+
+      background: $gradient_primary;
+
+      .button-wrapper {
+        background: $gradient_secondary;
+
+        .button-content {
+          background: #ff0000;
+          color: #fff;
+          text-shadow: 0 0 2px #fff;
+          box-shadow: 0 0 10px rgba(255, 128, 128, 0.5);
+        }
+      }
+    }
+  }
+
+  .hal-9000-output-text {
+    text-shadow: 0 6px 12px black;
+    font-size: 2rem;
+    line-height: 2.5rem;
+    padding: 0 1rem;
+    margin-top: 2rem;
+  }
 
   div {
     transition: all .25s ease;
   }
 
   .hal-9000-wrapper {
+
     position: relative;
     margin: 0 auto;
-    width: 400px;
-    height: 400px;
-    border: 5px solid white;
+    width: $hal-9000-size;
+    height: $hal-9000-size;
+    border: 5px solid black;
     border-radius: 50%;
-    overflow: hidden;
+    overflow: visible;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 1);
 
 
     .hal-9000-display {
       position: relative;
       width: 100%;
       height: 100%;
-      background-color: #5e5e5e;
+      background: $gradient_primary;
+      border-radius: 50%;
+      overflow: hidden;
+
+
+      &:after {
+        content: '';
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        border-radius: 50%;
+        pointer-events: none;
+        transition: all .15s ease;
+      }
+
 
       .hal-9000-display-background {
         position: absolute;
@@ -36,7 +158,7 @@
         transform: translate(-50%, -50%);
         width: 90%;
         height: 90%;
-        background-color: #000000;
+        background: $gradient_secondary;
         border-radius: 50%;
         overflow: hidden;
         box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.3);
@@ -56,6 +178,33 @@
         flex-direction: column;
         justify-content: center;
         text-align: center;
+        z-index: 3;
+
+        &:after {
+          content: '';
+          position: absolute;
+          width: 100%;
+          height: 100%;
+          top: 0;
+          left: 0;
+          border-radius: 50%;
+          box-shadow: 0 0 20px 0 rgba(0, 0, 0, 1) inset;
+          pointer-events: none;
+        }
+
+        &:before {
+          content: '';
+          position: absolute;
+          width: 10%;
+          height: 10%;
+          top: 15%;
+          left: 55%;
+          background: white;
+          border-radius: 50%;
+          box-shadow: 0 0 10px 5px rgba(255, 255, 255, 1);
+          pointer-events: none;
+          opacity: .25;
+        }
 
         .hal-9000-display-content-color {
           position: absolute;
@@ -86,9 +235,22 @@
           z-index: 1;
 
           .text-output {
-            font-size: .8rem;
-          }
+            position: relative;
+            font-size: 2rem;
+            z-index: 5;
+            pointer-events: none;
+            color: red;
+            text-shadow: 0 1px 5px black;
 
+            .speaking-symbol {
+              display: inline-block;
+              height: 10px;
+              width: 10px;
+              margin: 0 auto;
+              background: white;
+              border-radius: 50%;
+            }
+          }
 
 
           .speech-recognition {
@@ -97,7 +259,7 @@
             height: 100%;
             top: 0;
             left: 0;
-            z-index: 2;
+            z-index: 10;
             cursor: pointer;
           }
 
@@ -133,6 +295,41 @@
         }
       }
 
+      .hal-9000-display-capture {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) scaleX(-1);
+        width: 100%;
+        height: 100%;
+        opacity: .5;
+
+        img {
+          display: block;
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          object-position: center center;
+        }
+      }
+
+      .hal-9000-display-eyes {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 70%;
+        height: 70%;
+        z-index: 2;
+        pointer-events: none;
+
+        * {
+          overflow: visible;
+        }
+
+
+      }
+
       .hal-9000-display-glass {
         position: absolute;
         top: 50%;
@@ -145,7 +342,7 @@
         opacity: .5;
         overflow: hidden;
         pointer-events: none;
-        z-index: 3;
+        z-index: 4;
       }
 
       .hal-9000-light-points {
@@ -156,7 +353,7 @@
         bottom: 0;
         background-image: radial-gradient(rgba(255, 255, 255, 0.2) 5%, rgba(255, 255, 255, 0) 70%);
         pointer-events: none;
-        z-index: 4;
+        z-index: 5;
       }
     }
   }
@@ -165,10 +362,51 @@
 
   }
 
+  &.recognition {
+    .hal-9000-wrapper {
+      box-shadow: 0 0 50px rgba(255, 128, 128, 0.25);
+
+      .hal-9000-display {
+
+        *:not(.speech-recognition) {
+          pointer-events: none !important;
+        }
+
+        &:after {
+
+        }
+
+        .hal-9000-display-background {
+
+        }
+
+        .hal-9000-display-content {
+          background-color: rgba(250, 0, 0, 0.75);
+          box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
+
+        }
+
+        .hal-9000-display-glass {
+
+        }
+
+        .hal-9000-light-points {
+
+        }
+      }
+    }
+  }
+
   &.error {
     .hal-9000-wrapper {
-      box-shadow: 0 0 20px rgba(255, 0, 0, 0.5); /* Red gradient shadow effect */
+
+
       .hal-9000-display {
+
+        &:after {
+          box-shadow: 0 0 20px rgba(255, 0, 0, 0.5); /* Red gradient shadow effect */
+        }
+
         .hal-9000-display-background {
 
         }
@@ -190,9 +428,14 @@
 
   &.answer:not(.error):not(.listening) {
     .hal-9000-wrapper {
-      box-shadow: 0 0 20px rgba(0, 255, 4, 0.5);
+
 
       .hal-9000-display {
+
+        &:after {
+          box-shadow: 0 0 20px rgba(0, 255, 4, 0.5);
+        }
+
         .hal-9000-display-background {
 
         }
@@ -218,9 +461,13 @@
 
   &.listening:not(.error) {
     .hal-9000-wrapper {
-      box-shadow: 0 0 20px rgba(255, 240, 0, 1);
+
 
       .hal-9000-display {
+        &:after {
+          box-shadow: 0 0 20px rgba(255, 240, 0, 1);
+        }
+
         .hal-9000-display-background {
 
         }
@@ -298,9 +545,13 @@
 
 
     .hal-9000-wrapper {
-      box-shadow: 0 0 20px rgba(255, 89, 0, 1);
+
 
       .hal-9000-display {
+        &:after {
+          box-shadow: 0 0 20px rgba(255, 89, 0, 1);
+        }
+
         .hal-9000-display-background {
 
         }

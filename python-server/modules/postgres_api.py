@@ -127,29 +127,30 @@ class postgres_api:
         return inserted_id
 
     def get_data(self):
-        """
-        Handles the GET request to fetch data from the database.
-
-        Returns:
-            The response containing the fetched data.
-        """
         log.info('get_data')
+
+        # Get the table name and data ID from the request parameters
         table_name = request.args.get('tableName')
         log.info(table_name)
         data_id = request.args.get('id')
         log.info(data_id)
+
         try:
+            # Connect to the PostgreSQL database
             conn = self.connect_to_postgres()
             cur = conn.cursor()
 
+            # Define the table columns (assuming 'id' and 'data' columns for demonstration purposes)
             columns = {
                 'id': 'SERIAL PRIMARY KEY',
                 'data': 'JSONB'
             }
 
+            # Create the table if it doesn't exist
             self.create_table(cur, conn, table_name, columns)
 
             if data_id:
+                # If data ID is provided, fetch a specific row from the table
                 query = sql.SQL("SELECT * FROM {} WHERE id = %s").format(sql.Identifier(table_name))
                 cur.execute(query, (data_id,))
                 row = cur.fetchone()
@@ -157,6 +158,7 @@ class postgres_api:
                 data = dict(zip(column_names, row))
                 response = make_response(jsonify(data))
             else:
+                # If data ID is not provided, fetch all rows from the table
                 query = sql.SQL("SELECT * FROM {}").format(sql.Identifier(table_name))
                 cur.execute(query)
                 rows = cur.fetchall()
@@ -164,17 +166,23 @@ class postgres_api:
                 data = [dict(zip(column_names, row)) for row in rows]
                 response = make_response(jsonify(data))
 
+            # Set response headers to prevent caching
             response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
             response.headers['Pragma'] = 'no-cache'
             response.headers['Expires'] = '0'
 
+
             cur.close()
             conn.close()
+
+            log.info('get_data a')
+            log.info(response)
 
             return response
         except psycopg2.Error as e:
             log.info(str(e))
             return jsonify({'error': str(e)})
+
 
     def post_data(self):
         """

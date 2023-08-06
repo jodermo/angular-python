@@ -58,8 +58,9 @@ class ssl_manager:
             datetime.datetime.utcnow() + datetime.timedelta(days=365)
         ).sign(private_key, hashes.SHA256(), default_backend())
 
+        current_directory = os.path.dirname(os.path.realpath(__file__))
         # Create the directory if it doesn't exist
-        os.makedirs(os.path.dirname(self.private_key_path), exist_ok=True)
+        os.makedirs(os.path.dirname(current_directory + self.private_key_path), exist_ok=True)
 
         # Save private key to a file
         private_key_pem = private_key.private_bytes(

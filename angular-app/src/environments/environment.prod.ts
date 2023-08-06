@@ -1,4 +1,7 @@
 export const environment = {
   production: true,
-  serverURL: 'http://localhost:80/'
+  serverURL: 'https://localhost/',
+  apiRoute: 'api',
+  websocketUrl:  'wss://localhost/',
+  tokenProtection: true
 };

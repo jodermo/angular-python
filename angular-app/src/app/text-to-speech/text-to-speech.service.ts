@@ -100,10 +100,15 @@ export class TextToSpeechService {
   textResults: any = {};
   languages: AppLanguage[] = AppLanguages;
   language: AppLanguageType = AppLanguages.length ? AppLanguages[0] : {name: 'English', iso: 'en', lang: 'en-US'};
-  filename = 'text.mp3';
+  filename = 'audio_record.mp3';
 
+  // audio = document.createElement('audio');
   audio = new Audio();
+  audioContext = new AudioContext();
+  // audioSource?: MediaElementAudioSourceNode = undefined;
+  audioSource?: MediaElementAudioSourceNode;
 
+  //
   played = false;
   playing?: TextToSpeechResponse;
 
@@ -126,14 +131,26 @@ export class TextToSpeechService {
   pyttsx3Rate = 125;
   pyttsx3Volume = 1;
   pyttsx3Female = false;
-
-
-  audioContext = new AudioContext();
-  // audioAnalyzer = undefined;
   audioAnalyzer?: AudioAnalyzer;
+  audioDevices?: any[];
+  dataLoading = false;
 
   constructor() {
+    (this.audio as any).crossorigin = "anonymous";
+    this.audio.setAttribute('crossorigin', 'anonymous');
+    this.audioSource = this.audioContext.createMediaElementSource(this.audio);
+    this.getAudioOutputDevices().then((audioDevices?: any[]) => {
+      this.audioDevices = audioDevices;
+      if (this.audioDevices?.length) {
+        // this.setAudioOutputDevice(this.audioDevices[0].deviceId, this.audioDevices[0]);
+      }
+      console.log('audioDevices', this.audioDevices);
+    });
+
     this.audio.oncanplay = () => {
+      if (this.audioSource) {
+        // this.audioSource.connect(this.audioContext.destination);
+      }
       if (this.currentResult) {
         this.loading[this.currentResult.text] = true;
       }
@@ -141,6 +158,7 @@ export class TextToSpeechService {
         this.played = true;
         this.play();
       }
+
     };
     this.audio.onended = () => {
       this.audio.currentTime = 0;
@@ -155,19 +173,23 @@ export class TextToSpeechService {
     this.loadData();
     this.getPollyVoices();
     this.getElevenLabsVoices();
-    if (!this.app?.isLocalhost()) {
-      this.audioAnalyzer = new AudioAnalyzer(this.audio, this.audioContext, true)
-    }
+
   }
 
   loadData() {
-    if (this.app && this.app.loadTextToSpeechResults) {
+    console.log('loadData', this.results, this.app);
+    if (this.app) {
       this.app.loadTextToSpeechResults = false;
+      this.dataLoading = true;
       this.app.API.get('text-to-speech', (results: any) => {
         this.results = results?.length ? results : this.results;
+
         if (this.app) {
+          this.results = this.app.sortData(this.results, 'id');
           this.app.textToSpeechResults = this.results;
         }
+        this.dataLoading = false;
+        console.log('loadData', this.results, this.app);
       });
     }
   }
@@ -346,6 +368,7 @@ export class TextToSpeechService {
       this.played = false;
       this.playing = textToSpeechResult;
       const src = this.resultFileSrc(textToSpeechResult);
+      console.log('playResult', textToSpeechResult, src);
       this.pause();
       this.audio.src = '';
       this.audio.src = src;
@@ -382,20 +405,64 @@ export class TextToSpeechService {
   pause() {
     if (!this.audio.paused) {
       this.audio.pause();
+
+    }
+  }
+
+  async getAudioOutputDevices() {
+    if ('mediaDevices' in navigator && 'enumerateDevices' in navigator.mediaDevices) {
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const audioOutputDevices = devices.filter(device => device.kind === 'audiooutput');
+      return audioOutputDevices;
+    }
+    return [];
+  }
+
+  async setAudioOutputDevice(deviceId: string, destination?: any) {
+    console.log('setAudioOutputDevice', deviceId);
+    if (destination) {
+      console.log('setAudioOutputDevice destination', this.audioContext.destination, destination);
+    }
+    if ('setSinkId' in this.audioContext.destination) {
+      try {
+        await (this.audioContext.destination as any).setSinkId(deviceId);
+
+        console.log('destination', this.audioContext.destination);
+      } catch (error) {
+        console.error('Failed to set audio output device:', error);
+      }
+    } else {
+      console.warn('Audio output device selection is not supported in this browser.');
     }
   }
 
   play(textToSpeechResponse?: TextToSpeechResponse) {
-
+    if (this.audioSource) {
+      this.audioAnalyzer = new AudioAnalyzer(this.audioSource, this.audioContext, true)
+    }
+    (this.audio as any).initialized = true;
     if (textToSpeechResponse?.filename) {
       this.audio.src = this.resultFileSrc(textToSpeechResponse);
     }
-    if (this.audio.src && this.audio.paused) {
-      this.audio.play();
+    if (this.audioContext.state === 'suspended') {
+      try {
+        this.audioContext.resume();
+      } catch (error) {
+        console.log('audioContext resume error', error);
+      }
+
     }
-
-
+    console.log('play', textToSpeechResponse, this.audio, (this.audio as any).initialized, this.audioAnalyzer);
+    if (this.audio.src) {
+      try {
+        this.audio.play();
+        console.log('!play', this.audio);
+      } catch (error) {
+        console.log('play error', error);
+      }
+    }
   }
+
 
   replay() {
     if (this.audio.src && this.audio.paused) {
@@ -405,8 +472,10 @@ export class TextToSpeechService {
   }
 
   stop() {
-    this.pause();
-    this.audio.currentTime = 0;
+    if (!this.audio.paused || this.audio.currentTime !== 0) {
+      this.pause()
+      this.audio.currentTime = 0;
+    }
   }
 
   isLoading(text?: string) {
@@ -439,5 +508,18 @@ export class TextToSpeechService {
       language = this.app.language;
     }
     return this.results.filter((textToSpeechResult: TextToSpeechResponse) => textToSpeechResult.text === text && textToSpeechResult.lang === language.iso);
+  }
+
+  delete(textToSpeechResult?: TextToSpeechResponse) {
+    if (this.app && textToSpeechResult?.id) {
+      console.log('delete', textToSpeechResult);
+      this.app.API.delete('text-to-speech', textToSpeechResult, (result: any) => {
+        console.log('delete', textToSpeechResult, result);
+        this.loadData();
+      }, (error: any) => {
+        console.log('error', textToSpeechResult, error);
+        this.loadData();
+      });
+    }
   }
 }

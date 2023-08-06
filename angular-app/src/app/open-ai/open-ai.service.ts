@@ -264,6 +264,7 @@ export class OpenAiService {
         requestBody['function_call'] = this.functionCall;
       }
     }
+    console.log('sendMessages', messages);
     this.app?.post(this.app?.API.url + '/open-ai/chat', requestBody, (result: OpenAiResponse) => {
       result.time = Date.now();
       this.results.push(result);
@@ -272,6 +273,10 @@ export class OpenAiService {
       this.messages = [];
       this.sending = false;
     });
+  }
+
+  lastResult(){
+    return this.results?.length ? this.results[this.results.length - 1] : undefined;
   }
 
   sortResult() {

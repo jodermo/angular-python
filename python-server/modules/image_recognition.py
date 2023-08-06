@@ -204,12 +204,27 @@ class image_recognition:
 
             # Prepare the face recognition results
             results = []
+
+            frame_height, frame_width, _ = frame.shape
+
             for top, right, bottom, left in face_locations:
-                # Draw a box around the face
-                cv2.rectangle(frame, (left, top), (right, bottom), (0, 0, 255), 2)
+                # Calculate the percentage values
+                face_top_percent = top / frame_height * 100
+                face_right_percent = right / frame_width * 100
+                face_bottom_percent = bottom / frame_height * 100
+                face_left_percent = left / frame_width * 100
+                face_width_percent = (right - left) / frame_width * 100
+                face_height_percent = (bottom - top) / frame_height * 100
 
                 # Append the face location to the results
-                results.append({'top': top, 'right': right, 'bottom': bottom, 'left': left, 'width': right - left, 'height': bottom - top})
+                results.append({
+                    'top': face_top_percent,
+                    'right': face_right_percent,
+                    'bottom': face_bottom_percent,
+                    'left': face_left_percent,
+                    'width': face_width_percent,
+                    'height': face_height_percent
+                })
 
             if self.detectItems:
                 # Perform object detection on the frame
@@ -225,7 +240,6 @@ class image_recognition:
                     top, right, bottom, left = box_points
                     cv2.rectangle(frame, (left, top), (right, bottom), (0, 0, 255), 2)
 
-
                     # Append the object detection information to the results
                     results.append({
                         'object_name': object_name,
@@ -238,3 +252,4 @@ class image_recognition:
 
         # If no image data is provided, return an error response
         return jsonify(error='No image data provided')
+

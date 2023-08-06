@@ -5,66 +5,40 @@
 <div class="mo-bot" *ngIf="app.token">
 
 
-  <div class="bot-controls">
-    <div>
-      <h1>MoBot v0.0.1</h1>
-
-    </div>
+  <div class="bot-wrapper">
 
 
-    <div class="bot-main-controls">
+    <div class="bot-main-controls" *ngIf="bot.started">
 
-      <select *ngIf="bot.started" [(ngModel)]="app.language">
+      <select [(ngModel)]="app.language">
         <option *ngFor="let language of app.languages" [ngValue]="language">{{language.name}}</option>
       </select>
-
-      <div class="bot-language-selection" *ngIf="!bot.started">
-        <div class="bot-language-selection-language" *ngFor="let language of app.languages"
-             (click)="app.language = language; startBot()">
-          <span>{{language.name}}</span>
-        </div>
-      </div>
-
-      <button *ngIf="bot.started" (click)="bot.stop();">Stop Bot</button>
-      <button *ngIf="bot.started" (click)="extended = !extended">
-        <span *ngIf="!extended">Extended Layout</span>
-        <span *ngIf="extended">Default Layout</span>
+      <button (click)="bot.stop();">{{app.text('Stop bot')}}</button>
+      <button (click)="extended = !extended">
+        <span *ngIf="!extended">{{app.text('Configuration')}}</span>
+        <span *ngIf="extended">HAL 9000</span>
       </button>
 
     </div>
 
-    <div *ngIf="bot.started" class="bot-container" [ngClass]="{'hidden': (!extended)}">
-      <app-webcam-preview #webcamElement></app-webcam-preview>
-      <app-speech-recognition-info *ngIf="extended"></app-speech-recognition-info>
+    <div class="bot-content">
 
-    </div>
-
-    <div class="bot-output" [ngClass]="{'hidden': (!bot.started)}">
-      <app-mo-bot-display *ngIf="!extended"></app-mo-bot-display>
-      <div>
-        <div class="bot-output-text" *ngIf="bot.speechText && extended">
-
-          <b [ngClass]="{'text-loading': (textToSpeech.isLoading(bot.speechText))}">
-            <i>
-              "{{bot.speechText}}"
-            </i>
-          </b>
-          <div class="text-loading-info" *ngIf="textToSpeech.isLoading(bot.speechText)">
-            <small>Loading</small>
-          </div>
-        </div>
-        <app-text-to-speech-button *ngIf="bot.speechText" [text]="bot.speechText"
-                                   [layout]="'custom'"
-                                   [autoplay]="true"></app-text-to-speech-button>
-        <app-speech-recognition-button  [ngClass]="{'hidden': (!extended)}"
-                                       [showLanguageSelection]="false"
-                                       [showLastRecord]="false"
-                                       (onResult)="onSpeechRecognitionResult($event, true); loadResults();"></app-speech-recognition-button>
-
+      <div class="bot-output" [ngClass]="{'hidden': (!bot.started)}">
+        <app-mo-bot-display [ngClass]="{'hidden': (extended)}"></app-mo-bot-display>
+        <app-mo-bot-configuration [ngClass]="{'hidden': (!extended)}"></app-mo-bot-configuration>
 
       </div>
+      <div *ngIf="!bot.started" class="bot-start-configuration">
+        <app-mo-bot-start-view></app-mo-bot-start-view>
+      </div>
+
     </div>
   </div>
+
+  <app-speech-recognition-button *ngIf="bot.started" class="hidden"
+                                 [showLanguageSelection]="false"
+                                 [showLastRecord]="false"
+                                 (onResult)="onSpeechRecognitionResult($event, true);;"></app-speech-recognition-button>
 
 
 </div>

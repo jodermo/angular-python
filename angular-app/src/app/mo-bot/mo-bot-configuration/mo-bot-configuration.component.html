@@ -1,0 +1,124 @@
+<div class="mo-bot-configuration">
+  <div class="mo-bot-configuration-output">
+    <button *ngIf="bot.started && !bot.webcamStarted" (click)="bot.startWebcam()">{{app.text('Start webcam')}}</button>
+    <app-webcam-preview
+      *ngIf="bot.started && bot.webcamStarted"
+      [controls]="false"
+      [autostart]="false"
+      [recognition]="true"
+      #webcamElement></app-webcam-preview>
+
+    <div>
+      <b *ngIf="bot.currentListenSecond">
+        Listen for "{{bot.currentListenSecond}}" seconds
+      </b>
+      <app-speech-recognition-info *ngIf="bot.started"></app-speech-recognition-info>
+    </div>
+
+    <div class="mo-bot-configuration-words">
+      <div class="mo-bot-configuration-words-list">
+        <h3 >Default Functions</h3>
+        <ul >
+          <ng-container *ngFor="let setting of bot.functions">
+            <li *ngIf="!bot.newSetting && (setting === bot.currentSetting || (!bot.currentSetting))">
+              <div class="list-item-header">
+                <div *ngIf="setting.words">
+            <span *ngFor="let word of setting.words">
+              "{{word}}",
+            </span>
+                  <span class="padding-right"> => </span>
+                </div>
+
+                <div  class="list-item-content">
+                  <b *ngIf="setting.description">{{setting.description}}</b>
+                  <b *ngIf="!setting.description">{{app.text('Some function')}}</b>
+                </div>
+                <span class="spacer"></span>
+                <div *ngIf="bot.started">
+                  <button (click)="bot.triggerSetting(setting)">{{app.text('Trigger')}}</button>
+                </div>
+              </div>
+            </li>
+          </ng-container>
+        </ul>
+        <h3>Settings</h3>
+        <ul>
+          <ng-container *ngFor="let setting of bot.settings">
+            <li *ngIf="!bot.newSetting && (setting === bot.currentSetting || !bot.currentSetting)">
+              <div class="list-item-header" (click)="bot.currentSetting = setting">
+                <b>{{setting.alias}}: </b>
+                <div *ngIf="setting.words">
+            <span *ngFor="let word of setting.words">
+              "{{word}}",
+            </span>
+                </div>
+                <span class="spacer"></span>
+                <div *ngIf="bot.currentSetting === setting">
+                  <button (click)="bot.addOrUpdateSetting(setting)">Save</button>
+                </div>
+                <div *ngIf="bot.started">
+                  <button (click)="bot.triggerSetting(setting, $event)">{{app.text('Trigger')}}</button>
+                </div>
+                <div *ngIf="setting.id">
+                  <button (click)="bot.deleteSetting(setting, $event)">Delete</button>
+                </div>
+                <div *ngIf="bot.currentSetting === setting">
+                  <button (click)="bot.closeCurrentSetting($event)">X</button>
+                </div>
+              </div>
+              <div *ngIf="bot.currentSetting && bot.currentSetting === setting" class="list-item-content">
+                <app-mo-bot-configuration-setting [setting]="setting"></app-mo-bot-configuration-setting>
+              </div>
+
+            </li>
+
+          </ng-container>
+
+          <li *ngIf="bot.newSetting">
+            <div class="list-item-header" >
+              <b>{{bot.newSetting.alias}}: </b>
+              <div *ngIf="bot.newSetting.words">
+            <span *ngFor="let word of bot.newSetting.words">
+              "{{word}}",
+            </span>
+              </div>
+              <span class="spacer"></span>
+              <div >
+                <button [disabled]="!bot.newSetting.task || !bot.newSetting.task.user || !bot.newSetting.words || !bot.newSetting.words.length" (click)="bot.addOrUpdateSetting(bot.newSetting)">Add Setting</button>
+              </div>
+
+            </div>
+
+          </li>
+
+          <li *ngIf="!bot.currentSetting && !bot.newSetting">
+            <div class="mo-bot-form-field">
+              <label>{{app.text('New setting')}} <small><i>({{app.text('alias')}})</i></small></label>
+              <input placeholder="{{app.text('alias')}}" [(ngModel)]="newSettingName">
+              <button [disabled]="!newSettingName"
+                      (click)="bot.createNewSetting(newSettingName); newSettingName = undefined;">{{app.text('Create new setting')}}</button>
+            </div>
+          </li>
+          <li *ngIf="!bot.currentSetting && bot.newSetting">
+            <app-mo-bot-configuration-setting [setting]="bot.newSetting"></app-mo-bot-configuration-setting>
+          </li>
+        </ul>
+      </div>
+      <div class="clear"></div>
+    </div>
+  </div>
+  <div class="bot-output-text" *ngIf="bot.started && bot.speechText">
+    <b [ngClass]="{'text-loading': (textToSpeech.isLoading(bot.speechText))}">
+      <i>
+        "{{bot.speechText}}"
+      </i>
+    </b>
+    <div class="text-loading-info" *ngIf="openAi.sending ||  textToSpeech.isLoading(bot.speechText)">
+      <small>{{app.text('Loading')}}</small>
+    </div>
+  </div>
+  <app-text-to-speech-button *ngIf="bot.speechText" [text]="bot.speechText"
+                             [layout]="'hidden'"
+                             [autoplay]="true"></app-text-to-speech-button>
+
+</div>

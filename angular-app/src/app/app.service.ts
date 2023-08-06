@@ -109,14 +109,15 @@ export class AppService {
       tableName: string,
       data: any,
       onSuccess?: (result?: any) => void,
-      onError?: (error?: any) => void
+      onError?: (error?: any) => void,
+      doConfirm = false
     ): Promise<any> => {
       const body = {
         tableName: tableName,
         data: data,
         id: data.id
       };
-      if (confirm('Are you sure?')) {
+      if (!doConfirm || confirm('Are you sure?')) {
         return this.delete(this.API.url + '/data', body, onSuccess, onError);
       } else {
         if (onError) {
@@ -404,6 +405,9 @@ export class AppService {
         }
         console.warn('result', result, onSuccess);
       } else {
+        if (onError) {
+          onError(response);
+        }
         throw new Error(`DELETE request failed with status ${response.status}`);
       }
     } catch (error) {
@@ -449,7 +453,7 @@ export class AppService {
   }
 
   uploadFile(
-    file: File,
+    file: File | Blob,
     uploadPath = this.uploadPath,
     onSuccess?: (result?: any) => void,
     onError?: (error?: any) => void
@@ -548,4 +552,22 @@ export class AppService {
   getObjectResultKeys(result: any) {
     return Object.entries(result).map(([key, value]) => ({key, value}));
   }
+
+  text(value: string, language = this.language) {
+    return value;
+  }
+
+  sortData(data?: any[], key = 'id', reverse = false) {
+    if (data?.length) {
+      data = data.sort((a, b) => {
+        const aValue = a[key] || 0;
+        const bValue = b[key] || 0;
+        if (aValue < bValue) return reverse ? 1 : -1;
+        if (aValue > bValue) return reverse ? -1 : 1;
+        return 0;
+      });
+    }
+    return data || [];
+  }
+
 }

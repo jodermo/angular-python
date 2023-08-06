@@ -40,7 +40,7 @@ import {WebcamComponent} from './webcam/webcam.component';
 import {WebcamService} from "./webcam/webcam.service";
 import {LoginComponent} from './login/login.component';
 import { MoBotComponent } from './mo-bot/mo-bot.component';
-import {WebcamModule} from "ngx-webcam";
+import { WebcamModule} from "ngx-webcam";
 import { WebcamPreviewComponent } from './webcam/webcam-preview/webcam-preview.component';
 import { WebcamMarkerComponent } from './webcam/webcam-preview/webcam-marker/webcam-marker.component';
 import { WebcamRecordComponent } from './webcam/webcam-record/webcam-record.component';
@@ -50,6 +50,10 @@ import { SpeechRecognitionInfoComponent } from './speech-recognition/speech-reco
 import { AppGeneratorComponent } from './app-generator/app-generator.component';
 import { AudioAnalyzerComponent } from './audio-analyzer/audio-analyzer.component';
 import { MoBotDisplayComponent } from './mo-bot/mo-bot-display/mo-bot-display.component';
+import { MoBotConfigurationComponent } from './mo-bot/mo-bot-configuration/mo-bot-configuration.component';
+import { MoBotConfigurationSettingComponent } from './mo-bot/mo-bot-configuration/mo-bot-configuration-setting/mo-bot-configuration-setting.component';
+import { MoBotStartViewComponent } from './mo-bot/mo-bot-start-view/mo-bot-start-view.component';
+import { WebcamErrorComponent } from './webcam/webcam-error/webcam-error.component';
 
 @NgModule({
   declarations: [
@@ -86,6 +90,10 @@ import { MoBotDisplayComponent } from './mo-bot/mo-bot-display/mo-bot-display.co
     AppGeneratorComponent,
     AudioAnalyzerComponent,
     MoBotDisplayComponent,
+    MoBotConfigurationComponent,
+    MoBotConfigurationSettingComponent,
+    MoBotStartViewComponent,
+    WebcamErrorComponent,
   ],
   imports: [
     CommonModule,
@@ -114,4 +122,6 @@ import { MoBotDisplayComponent } from './mo-bot/mo-bot-display/mo-bot-display.co
   bootstrap: [AppComponent]
 })
 export class AppModule {
+
+
 }

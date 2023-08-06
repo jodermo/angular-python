@@ -52,6 +52,7 @@ class speech_recognition:
              sample_rate = data.get('sample_rate', 16000)
              sample_width = data.get('sample_width', 1)
              channels = data.get('channels', 1)
+             recording = data.get('recording', False)
              # Generate a unique filename
              filename = self.generate_unique_filename()
 
@@ -90,7 +91,8 @@ class speech_recognition:
                         'event': 'words_detected',
                         'roomName': 'speech-recognition',
                         'audio_data': audio_data,
-                        'recognitionIndex': recognition_index
+                        'recognitionIndex': recognition_index,
+                        'recording': recording if recording else False
                     })
                  if sentence_detected:
                     self.websocket.send_message('speech-recognition', {
@@ -100,7 +102,8 @@ class speech_recognition:
                         'event': 'sentence_detected',
                         'roomName': 'speech-recognition',
                         'audio_data': audio_data,
-                        'recognitionIndex': recognition_index
+                        'recognitionIndex': recognition_index,
+                        'recording': recording if recording else False
                     })
                  if not sentence_detected and not words_detected:
                     self.websocket.send_message('speech-recognition', {
@@ -109,7 +112,8 @@ class speech_recognition:
                         'event': 'nothing_detected',
                         'roomName': 'speech-recognition',
                         'audio_data': audio_data,
-                        'recognitionIndex': recognition_index
+                        'recognitionIndex': recognition_index,
+                        'recording': recording if recording else False
                     })
              except sr.UnknownValueError as e:
                  # Handle speech recognition errors
@@ -121,7 +125,8 @@ class speech_recognition:
                      'event': 'error',
                      'roomName': 'speech-recognition',
                      'language': language,
-                     'recognitionIndex': recognition_index
+                     'recognitionIndex': recognition_index,
+                     'recording': recording if recording else False
                  })
                  print(error)
              except sr.RequestError as e:
@@ -135,7 +140,8 @@ class speech_recognition:
                      'language': language,
                      'sample_rate': sample_rate,
                      'sample_rate': sample_width,
-                     'recognitionIndex': recognition_index
+                     'recognitionIndex': recognition_index,
+                     'recording': recording if recording else False
                  })
                  print(error)
 
@@ -195,7 +201,6 @@ class speech_recognition:
                 self.wma_to_wav(file_path, wav_file)
                 file_path = wav_file
 
-
             log.info(file_path)
             # Initialize recognizer class (for recognizing the speech)
             r = sr.Recognizer()
@@ -224,6 +229,10 @@ class speech_recognition:
 
     def get_recognize_file(self, request):
         path =  request.args.get('path') if request.args.get('path') else 'records'
-        filename = request.args.get('filename') if request.args.get('filename') else 'text.mp3'
+        filename = request.args.get('filename') if request.args.get('filename') else 'audio_record.mp3'
         language = request.args.get('language') if request.args.get('language') else 'en-US'
+        log.info('get_recognize_file')
+        log.info(path)
+        log.info(filename)
+        log.info(language)
         return self.recognize_file(filename, path, language)

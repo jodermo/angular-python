@@ -25,21 +25,17 @@ COPY --from=build /app/dist/angular-app ./angular-app
 # Set the working directory in the container
 WORKDIR /app
 
-
+# Install Node.js and npm
+RUN apt-get update && apt-get install -y curl
+RUN curl -sL https://deb.nodesource.com/setup_14.x | bash -
 
 # Install the required system packages
-RUN apt-get update && apt-get install -y libasound2-dev ffmpeg mplayer
-
-# Copy the requirements file to the container
-COPY ./python-server/requirements.txt .
+RUN apt-get install -y libasound2-dev ffmpeg mplayer espeak espeak-ng libespeak-dev libportaudio2 libportaudiocpp0 portaudio19-dev libsndfile1-dev libvpx-dev mpg123 nodejs npm
 
 # Install the Python dependencies
+RUN pip install --no-cache-dir pyaudio python-espeak PyJWT openai torch torchvision
+COPY ./python-server/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
-
-# Install npm and mpg123
-RUN apt-get install -y npm mpg123
-
-RUN pip install openai
 
 # Install nodemon using npm
 RUN npm install -g nodemon
@@ -48,6 +44,8 @@ RUN npm install -g nodemon
 COPY ./python-server .
 
 
+# Install PyInstaller
+# RUN pip install pyinstaller
 
 # Expose a port (e.g., 80) for the server to listen on
 EXPOSE 443

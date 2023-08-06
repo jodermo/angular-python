@@ -17,7 +17,9 @@ export class OpenAiComponent extends AppComponent {
 
   constructor(app: AppService, public openAi: OpenAiService) {
     super(app);
-    openAi.init(app);
+    if(!openAi.app){
+      openAi.init(app);
+    }
   }
 
 

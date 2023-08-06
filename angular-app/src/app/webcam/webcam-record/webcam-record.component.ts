@@ -23,7 +23,11 @@ export class WebcamRecordComponent extends WebcamComponent implements AfterViewI
 
   initWebcam(){
     if(this.videoElement){
-      this.webcam.setVideoElements(this.videoElement.nativeElement, this.outputVideoElement?.nativeElement);
+      try{
+        this.webcam.setVideoElements(this.videoElement.nativeElement, this.outputVideoElement?.nativeElement);
+      }catch (e) {
+        console.log('initWebcam error', e);
+      }
     }
   }
 

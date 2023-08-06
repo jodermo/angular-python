@@ -1,0 +1,15 @@
+<div>
+  <h1>MoBot v1.0.0</h1>
+  <p><i>{{app.text('Select language to start bot')}}:</i></p>
+  <div class="bot-language-selection" *ngIf="!bot.started">
+    <div class="bot-language-selection-language" *ngFor="let language of app.languages"
+         (click)="app.language = language; startBot();">
+      <span>{{language.name}}</span>
+    </div>
+  </div>
+  <button (click)="config = !config">
+    <span *ngIf="!config">{{app.text('Show configuration')}}</span>
+    <span *ngIf="config">{{app.text('Hide configuration')}}</span>
+  </button>
+  <app-mo-bot-configuration *ngIf="config"></app-mo-bot-configuration>
+</div>

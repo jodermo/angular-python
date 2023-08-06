@@ -2,9 +2,9 @@
   <app-login></app-login>
 </div>
 
-<div class="content webcam-page" role="main" [ngClass]="{'hidden': (showLogin && !webcam.started)}">
+<div class="content webcam-page" role="main">
   <app-webcam-preview ></app-webcam-preview>
   <app-webcam-record *ngIf="!webcam.started"></app-webcam-record>
-  <app-webcam-recognition-models></app-webcam-recognition-models>
+  <app-webcam-recognition-models  [ngClass]="{'hidden': (showLogin && !webcam.started)}"></app-webcam-recognition-models>
 </div>
 

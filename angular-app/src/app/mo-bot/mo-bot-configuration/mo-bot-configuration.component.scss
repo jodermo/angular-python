@@ -1,0 +1,57 @@
+.mo-bot-configuration {
+  position: relative;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+
+  text-align: left;
+
+
+  .mo-bot-configuration-output {
+    position: relative;
+    width: 100%;
+    display: flex;
+
+    & > * {
+      flex: 1;
+    }
+  }
+
+  .mo-bot-configuration-words {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+
+
+    .mo-bot-configuration-words-list {
+      position: relative;
+      width: 100%;
+      height: auto;
+      padding: 1rem;
+      display: block;
+      overflow-x: hidden;
+      overflow-y: auto;
+
+      ul {
+        li {
+          .list-item-header {
+            width: 100%;
+            display: flex;
+            cursor: pointer;
+          }
+
+          border-bottom: 1px solid #fff;
+          margin-bottom: 1rem;
+        }
+      }
+    }
+
+
+  }
+
+  .clear {
+    clear: both;
+  }
+}

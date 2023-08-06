@@ -7,7 +7,7 @@
 
   <div class="text-to-speech-results" *ngIf="textToSpeech.results && textToSpeech.results.length">
     <div class="text-to-speech-results-wrapper">
-      <div class="text-to-speech-results-container">
+      <div class="text-to-speech-results-container" *ngIf="!textToSpeech.dataLoading">
 
         <ng-container *ngFor="let textToSpeechResult of textToSpeech.results">
           <div *ngIf="!textToSpeechResult.id">
@@ -53,6 +53,11 @@
                 (click)="textToSpeech.download(textToSpeechResult.text)">
                 Download
               </button>
+              <button
+                *ngIf="textToSpeechResult.id"
+                (click)="textToSpeech.delete(textToSpeechResult)">
+                Delete
+              </button>
               <span class="spacer"></span>
               <label>
                 <select [(ngModel)]="textToSpeech.mode">
@@ -73,6 +78,11 @@
               <button
                 (click)="app.download(textToSpeech.resultFileSrc(textToSpeechResult))">
                 Download
+              </button>
+              <button
+                *ngIf="textToSpeechResult.id"
+                (click)="textToSpeech.delete(textToSpeechResult)">
+                Delete
               </button>
             </div>
 

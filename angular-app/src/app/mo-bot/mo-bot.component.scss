@@ -18,20 +18,151 @@ $text-color-highlight: $text-color;
 
 .background-color-highlight {
   background: $background-color-highlight;
-  color: $text-color-highlight;
+  color: $background-color;
 }
 
 body {
   .mo-bot {
+
     @extend .background-color;
+    background: url("/assets/img/wall_3.png");
+
+    background-origin: content-box;
+    background-position: center center;
+    background-repeat: repeat;
+    background-size: 100%;
     position: relative;
     width: 100%;
     height: 100%;
     display: flex;
     justify-content: center;
+    overflow: hidden;
+
+    .bot-output {
+      position: relative;
+      width: 100%;
+      min-height: 420px;
+      height: 100%;
+      display: block;
+
+    }
+
+    .bot-start-configuration {
+      @extend .background-color-secondary;
+      text-align: center;
+    }
+
+    .bot-wrapper {
+      position: relative;
+      max-width: 100%;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+
+      .bot-content {
+        position: relative;
+        flex: 1;
+        overflow-x: hidden;
+        overflow-y: auto;
+      }
+    }
+
+    &:after {
+      content: '';
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+      background: rgba(0, 0, 0, 0.25);
+      z-index: 0;
+    }
+
+    .webcam-output {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+
+      webcam {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        display: inline-block;
+
+        .webcam-wrapper {
+          position: relative;
+          width: 100%;
+          height: 100%;
+
+          video {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            object-position: center center;
+          }
+        }
+      }
+
+    }
+
+
+    .mo-bot-configuration-words {
+      @extend .background-color-secondary;
+    }
+
+    .hal-9000-display-eye {
+      pointer-events: none;
+
+      .webcam-marker {
+        border: none;
+        box-shadow: none;
+        overflow: visible;
+
+        &:before {
+          content: '';
+          position: absolute;
+          width: 3rem;
+          height: 3rem;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          background: white;
+          box-shadow: 0 0 20px 0 rgba(255, 255, 255, 1);
+          border-radius: 50%;
+          opacity: .25;
+        }
+
+        &:after {
+          content: '';
+          position: absolute;
+          width: 1.5rem;
+          height: 1.5rem;
+          top: 50%;
+          left: 50%;
+          border-radius: 50%;
+          transform: translate(-50%, -50%);
+          box-shadow: 0 0 20px 0 rgba(255, 255, 255, .5);
+          background: white;
+          opacity: .5;
+        }
+      }
+    }
+
+
+    .hidden {
+      position: absolute;
+      z-index: -10;
+      opacity: 0;
+      pointer-events: none !important;
+    }
 
     button {
-      @extend .background-color-secondary;
+      @extend .background-color;
+      transition: all .25s ease;
 
       &:hover {
         @extend .background-color-highlight;
@@ -44,13 +175,24 @@ body {
       height: 100%;
     }
 
+    .hal-9000-output-text{
+      width: 100%;
+      position: absolute;
+      bottom: 2rem;
+      left: 0;
+      text-align: center;
+      pointer-events: none;
+      z-index: 100;
+      opacity: .9;
+    }
+
     .bot-output-text {
       @extend .background-color-secondary;
       position: relative;
       padding: 1rem;
       font-size: 1.2rem;
       line-height: 1.75rem;
-
+      text-align: center;
 
       .text-loading-info {
         position: absolute;
@@ -74,31 +216,47 @@ body {
         flex: 1;
       }
 
-      &.hidden {
-        position: absolute;
-        width: 0;
-        height: 0;
-        z-index: -10;
-        opacity: 0;
-        overflow: hidden;
-      }
     }
 
     .text-loading {
       opacity: 0.5;
     }
 
-    .bot-controls {
+    .mo-bot-form-field {
       display: flex;
-      flex-direction: column;
-      text-align: center;
+      flex-wrap: wrap;
+
+      label {
+        width: 100%;
+      }
+
+      input, select {
+        flex: 1;
+        width: auto !important;
+      }
+
+      span, b, small, i {
+        position: relative;
+        display: flex;
+
+        flex-direction: column;
+        justify-content: center;
+        flex: 1;
+        padding: 0 1rem;
+      }
+    }
+
+    .bot-wrapper {
+
 
       .bot-language-selection {
         width: 100%;
         display: flex;
         flex-wrap: wrap;
-        column-gap: 1rem;
-        row-gap: 1rem;
+        margin: 1rem auto;
+
+        border-top: 1px solid #fff;
+        border-bottom: 1px solid #fff;
 
         .bot-language-selection-language {
           flex: 1;
@@ -108,6 +266,8 @@ body {
           display: flex;
           flex-direction: column;
           justify-content: center;
+          text-align: center;
+          padding: 0 1rem;
 
           &:hover {
             @extend .background-color-highlight;
@@ -147,8 +307,23 @@ body {
     }
 
     .mo-bot-display {
+      display: flex;
+      flex-direction: column;
+
       .audio-analyzer {
         height: 100% !important;
+      }
+
+      &.layout-HAL-9000 {
+        position: absolute;
+        height: 100%;
+        top: 50%;
+        transform: translateY(-50%);
+        pointer-events: none;
+
+        & > * {
+          pointer-events: all;
+        }
       }
     }
 
@@ -199,13 +374,7 @@ body {
         width: 100%;
         height: auto;
 
-        .webcam-output {
-          position: relative;
-          display: inline-block;
-          width: auto;
-          height: auto;
-          margin: 0 auto;
-        }
+
       }
 
       .webcam-controls {
@@ -256,12 +425,7 @@ body {
         font-size: 3rem;
       }
 
-      .webcam-error {
-        background: rgba(255, 255, 255, .75);
-        color: red;
-        padding: 1rem;
-        margin-top: 1rem;
-      }
+
 
 
     }
@@ -276,6 +440,7 @@ body {
       display: flex;
       flex-direction: column;
       justify-content: center;
+      text-align: center;
 
       & > * {
         margin-bottom: 1rem;

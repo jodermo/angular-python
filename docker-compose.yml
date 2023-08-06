@@ -17,12 +17,13 @@ services:
     env_file:
       - .env
     ports:
-      - 80:80
+      - 443:443
     volumes:
       - ./python-server:/app
       - ./angular-app/dist/angular-app:/angular-app
     depends_on:
       - postgres-database
+    restart: always
     command: nodemon -L --watch /app --ext py --exec "python server.py"
 
 

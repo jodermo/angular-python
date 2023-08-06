@@ -1,11 +1,17 @@
-<div *ngIf="recognitionResult" class="webcam-marker" [ngStyle]="{
-  top: recognitionResult.top + 'px',
-  left: recognitionResult.left+ 'px',
-  width: recognitionResult.width+ 'px',
-  height: recognitionResult.height+ 'px',
+<ng-container>
+  <div *ngIf="recognitionResult" class="webcam-marker" [ngStyle]="{
+  top: invertY ?  'inherit'  : recognitionResult.top + '%',
+  bottom: !invertY ?  'inherit'  : recognitionResult.top + '%',
+  left: invertX ? 'inherit' : recognitionResult.left + '%',
+  right: !invertX ? 'inherit' : recognitionResult.left + '%',
+  width: recognitionResult.width+ '%',
+  height: recognitionResult.height+ '%',
+  opacity: webcam.staticRecognitionResultVisible[index]? 1: 0,
   transition: 'all .25s ease'
 }">
-  <p *ngIf="recognitionResult.text">
-    {{recognitionResult.text}}
-  </p>
-</div>
+    <p *ngIf="recognitionResult.text">
+      {{recognitionResult.text}}
+    </p>
+  </div>
+</ng-container>
+

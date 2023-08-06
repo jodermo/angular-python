@@ -54,6 +54,7 @@ angular-app/testem.log
 angular-app/.vscode/*
 angular-app/.editorconfig
 
+build/
 
 /python-server/server.log
 /python-server/server.spec
@@ -63,6 +64,7 @@ angular-app/.editorconfig
 !/python-server/ssl/README.md
 /python-server/build/
 /python-server/dist/
+/python-server/modules/__pycache__/
 /python-server/www/*
 !/python-server/www/README.md
 postgres-data/*
@@ -76,4 +78,5 @@ docker-compose.yml
 angular-app/src/environments/environment.prod.ts
 
 .env
+env
 .idea
