@@ -3,8 +3,11 @@
 // The list of file replacements can be found in `angular.json`.
 
 export const environment = {
-  production: false,
-  serverURL: 'http://localhost:80/'
+  production: true,
+  serverURL: 'https://localhost/',
+  apiRoute: 'api',
+  websocketUrl:  'wss://localhost/',
+  tokenProtection: true
 };
 
 /*
