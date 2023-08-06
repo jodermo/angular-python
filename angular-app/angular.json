@@ -37,19 +37,19 @@
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "1mb",
-                  "maximumError": "8mb"
+                  "maximumWarning": "16mb",
+                  "maximumError": "32mb"
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "8kb",
-                  "maximumError": "16kb"
+                  "maximumWarning": "32kb",
+                  "maximumError": "64kb"
                 }
               ],
               "fileReplacements": [
                 {
                   "replace": "src/environments/environment.ts",
-                  "with": "src/environments/environment.prod.ts"
+                  "with": "../environment.ts"
                 }
               ],
               "outputHashing": "all"
@@ -60,7 +60,13 @@
               "vendorChunk": true,
               "extractLicenses": false,
               "sourceMap": true,
-              "namedChunks": true
+              "namedChunks": true,
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "../environment.ts"
+                }
+              ]
             }
           },
           "defaultConfiguration": "production"
@@ -69,10 +75,22 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
-              "browserTarget": "angular-app:build:production"
+              "browserTarget": "angular-app:build:production",
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "../environment.ts"
+                }
+              ]
             },
             "development": {
-              "browserTarget": "angular-app:build:development"
+              "browserTarget": "angular-app:build:development",
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "../environment.ts"
+                }
+              ]
             }
           },
           "defaultConfiguration": "development"

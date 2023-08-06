@@ -1,7 +1,7 @@
 import {Injectable} from '@angular/core';
 import {ServerFile} from './file-manager/file-manager.service';
 import {TextToSpeechResponse} from "./text-to-speech/text-to-speech.service";
-import {environment} from "../environments/environment.prod";
+import {environment} from "../environments/environment";
 import {SpeechRecognitionResponse} from "./speech-recognition/speech-recognition.service";
 import {WebcamRecognitionModel, WebcamService} from "./webcam/webcam.service";
 
