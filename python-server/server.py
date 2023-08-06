@@ -1,6 +1,6 @@
 # file: server.py
 
-from flask import Flask, request, jsonify, send_file
+from flask import Flask, request, jsonify, send_file, send_from_directory
 from flask_cors import CORS
 from modules.ssl_manager import ssl_manager
 from modules.postgres_api import postgres_api
@@ -17,7 +17,7 @@ from modules.eleven_labs import eleven_labs
 from modules.aws_polly import aws_polly
 from modules.user_auth import user_auth
 from modules.build_server import build_server
-
+from werkzeug.serving import run_simple
 
 import os
 from dotenv import load_dotenv
@@ -71,6 +71,7 @@ class Server:
 
 
     def setup_app(self):
+
         cors_allowed_origins = os.getenv('ALLOWED_ORIGINS', '*').split(',')
         CORS(self.app, origins=cors_allowed_origins if cors_allowed_origins else ['*'])
         self.app.config['MAX_CONTENT_LENGTH'] = self.max_content_length
@@ -79,8 +80,8 @@ class Server:
         self.app.before_request(self.handle_chunking)
 
         self.app.add_url_rule('/', methods=['GET'], view_func=self.angular_build)
-        self.app.add_url_rule('/<filename>', methods=['GET'], view_func=self.angular_build)
-
+        self.app.add_url_rule('/<path:filename>', methods=['GET'], view_func=self.angular_build)
+        self.app.add_url_rule('/assets/img/<path:filename>', methods=['GET'], view_func=self.angular_image_assets)
         self.app.add_url_rule(self.apiRoute +'/build', methods=['POST'], view_func=self.build)
 
         self.app.add_url_rule(self.apiRoute +'/auth', methods=['POST'], view_func=self.login)
@@ -132,8 +133,23 @@ class Server:
         self.app.add_url_rule(self.apiRoute +'/image-recognition/stream/', methods=['POST'], view_func=self.image_recognition_stream)
         self.app.add_url_rule(self.apiRoute +'/image-recognition/model/', methods=['POST'], view_func=self.image_recognition_model)
 
+        self.app.after_request(self.after_request)
+
         self.app.errorhandler(Exception)(self.handle_error)
         log.info('setup_app')
+
+
+
+
+    def after_request(self, response):
+        log.info('after_request: ')
+        log.info(response)
+        response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+        response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+        return response
+
+
+
 
     def build(self):
         self.build_server.run()
@@ -158,12 +174,46 @@ class Server:
     def login(self):
         return self.user_auth.login(request)
 
-    def angular_build(self, filename=None):
-        log.exception('filename: ' + str(filename))
-        if "." in str(filename):
-            return send_file('../angular-app/' + str(filename))
+
+    def angular_build(self, path=None, filename=None):
+        log.info('path: ' + str(path))
+        log.info('filename: ' + str(filename))
+        current_directory = os.path.dirname(os.path.realpath(__file__))
+        angular_app_directory = os.path.join(current_directory, '../', '/angular-app/')
+        # angular_app_directory = os.path.join(current_directory, '..', '/angular-app/dist/angular-app/')
+
+        if path is not None:
+            angular_app_directory = os.path.join(angular_app_directory, path)
+
+        if filename is None:
+            filename = "index.html"  # Use a default filename if none is provided
+
+        # Check if the provided filename is an Angular route
+        if not filename.endswith(".html") and not filename.endswith(".js") and not filename.endswith(".css"):
+            # It's an Angular route, serve the index.html file
+            return send_file(os.path.join(angular_app_directory, "index.html"))
+
+        # Set the correct MIME type based on the file extension
+        if filename.endswith(".js"):
+            return send_file(os.path.join(angular_app_directory, filename), mimetype="application/javascript")
+        elif filename.endswith(".css"):
+            return send_file(os.path.join(angular_app_directory, filename), mimetype="text/css")
+        elif filename.endswith(".html"):
+            return send_file(os.path.join(angular_app_directory, filename), mimetype="text/html")
         else:
-            return send_file('../angular-app/index.html')
+            return send_file(os.path.join(angular_app_directory, filename))
+
+    def angular_image_assets(self, path=None, filename=None):
+        log.info('angular_image_assets: ')
+        log.info('path: ' + str(path))
+        log.info('filename: ' + str(filename))
+        # Define the root directory of your Angular app's assets
+        log.info('filename: ' + str(filename))
+        current_directory = os.path.dirname(os.path.realpath(__file__))
+        angular_assets_directory = os.path.join(current_directory, '../', '/angular-app/assets/img')
+        # Use Flask's send_from_directory to serve the requested file
+        return send_from_directory(angular_assets_directory, filename)
+
 
     def image_recognition_model(self):
         return self.image_recognition.create_model_request(request)
@@ -311,4 +361,5 @@ class Server:
 
 if __name__ == '__main__':
     server = Server()
+    # run_simple('127.0.0.1', 443, server.app, ssl_context='adhoc', use_reloader=True)
     server.run()

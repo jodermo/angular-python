@@ -1,8 +1,10 @@
 @echo off
 
-echo Installing Python...
-set "installer_path=../exe/python-3.11.4-amd64.exe"  REM Replace with the actual installer path
+echo Installing Node.js...
+set "installer_path=../installer/node-v18.17.0-x64.msi"  REM Replace with the actual installer path
 
-REM Install Python
+REM Install Node.js
 start /wait %installer_path%
 echo Python installation completed.
+
+pause

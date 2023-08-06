@@ -23,6 +23,7 @@ mode = mode if mode else 'dev'
 log = server_logging("speech_recognition.log", mode)
 
 
+
 class speech_recognition:
     def __init__(self, websocket):
         self.websocket = websocket
