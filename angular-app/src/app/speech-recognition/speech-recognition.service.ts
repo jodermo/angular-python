@@ -152,7 +152,10 @@ export class SpeechRecognitionService {
       this.websocket.joinRoom('speech-recognition');
       this.websocketStarted = true;
       this.websocket.on('speech-recognition', (data: any) => {
-        this.checkDetectWords(data);
+        console.log('speech-recognition', data, this.app?.user);
+        if(!data.user || (data.user.id && this.app?.user && data.user.id === this.app.user.id)){
+          this.checkDetectWords(data);
+        }
       });
     }
   }
@@ -283,7 +286,8 @@ export class SpeechRecognitionService {
             sample_rate: sampleRate,
             channels: numberOfChannels,
             sample_width: sampleWidth,
-            recognitionIndex: this.recognitionIndex
+            recognitionIndex: this.recognitionIndex,
+            user: this.app?.user
           };
           // Send the data to the server over WebSocket
 

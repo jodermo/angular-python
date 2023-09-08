@@ -10,7 +10,7 @@ import soundfile as sf
 import numpy as np
 from pydub import AudioSegment
 
-from flask import jsonify
+from flask import jsonify, request
 from flask_socketio import SocketIO, emit
 from datetime import datetime
 from modules.server_logging import server_logging
@@ -45,6 +45,7 @@ class speech_recognition:
          @self.websocket.socketio.on('audio')
          def process_audio(data):
              # Extract the audio data from the request
+             client_sid = request.sid
              recognition_index = int(data.get('recognitionIndex', 0))
              audio_data = data.get('audio')
              language = data.get('language', 'en-US')
@@ -56,6 +57,13 @@ class speech_recognition:
              recording = data.get('recording', False)
              # Generate a unique filename
              filename = self.generate_unique_filename()
+             user = data['user']
+             if user and user['id']:
+                 if user['id'] in self.userClients:
+                     self.userClients[user['id']].append(client_sid)
+                 else:
+                     self.userClients[user['id']] = [client_sid]
+
 
              # Save the audio data to a temporary file
              with tempfile.NamedTemporaryFile(suffix='.mp3', delete=False) as temp_file:
@@ -93,7 +101,8 @@ class speech_recognition:
                         'roomName': 'speech-recognition',
                         'audio_data': audio_data,
                         'recognitionIndex': recognition_index,
-                        'recording': recording if recording else False
+                        'recording': recording if recording else False,
+                        'user': user
                     })
                  if sentence_detected:
                     self.websocket.send_message('speech-recognition', {
@@ -104,7 +113,8 @@ class speech_recognition:
                         'roomName': 'speech-recognition',
                         'audio_data': audio_data,
                         'recognitionIndex': recognition_index,
-                        'recording': recording if recording else False
+                        'recording': recording if recording else False,
+                        'user': user
                     })
                  if not sentence_detected and not words_detected:
                     self.websocket.send_message('speech-recognition', {
@@ -114,7 +124,8 @@ class speech_recognition:
                         'roomName': 'speech-recognition',
                         'audio_data': audio_data,
                         'recognitionIndex': recognition_index,
-                        'recording': recording if recording else False
+                        'recording': recording if recording else False,
+                        'user': user
                     })
              except sr.UnknownValueError as e:
                  # Handle speech recognition errors
@@ -127,7 +138,8 @@ class speech_recognition:
                      'roomName': 'speech-recognition',
                      'language': language,
                      'recognitionIndex': recognition_index,
-                     'recording': recording if recording else False
+                     'recording': recording if recording else False,
+                     'user': user
                  })
                  print(error)
              except sr.RequestError as e:
@@ -142,7 +154,8 @@ class speech_recognition:
                      'sample_rate': sample_rate,
                      'sample_rate': sample_width,
                      'recognitionIndex': recognition_index,
-                     'recording': recording if recording else False
+                     'recording': recording if recording else False,
+                     'user': user
                  })
                  print(error)
 
@@ -151,34 +164,21 @@ class speech_recognition:
 
 
     def create_directory(self, directory_path):
-        log.info('create_directory')
-        log.info(directory_path)
         if not os.path.exists(directory_path):
             os.makedirs(directory_path)
 
     def mp3_to_wav(self, input_file, output_path):
-        log.info('mp3_to_wav')
-        log.info(input_file)
-        log.info(output_path)
         audio = AudioSegment.from_file(input_file)
         audio.export(output_path, format='wav')
-        log.info('success')
 
     def wma_to_wav(self, input_file, output_path):
-        log.info('wma_to_wav')
-        log.info(input_file)
-        log.info(output_path)
         subprocess.run(['mplayer', '-vo', 'null', '-vc', 'null', '-af', 'resample=44100', '-ao', 'pcm:waveheader', input_file, '-ao', 'pcm:file=' + output_path])
-        log.info('success')
 
     def recognize_file(self, filename, path, language="en-US"):
         filename = filename.split("?")[0]
-        log.info('recognize_file')
-        log.info(filename)
         directory_path = os.path.join(self.uploadRoot, self.uploadDirectory, path)
         self.create_directory(directory_path)
         file_path = os.path.join(directory_path, filename)
-        log.info(file_path)
         try:
             if not os.path.isfile(file_path):
                 return jsonify({'success': 0, 'error': 'File not found', 'filename': filename, 'path': file_path, 'language': language, 'directory': directory_path})

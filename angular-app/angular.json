@@ -60,13 +60,7 @@
               "vendorChunk": true,
               "extractLicenses": false,
               "sourceMap": true,
-              "namedChunks": true,
-              "fileReplacements": [
-                {
-                  "replace": "src/environments/environment.ts",
-                  "with": "../environment.ts"
-                }
-              ]
+              "namedChunks": true
             }
           },
           "defaultConfiguration": "production"
@@ -76,21 +70,9 @@
           "configurations": {
             "production": {
               "browserTarget": "angular-app:build:production",
-              "fileReplacements": [
-                {
-                  "replace": "src/environments/environment.ts",
-                  "with": "../environment.ts"
-                }
-              ]
             },
             "development": {
               "browserTarget": "angular-app:build:development",
-              "fileReplacements": [
-                {
-                  "replace": "src/environments/environment.ts",
-                  "with": "../environment.ts"
-                }
-              ]
             }
           },
           "defaultConfiguration": "development"

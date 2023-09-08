@@ -1,5 +1,5 @@
 export const environment = {
-  production: true,
+  production: false,
   serverURL: 'https://localhost/',
   apiRoute: 'api',
   websocketUrl:  'wss://localhost/',

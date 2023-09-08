@@ -142,8 +142,6 @@ class Server:
 
 
     def after_request(self, response):
-        log.info('after_request: ')
-        log.info(response)
         response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
         response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
         return response

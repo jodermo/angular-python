@@ -47,6 +47,7 @@ export class AppService {
   languages: AppLanguage[] = AppLanguages;
   language: AppLanguageType = AppLanguages.length ? AppLanguages[0] : {name: 'English', iso: 'en', lang: 'en-US'};
   user = {
+    id: 0,
     username: ''
   };
   // API configuration

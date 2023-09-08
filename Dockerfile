@@ -5,10 +5,18 @@ FROM node:14 AS build
 WORKDIR /app
 
 # Copy package.json and package-lock.json
-COPY ./angular-app/package*.json ./
+COPY ./environment.ts ./
+
+# Copy package.json and package-lock.json for the Angular app
+COPY ./angular-app/package*.json ./angular-app/
+
+# Switch to the Angular app directory
+WORKDIR /app/angular-app
+
+RUN npm install -g @angular/cli
 
 # Install dependencies
-RUN npm ci --only=production
+RUN npm i --only=production
 
 # Copy the entire project
 COPY ./angular-app/ .
@@ -20,7 +28,7 @@ RUN npm run build
 # Use an official Python runtime as the base image
 FROM python:3.9
 
-COPY --from=build /app/dist/angular-app ./angular-app
+COPY --from=build /app/angular-app/dist/angular-app ./angular-app
 
 # Set the working directory in the container
 WORKDIR /app

@@ -67,19 +67,19 @@ export class WebsocketService {
   joinRoom(roomName = this.roomName): void {
     this.roomName = roomName;
     this.chatMessages[roomName] = this.chatMessages[roomName] ? this.chatMessages[roomName] : [];
-    this.socket.emit('join_room', {roomName: roomName});
+    this.socket.emit('join_room', {roomName: roomName, user: this.app?.user});
     this.joined[roomName] = true;
     this.loadData(roomName);
   }
 
   leaveRoom(roomName = this.roomName): void {
-    this.socket.emit('leave_room', {roomName: roomName});
+    this.socket.emit('leave_room', {roomName: roomName, user: this.app?.user});
     this.joined[roomName] = false;
   }
 
   closeRoom(roomName = this.roomName): void {
     this.chatMessages[roomName] = undefined;
-    this.socket.emit('close_room', {roomName: roomName});
+    this.socket.emit('close_room', {roomName: roomName, user: this.app?.user});
     this.joined[roomName] = false;
   }
 
